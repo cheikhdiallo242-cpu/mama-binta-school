@@ -21,13 +21,13 @@ button {
     cursor: pointer;
 }
 button:hover { background: #5ec2c9; }
+.choice {
+    background: #ffd803;
+}
 #box {
     margin-top: 20px;
     font-size: 20px;
     white-space: pre-line;
-}
-.choice {
-    background: #ffd803;
 }
 </style>
 </head>
@@ -37,8 +37,11 @@ button:hover { background: #5ec2c9; }
 <h1>École de Mama Binta 👧📚</h1>
 
 <h2>📖 Lecture</h2>
-<button onclick="getReadingLesson()">Leçon de lecture</button>
-<button onclick="getReadingExercise()">Exercice de lecture</button>
+<button onclick="getReadingLesson()">Leçon</button>
+<button onclick="getReadingExercise()">Exercice</button>
+
+<h2>✍️ Écriture</h2>
+<button onclick="getWritingExercise()">Exercice d’écriture</button>
 
 <h2>➕➖ Mathématiques</h2>
 <button onclick="getAddition()">Addition</button>
@@ -52,19 +55,32 @@ let correctAnswer = null;
 function getReadingLesson() {
     fetch("/lesson/reading")
         .then(r => r.json())
-        .then(data => {
+        .then(d => {
             document.getElementById("box").innerText =
-                data.title + "\n\n" + data.content;
+                d.title + "\n\n" + d.content;
         });
 }
 
 function getReadingExercise() {
     fetch("/exercise/reading")
         .then(r => r.json())
-        .then(data => {
-            correctAnswer = data.answer;
-            let html = data.question + "<br><br>";
-            data.choices.forEach(c => {
+        .then(d => {
+            correctAnswer = d.answer;
+            let html = d.question + "<br><br>";
+            d.choices.forEach(c => {
+                html += `<button class="choice" onclick="check('${c}')">${c}</button><br>`;
+            });
+            document.getElementById("box").innerHTML = html;
+        });
+}
+
+function getWritingExercise() {
+    fetch("/exercise/writing")
+        .then(r => r.json())
+        .then(d => {
+            correctAnswer = d.answer;
+            let html = "✍️ " + d.question + "<br><br>";
+            d.choices.forEach(c => {
                 html += `<button class="choice" onclick="check('${c}')">${c}</button><br>`;
             });
             document.getElementById("box").innerHTML = html;
@@ -73,27 +89,29 @@ function getReadingExercise() {
 
 function check(choice) {
     if (choice === correctAnswer) {
-        document.getElementById("box").innerHTML = "Bravo Mama Binta 🎉📖";
+        document.getElementById("box").innerHTML =
+            "Bravo Mama Binta 🎉✍️";
     } else {
-        document.getElementById("box").innerHTML = "Essaie encore 😊";
+        document.getElementById("box").innerHTML =
+            "Essaie encore 😊";
     }
 }
 
 function getAddition() {
     fetch("/math/addition")
         .then(r => r.json())
-        .then(data => {
+        .then(d => {
             document.getElementById("box").innerText =
-                data.question + "\n\nRéponse : " + data.answer;
+                d.question + "\n\nRéponse : " + d.answer;
         });
 }
 
 function getSubtraction() {
     fetch("/math/subtraction")
         .then(r => r.json())
-        .then(data => {
+        .then(d => {
             document.getElementById("box").innerText =
-                data.question + "\n\nRéponse : " + data.answer;
+                d.question + "\n\nRéponse : " + d.answer;
         });
 }
 </script>
