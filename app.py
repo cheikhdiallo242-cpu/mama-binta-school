@@ -5,21 +5,32 @@ app = Flask(__name__)
 
 STUDENT_NAME = "Mama Binta"
 
+# ---------------- LECTURE : DONNÉES ----------------
 
-# ---------------- LEÇONS ----------------
+alphabet_lessons = [
+    "La lettre A se prononce « a » comme Avion ✈️",
+    "La lettre B se prononce « be » comme Banane 🍌",
+    "La lettre C se prononce « ce » comme Chat 🐱",
+    "La lettre D se prononce « de » comme Dent 🦷"
+]
+
+syllable_exercises = [
+    {"question": "Quelle syllabe fait le son « ba » ?", "choices": ["ba", "da", "ma"], "answer": "ba"},
+    {"question": "Quelle syllabe fait le son « be » ?", "choices": ["bi", "be", "bo"], "answer": "be"},
+    {"question": "Quelle syllabe fait le son « ma » ?", "choices": ["na", "la", "ma"], "answer": "ma"},
+]
+
+# ---------------- MATHS : DONNÉES ----------------
 
 addition_lessons = [
     "Additionner, c’est réunir des choses.\n\n2 pommes 🍎 + 3 pommes 🍎 = 5 pommes",
-    "Si tu as 1 jouet 🧸 et encore 4 jouets 🧸, tu as 5 jouets.",
     "3 bonbons 🍬 + 2 bonbons 🍬 = 5 bonbons"
 ]
 
 subtraction_lessons = [
     "Soustraire, c’est enlever.\n\n5 pommes 🍎 - 2 pommes 🍎 = 3 pommes",
-    "Tu as 6 bonbons 🍬 et tu en manges 1.\nIl reste 5 bonbons.",
-    "4 jouets 🧸 - 2 jouets 🧸 = 2 jouets"
+    "4 jouets 🧸 - 1 jouet 🧸 = 3 jouets"
 ]
-
 
 # ---------------- ROUTES ----------------
 
@@ -27,6 +38,24 @@ subtraction_lessons = [
 def home():
     return render_template("index.html")
 
+
+# -------- LECTURE --------
+
+@app.route("/lesson/reading")
+def lesson_reading():
+    return jsonify({
+        "title": "Leçon de lecture 📖",
+        "content": random.choice(alphabet_lessons)
+    })
+
+
+@app.route("/exercise/reading")
+def exercise_reading():
+    ex = random.choice(syllable_exercises)
+    return jsonify(ex)
+
+
+# -------- MATHS --------
 
 @app.route("/lesson/addition")
 def lesson_addition():
@@ -43,8 +72,6 @@ def lesson_subtraction():
         "content": random.choice(subtraction_lessons)
     })
 
-
-# ---------------- EXERCICES ----------------
 
 @app.route("/math/addition")
 def math_addition():
