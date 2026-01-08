@@ -5,97 +5,92 @@ app = Flask(__name__)
 
 STUDENT_NAME = "Mama Binta"
 
-# ---------------- LECTURE ----------------
+# ================= LECTURE =================
 
 alphabet_lessons = [
-    "La lettre A se prononce « a » comme Avion ✈️",
-    "La lettre B se prononce « be » comme Banane 🍌",
-    "La lettre C se prononce « ce » comme Chat 🐱",
-    "La lettre D se prononce « de » comme Dent 🦷"
+    "La lettre A fait le son « a » comme Avion ✈️",
+    "La lettre B fait le son « be » comme Banane 🍌",
+    "La lettre M fait le son « me » comme Maman 👩",
+    "La lettre L fait le son « le » comme Livre 📘"
 ]
 
 reading_exercises = [
-    {"question": "Quelle syllabe fait « ba » ?", "choices": ["ba", "da", "ma"], "answer": "ba"},
-    {"question": "Quelle syllabe fait « ma » ?", "choices": ["na", "ma", "la"], "answer": "ma"}
+    {"question": "Quelle syllabe fait « ba » ?", "choices": ["ba", "da", "ta"], "answer": "ba"},
+    {"question": "Quelle syllabe fait « ma » ?", "choices": ["la", "ma", "na"], "answer": "ma"},
+    {"question": "Quelle syllabe fait « le » ?", "choices": ["li", "le", "lo"], "answer": "le"}
 ]
 
-# ---------------- ÉCRITURE ----------------
+# ================= ÉCRITURE =================
 
 writing_exercises = [
-    {
-        "question": "Complète le mot : B _ N A N E 🍌",
-        "choices": ["A", "O", "E"],
-        "answer": "A"
-    },
-    {
-        "question": "Complète le mot : C H _ T 🐱",
-        "choices": ["A", "O", "E"],
-        "answer": "A"
-    },
-    {
-        "question": "Complète le mot : M _ I S O N 🏠",
-        "choices": ["A", "E", "A"],
-        "answer": "A"
-    }
+    {"question": "Complète : É _ O L E 🏫", "choices": ["C", "K", "S"], "answer": "C"},
+    {"question": "Complète : C A H I _ R 📘", "choices": ["E", "A", "O"], "answer": "E"},
+    {"question": "Complète : M A M A N 👩", "choices": ["M", "N", "L"], "answer": "M"},
+    {"question": "Complète : F A M I _ L E 👨‍👩‍👧", "choices": ["L", "N", "R"], "answer": "L"},
+    {"question": "Complète : C R A Y O _ ✏️", "choices": ["N", "M", "R"], "answer": "N"},
+    {"question": "Complète : S A _ L E 🏖️", "choices": ["B", "M", "L"], "answer": "B"},
+    {"question": "Complète : T A B L _ 🪑", "choices": ["E", "A", "I"], "answer": "E"},
+    {"question": "Complète : É C O L I _ R 🎒", "choices": ["E", "A", "R"], "answer": "E"}
 ]
 
-# ---------------- MATHS ----------------
+# ================= MATHS (SCOLAIRES) =================
 
-addition_exercises = [
-    lambda: (random.randint(1, 10), random.randint(1, 10))
+math_addition_problems = [
+    lambda: (7, 3, "crayons ✏️"),
+    lambda: (4, 5, "enfants 👧🧒"),
+    lambda: (6, 2, "bonbons 🍬"),
+    lambda: (3, 6, "livres 📚")
 ]
 
-subtraction_exercises = [
-    lambda: (random.randint(5, 15), random.randint(1, 5))
+math_subtraction_problems = [
+    lambda: (9, 4, "pommes 🍎"),
+    lambda: (8, 3, "crayons ✏️"),
+    lambda: (10, 5, "bonbons 🍬"),
+    lambda: (7, 2, "balles ⚽")
 ]
 
-# ---------------- ROUTES ----------------
+# ================= ROUTES =================
 
 @app.route("/")
 def home():
     return render_template("index.html")
 
-# -------- LECTURE --------
+# ----- Lecture -----
 
 @app.route("/lesson/reading")
 def lesson_reading():
     return jsonify({
-        "title": "Leçon de lecture 📖",
+        "title": "Lecture 📖",
         "content": random.choice(alphabet_lessons)
     })
-
 
 @app.route("/exercise/reading")
 def exercise_reading():
     return jsonify(random.choice(reading_exercises))
 
-
-# -------- ÉCRITURE --------
+# ----- Écriture -----
 
 @app.route("/exercise/writing")
 def exercise_writing():
     return jsonify(random.choice(writing_exercises))
 
-
-# -------- MATHS --------
+# ----- Maths -----
 
 @app.route("/math/addition")
 def math_addition():
-    a, b = random.choice(addition_exercises)()
+    a, b, item = random.choice(math_addition_problems)()
     return jsonify({
-        "question": f"{STUDENT_NAME} a {a} pommes 🍎 et reçoit {b}. Combien a-t-elle ?",
+        "question": f"{STUDENT_NAME} a {a} {item}. Elle en reçoit {b}. Combien a-t-elle ?",
         "answer": a + b
     })
 
-
 @app.route("/math/subtraction")
 def math_subtraction():
-    a, b = random.choice(subtraction_exercises)()
+    a, b, item = random.choice(math_subtraction_problems)()
     return jsonify({
-        "question": f"{STUDENT_NAME} a {a} bonbons 🍬 et en mange {b}. Combien reste-t-il ?",
+        "question": f"{STUDENT_NAME} a {a} {item}. Elle en donne {b}. Combien reste-t-il ?",
         "answer": a - b
     })
-
 
 if __name__ == "__main__":
     app.run()
