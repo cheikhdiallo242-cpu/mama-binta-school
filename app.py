@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 import random
 
 app = Flask(__name__)
@@ -7,7 +7,7 @@ STUDENT_NAME = "Mama Binta"
 
 @app.route("/")
 def home():
-    return f"Bienvenue à l'école de {STUDENT_NAME} 👧📚"
+    return render_template("index.html")
 
 @app.route("/math/lesson")
 def math_lesson():
@@ -26,13 +26,14 @@ def math_exercise():
         "answer": a + b
     })
 
-@app.route("/math/check", methods=["POST"])
-def math_check():
-    data = request.json
-    if int(data["user_answer"]) == int(data["correct_answer"]):
-        return jsonify({
-            "result": "Bravo Mama Binta 🎉 Tu as bien travaillé !"
-        })
+@app.route("/math/subtraction")
+def math_subtraction():
+    a = random.randint(5, 20)
+    b = random.randint(1, a)
+    return jsonify({
+        "question": f"Mama Binta, combien font {a} - {b} ?",
+        "answer": a - b
+    })
     else:
         return jsonify({
             "result": "Ce n’est pas grave 😊 Réessaie encore."
