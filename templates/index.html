@@ -29,12 +29,25 @@ button:hover { background: #5ec2c9; }
     font-size: 20px;
     white-space: pre-line;
 }
+#score {
+    margin-top: 20px;
+    font-size: 18px;
+    background: #e3f6f5;
+    padding: 10px;
+    border-radius: 10px;
+    display: inline-block;
+}
 </style>
 </head>
 
 <body>
 
 <h1>École de Mama Binta 👧📚</h1>
+
+<div id="score">
+⭐ Points : <span id="points">0</span><br>
+🏅 Niveau : <span id="level">1</span>
+</div>
 
 <h2>📖 Lecture</h2>
 <button onclick="getReadingLesson()">Leçon</button>
@@ -51,6 +64,21 @@ button:hover { background: #5ec2c9; }
 
 <script>
 let correctAnswer = null;
+let points = 0;
+let level = 1;
+
+function updateScore() {
+    document.getElementById("points").innerText = points;
+    document.getElementById("level").innerText = level;
+}
+
+function addPoint() {
+    points++;
+    if (points % 5 === 0) {
+        level++;
+    }
+    updateScore();
+}
 
 function getReadingLesson() {
     fetch("/lesson/reading")
@@ -89,11 +117,12 @@ function getWritingExercise() {
 
 function check(choice) {
     if (choice === correctAnswer) {
+        addPoint();
         document.getElementById("box").innerHTML =
-            "Bravo Mama Binta 🎉✍️";
+            "Bravo Mama Binta 🎉⭐";
     } else {
         document.getElementById("box").innerHTML =
-            "Essaie encore 😊";
+            "Ce n’est pas grave, essaie encore 😊";
     }
 }
 
