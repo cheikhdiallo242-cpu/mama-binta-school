@@ -1,1 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>École de Mama Binta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fef6e4;
+            text-align: center;
+            padding: 30px;
+        }
+        h1 {
+            color: #f582ae;
+        }
+        button {
+            font-size: 18px;
+            padding: 15px 25px;
+            margin: 10px;
+            border: none;
+            border-radius: 10px;
+            background-color: #8bd3dd;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #5ec2c9;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
 
+<h1>Bienvenue à l’école de Mama Binta 👧📚</h1>
+
+<p>Choisis un exercice :</p>
+
+<button onclick="getAddition()">➕ Addition</button>
+<button onclick="getSubtraction()">➖ Soustraction</button>
+
+<p id="question"></p>
+<input type="number" id="answer" placeholder="Ta réponse">
+<br><br>
+<button onclick="checkAnswer()">Vérifier</button>
+
+<p id="result"></p>
+
+<script>
+let correctAnswer = 0;
+
+function getAddition() {
+    fetch("/math/exercise")
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("question").innerText = data.question;
+            correctAnswer = data.answer;
+        });
+}
+
+function getSubtraction() {
+    fetch("/math/subtraction")
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("question").innerText = data.question;
+            correctAnswer = data.answer;
+        });
+}
+
+function checkAnswer() {
+    let userAnswer = document.getElementById("answer").value;
+    if (parseInt(userAnswer) === correctAnswer) {
+        document.getElementById("result").innerText = "Bravo Mama Binta 🎉";
+    } else {
+        document.getElementById("result").innerText = "Essaie encore 😊";
+    }
+}
+</script>
+
+</body>
+</html>
