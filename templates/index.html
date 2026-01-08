@@ -1,105 +1,90 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>École de Mama Binta</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #fef6e4;
-            text-align: center;
-            padding: 30px;
-        }
-        h1 {
-            color: #f582ae;
-        }
-        button {
-            font-size: 18px;
-            padding: 15px 25px;
-            margin: 8px;
-            border: none;
-            border-radius: 10px;
-            background-color: #8bd3dd;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #5ec2c9;
-        }
-        #lesson {
-            margin-top: 20px;
-            font-size: 18px;
-            white-space: pre-line;
-        }
-        #question {
-            font-size: 20px;
-            margin-top: 20px;
-        }
-        #result {
-            margin-top: 15px;
-            font-size: 20px;
-        }
-        input {
-            font-size: 18px;
-            padding: 8px;
-            width: 120px;
-            text-align: center;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>École de Mama Binta</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #fef6e4;
+    text-align: center;
+    padding: 30px;
+}
+h1 { color: #f582ae; }
+button {
+    font-size: 18px;
+    padding: 12px 20px;
+    margin: 6px;
+    border: none;
+    border-radius: 10px;
+    background: #8bd3dd;
+    cursor: pointer;
+}
+button:hover { background: #5ec2c9; }
+#box {
+    margin-top: 20px;
+    font-size: 20px;
+    white-space: pre-line;
+}
+.choice {
+    background: #ffd803;
+}
+</style>
 </head>
+
 <body>
 
-<h1>Bienvenue à l’école de Mama Binta 👧📚</h1>
+<h1>École de Mama Binta 👧📚</h1>
 
-<p>Commence par la leçon :</p>
+<h2>📖 Lecture</h2>
+<button onclick="getReadingLesson()">Leçon de lecture</button>
+<button onclick="getReadingExercise()">Exercice de lecture</button>
 
-<button onclick="showAdditionLesson()">📘 Leçon Addition</button>
-<button onclick="showSubtractionLesson()">📘 Leçon Soustraction</button>
+<h2>➕➖ Mathématiques</h2>
+<button onclick="getAddition()">Addition</button>
+<button onclick="getSubtraction()">Soustraction</button>
 
-<p id="lesson"></p>
-
-<hr>
-
-<p>Fais un exercice :</p>
-
-<button onclick="getAddition()">➕ Addition</button>
-<button onclick="getSubtraction()">➖ Soustraction</button>
-
-<p id="question"></p>
-
-<input type="number" id="answer" placeholder="Réponse">
-<br><br>
-<button onclick="checkAnswer()">Vérifier</button>
-
-<p id="result"></p>
+<div id="box"></div>
 
 <script>
 let correctAnswer = null;
 
-function showAdditionLesson() {
-    fetch("/lesson/addition")
+function getReadingLesson() {
+    fetch("/lesson/reading")
         .then(r => r.json())
         .then(data => {
-            document.getElementById("lesson").innerText =
+            document.getElementById("box").innerText =
                 data.title + "\n\n" + data.content;
         });
 }
 
-function showSubtractionLesson() {
-    fetch("/lesson/subtraction")
+function getReadingExercise() {
+    fetch("/exercise/reading")
         .then(r => r.json())
         .then(data => {
-            document.getElementById("lesson").innerText =
-                data.title + "\n\n" + data.content;
+            correctAnswer = data.answer;
+            let html = data.question + "<br><br>";
+            data.choices.forEach(c => {
+                html += `<button class="choice" onclick="check('${c}')">${c}</button><br>`;
+            });
+            document.getElementById("box").innerHTML = html;
         });
+}
+
+function check(choice) {
+    if (choice === correctAnswer) {
+        document.getElementById("box").innerHTML = "Bravo Mama Binta 🎉📖";
+    } else {
+        document.getElementById("box").innerHTML = "Essaie encore 😊";
+    }
 }
 
 function getAddition() {
-    fetch("/math/exercise")
+    fetch("/math/addition")
         .then(r => r.json())
         .then(data => {
-            document.getElementById("question").innerText = data.question;
-            correctAnswer = data.answer;
-            document.getElementById("result").innerText = "";
+            document.getElementById("box").innerText =
+                data.question + "\n\nRéponse : " + data.answer;
         });
 }
 
@@ -107,27 +92,9 @@ function getSubtraction() {
     fetch("/math/subtraction")
         .then(r => r.json())
         .then(data => {
-            document.getElementById("question").innerText = data.question;
-            correctAnswer = data.answer;
-            document.getElementById("result").innerText = "";
+            document.getElementById("box").innerText =
+                data.question + "\n\nRéponse : " + data.answer;
         });
-}
-
-function checkAnswer() {
-    let userAnswer = document.getElementById("answer").value;
-    if (correctAnswer === null) {
-        document.getElementById("result").innerText =
-            "Choisis d’abord un exercice 😊";
-        return;
-    }
-
-    if (parseInt(userAnswer) === correctAnswer) {
-        document.getElementById("result").innerText =
-            "Bravo Mama Binta 🎉";
-    } else {
-        document.getElementById("result").innerText =
-            "Ce n’est pas grave, essaie encore 😊";
-    }
 }
 </script>
 
