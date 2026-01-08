@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, render_template
 import random
 
 app = Flask(__name__)
@@ -6,24 +6,33 @@ app = Flask(__name__)
 STUDENT_NAME = "Mama Binta"
 
 
+# ---------------- LEÇONS ----------------
+
+addition_lessons = [
+    "Additionner, c’est réunir des choses.\n\n2 pommes 🍎 + 3 pommes 🍎 = 5 pommes",
+    "Si tu as 1 jouet 🧸 et encore 4 jouets 🧸, tu as 5 jouets.",
+    "3 bonbons 🍬 + 2 bonbons 🍬 = 5 bonbons"
+]
+
+subtraction_lessons = [
+    "Soustraire, c’est enlever.\n\n5 pommes 🍎 - 2 pommes 🍎 = 3 pommes",
+    "Tu as 6 bonbons 🍬 et tu en manges 1.\nIl reste 5 bonbons.",
+    "4 jouets 🧸 - 2 jouets 🧸 = 2 jouets"
+]
+
+
+# ---------------- ROUTES ----------------
+
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
-# ----------- LEÇONS -----------
-
 @app.route("/lesson/addition")
 def lesson_addition():
     return jsonify({
         "title": "Leçon d’addition ➕",
-        "content": (
-            "Additionner, c’est compter plusieurs choses ensemble.\n\n"
-            "Exemple :\n"
-            "Si tu as 2 bonbons et encore 3 bonbons,\n"
-            "alors tu as 5 bonbons.\n\n"
-            "2 + 3 = 5 🍬"
-        )
+        "content": random.choice(addition_lessons)
     })
 
 
@@ -31,34 +40,28 @@ def lesson_addition():
 def lesson_subtraction():
     return jsonify({
         "title": "Leçon de soustraction ➖",
-        "content": (
-            "Soustraire, c’est enlever des choses.\n\n"
-            "Exemple :\n"
-            "Si tu as 5 bonbons et que tu en manges 2,\n"
-            "il te reste 3 bonbons.\n\n"
-            "5 - 2 = 3 🍬"
-        )
+        "content": random.choice(subtraction_lessons)
     })
 
 
-# ----------- EXERCICES -----------
+# ---------------- EXERCICES ----------------
 
-@app.route("/math/exercise")
-def math_exercise():
-    a = random.randint(1, 20)
-    b = random.randint(1, 20)
+@app.route("/math/addition")
+def math_addition():
+    a = random.randint(1, 10)
+    b = random.randint(1, 10)
     return jsonify({
-        "question": f"{STUDENT_NAME}, combien font {a} + {b} ?",
+        "question": f"{STUDENT_NAME} a {a} pommes 🍎 et reçoit {b} pommes 🍎. Combien a-t-elle ?",
         "answer": a + b
     })
 
 
 @app.route("/math/subtraction")
 def math_subtraction():
-    a = random.randint(5, 20)
+    a = random.randint(5, 15)
     b = random.randint(1, a)
     return jsonify({
-        "question": f"{STUDENT_NAME}, combien font {a} - {b} ?",
+        "question": f"{STUDENT_NAME} a {a} bonbons 🍬 et en mange {b}. Combien reste-t-il ?",
         "answer": a - b
     })
 
