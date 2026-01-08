@@ -16,7 +16,7 @@
         button {
             font-size: 18px;
             padding: 15px 25px;
-            margin: 10px;
+            margin: 8px;
             border: none;
             border-radius: 10px;
             background-color: #8bd3dd;
@@ -25,9 +25,24 @@
         button:hover {
             background-color: #5ec2c9;
         }
-        #result {
+        #lesson {
             margin-top: 20px;
+            font-size: 18px;
+            white-space: pre-line;
+        }
+        #question {
             font-size: 20px;
+            margin-top: 20px;
+        }
+        #result {
+            margin-top: 15px;
+            font-size: 20px;
+        }
+        input {
+            font-size: 18px;
+            padding: 8px;
+            width: 120px;
+            text-align: center;
         }
     </style>
 </head>
@@ -35,45 +50,83 @@
 
 <h1>Bienvenue à l’école de Mama Binta 👧📚</h1>
 
-<p>Choisis un exercice :</p>
+<p>Commence par la leçon :</p>
+
+<button onclick="showAdditionLesson()">📘 Leçon Addition</button>
+<button onclick="showSubtractionLesson()">📘 Leçon Soustraction</button>
+
+<p id="lesson"></p>
+
+<hr>
+
+<p>Fais un exercice :</p>
 
 <button onclick="getAddition()">➕ Addition</button>
 <button onclick="getSubtraction()">➖ Soustraction</button>
 
 <p id="question"></p>
-<input type="number" id="answer" placeholder="Ta réponse">
+
+<input type="number" id="answer" placeholder="Réponse">
 <br><br>
 <button onclick="checkAnswer()">Vérifier</button>
 
 <p id="result"></p>
 
 <script>
-let correctAnswer = 0;
+let correctAnswer = null;
+
+function showAdditionLesson() {
+    fetch("/lesson/addition")
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById("lesson").innerText =
+                data.title + "\n\n" + data.content;
+        });
+}
+
+function showSubtractionLesson() {
+    fetch("/lesson/subtraction")
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById("lesson").innerText =
+                data.title + "\n\n" + data.content;
+        });
+}
 
 function getAddition() {
     fetch("/math/exercise")
-        .then(res => res.json())
+        .then(r => r.json())
         .then(data => {
             document.getElementById("question").innerText = data.question;
             correctAnswer = data.answer;
+            document.getElementById("result").innerText = "";
         });
 }
 
 function getSubtraction() {
     fetch("/math/subtraction")
-        .then(res => res.json())
+        .then(r => r.json())
         .then(data => {
             document.getElementById("question").innerText = data.question;
             correctAnswer = data.answer;
+            document.getElementById("result").innerText = "";
         });
 }
 
 function checkAnswer() {
     let userAnswer = document.getElementById("answer").value;
+    if (correctAnswer === null) {
+        document.getElementById("result").innerText =
+            "Choisis d’abord un exercice 😊";
+        return;
+    }
+
     if (parseInt(userAnswer) === correctAnswer) {
-        document.getElementById("result").innerText = "Bravo Mama Binta 🎉";
+        document.getElementById("result").innerText =
+            "Bravo Mama Binta 🎉";
     } else {
-        document.getElementById("result").innerText = "Essaie encore 😊";
+        document.getElementById("result").innerText =
+            "Ce n’est pas grave, essaie encore 😊";
     }
 }
 </script>
