@@ -5,6 +5,8 @@
 <title>École de Mama Binta</title>
 
 <link rel="manifest" href="/static/manifest.json">
+
+<!-- CHARGEMENT DU GÉNÉRATEUR -->
 <script src="/static/generator.js"></script>
 
 <script>
@@ -14,22 +16,45 @@ if ("serviceWorker" in navigator) {
 </script>
 
 <style>
-body { font-family: Arial; background:#fef6e4; text-align:center; padding:30px; }
-h1 { color:#f582ae; }
-button { font-size:18px; padding:12px 20px; margin:6px; border-radius:10px; border:none; background:#8bd3dd; }
-.choice { background:#ffd803; }
-#box { margin-top:20px; font-size:20px; white-space:pre-line; }
-#teacher { background:#fde68a; padding:15px; border-radius:15px; }
+body {
+    font-family: Arial;
+    background: #fef6e4;
+    text-align: center;
+    padding: 30px;
+}
+h1 { color: #f582ae; }
+button {
+    font-size: 18px;
+    padding: 12px 20px;
+    margin: 6px;
+    border-radius: 10px;
+    border: none;
+    background: #8bd3dd;
+}
+.choice { background: #ffd803; }
+#box {
+    margin-top: 20px;
+    font-size: 20px;
+    white-space: pre-line;
+}
+#teacher {
+    background: #fde68a;
+    padding: 15px;
+    border-radius: 15px;
+}
 </style>
 </head>
 
 <body>
 
 <h1>École de Mama Binta 👧📚</h1>
-<div id="teacher">👩🏾‍🏫 La maîtresse intelligente</div>
 
-<button onclick="reading()">Lecture</button>
-<button onclick="maths()">Maths</button>
+<div id="teacher">
+👩🏾‍🏫 La maîtresse intelligente est avec toi
+</div>
+
+<button onclick="startReading()">📖 Lecture</button>
+<button onclick="startMaths()">➕ Maths</button>
 
 <div id="box"></div>
 
@@ -37,44 +62,46 @@ button { font-size:18px; padding:12px 20px; margin:6px; border-radius:10px; bord
 let current = null;
 
 /* ---- VOIX ---- */
-function speak(t){
-    if(!("speechSynthesis" in window)) return;
+function speak(text) {
+    if (!("speechSynthesis" in window)) return;
     speechSynthesis.cancel();
-    let u=new SpeechSynthesisUtterance(t);
-    u.lang="fr-FR"; u.rate=0.85; u.pitch=1.2;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "fr-FR";
+    u.rate = 0.85;
+    u.pitch = 1.2;
     speechSynthesis.speak(u);
 }
 
 /* ---- LECTURE ---- */
-function reading(){
+function startReading() {
     current = generateReadingQuestion();
-    show();
+    showQuestion();
 }
 
 /* ---- MATHS ---- */
-function maths(){
+function startMaths() {
     current = generateMathQuestion();
-    show();
+    showQuestion();
 }
 
 /* ---- AFFICHAGE ---- */
-function show(){
+function showQuestion() {
     let html = current.question + "\n\n";
-    current.choices.forEach(c=>{
-        html += `<button class="choice" onclick="check('${c}')">${c}</button><br>`;
+    current.choices.forEach(c => {
+        html += `<button class="choice" onclick="checkAnswer('${c}')">${c}</button><br>`;
     });
     document.getElementById("box").innerHTML = html;
     speak(current.question);
 }
 
-/* ---- CHECK ---- */
-function check(x){
-    if(x === current.answer){
+/* ---- RÉPONSE ---- */
+function checkAnswer(choice) {
+    if (choice === current.answer) {
+        document.getElementById("box").innerText = "Bravo Mama Binta 🎉";
         speak("Bravo Mama Binta !");
-        document.getElementById("box").innerText = "Bonne réponse 🎉";
     } else {
-        speak("Essaie encore.");
         document.getElementById("box").innerText = "Essaie encore 😊";
+        speak("Essaie encore.");
     }
 }
 </script>
