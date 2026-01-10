@@ -1,43 +1,60 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>École de Mama Binta</title>
-<style>
-body {
-    font-family: Arial, sans-serif;
-    background: #fef6e4;
-    text-align: center;
-    padding: 30px;
-}
-h1 { color: #f582ae; }
-button {
-    font-size: 18px;
-    padding: 12px 20px;
-    margin: 6px;
-    border: none;
-    border-radius: 10px;
-    background: #8bd3dd;
-    cursor: pointer;
-}
-button:hover { background: #5ec2c9; }
-.choice {
-    background: #ffd803;
-}
-#box {
-    margin-top: 20px;
-    font-size: 20px;
-    white-space: pre-line;
-}
-#score {
-    margin-top: 20px;
-    font-size: 18px;
-    background: #e3f6f5;
-    padding: 10px;
-    border-radius: 10px;
-    display: inline-block;
-}
-</style>
+    <meta charset="UTF-8">
+    <title>École de Mama Binta</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="/static/manifest.json">
+
+    <script>
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/static/sw.js");
+    }
+    </script>
+
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #fef6e4;
+        text-align: center;
+        padding: 30px;
+    }
+    h1 { color: #f582ae; }
+
+    button {
+        font-size: 18px;
+        padding: 12px 20px;
+        margin: 6px;
+        border: none;
+        border-radius: 10px;
+        background: #8bd3dd;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #5ec2c9;
+    }
+
+    .choice {
+        background: #ffd803;
+    }
+
+    #box {
+        margin-top: 20px;
+        font-size: 20px;
+        white-space: pre-line;
+    }
+
+    #score {
+        margin-top: 20px;
+        font-size: 18px;
+        background: #e3f6f5;
+        padding: 10px;
+        border-radius: 10px;
+        display: inline-block;
+    }
+    </style>
 </head>
 
 <body>
@@ -45,8 +62,8 @@ button:hover { background: #5ec2c9; }
 <h1>École de Mama Binta 👧📚</h1>
 
 <div id="score">
-⭐ Points : <span id="points">0</span><br>
-🏅 Niveau : <span id="level">1</span>
+    ⭐ Points : <span id="points">0</span><br>
+    🏅 Niveau : <span id="level">1</span>
 </div>
 
 <h2>📖 Lecture</h2>
@@ -80,6 +97,8 @@ function addPoint() {
     updateScore();
 }
 
+// -------- LECTURE --------
+
 function getReadingLesson() {
     fetch("/lesson/reading")
         .then(r => r.json())
@@ -94,20 +113,22 @@ function getReadingExercise() {
         .then(r => r.json())
         .then(d => {
             correctAnswer = d.answer;
-            let html = d.question + "<br><br>";
+            let html = d.question + "\n\n";
             d.choices.forEach(c => {
                 html += `<button class="choice" onclick="check('${c}')">${c}</button><br>`;
             });
             document.getElementById("box").innerHTML = html;
         });
 }
+
+// -------- ÉCRITURE --------
 
 function getWritingExercise() {
     fetch("/exercise/writing")
         .then(r => r.json())
         .then(d => {
             correctAnswer = d.answer;
-            let html = "✍️ " + d.question + "<br><br>";
+            let html = "✍️ " + d.question + "\n\n";
             d.choices.forEach(c => {
                 html += `<button class="choice" onclick="check('${c}')">${c}</button><br>`;
             });
@@ -115,16 +136,7 @@ function getWritingExercise() {
         });
 }
 
-function check(choice) {
-    if (choice === correctAnswer) {
-        addPoint();
-        document.getElementById("box").innerHTML =
-            "Bravo Mama Binta 🎉⭐";
-    } else {
-        document.getElementById("box").innerHTML =
-            "Ce n’est pas grave, essaie encore 😊";
-    }
-}
+// -------- MATHS --------
 
 function getAddition() {
     fetch("/math/addition")
@@ -142,6 +154,19 @@ function getSubtraction() {
             document.getElementById("box").innerText =
                 d.question + "\n\nRéponse : " + d.answer;
         });
+}
+
+// -------- CHECK --------
+
+function check(choice) {
+    if (choice === correctAnswer) {
+        addPoint();
+        document.getElementById("box").innerText =
+            "Bravo Mama Binta 🎉⭐";
+    } else {
+        document.getElementById("box").innerText =
+            "Ce n’est pas grave, essaie encore 😊";
+    }
 }
 </script>
 
