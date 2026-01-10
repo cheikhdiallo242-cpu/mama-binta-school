@@ -1,157 +1,105 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>École de Mama Binta</title>
+<meta charset="UTF-8">
+<title>École de Mama Binta</title>
 
-    <!-- PWA -->
-    <link rel="manifest" href="/static/manifest.json">
+<link rel="manifest" href="/static/manifest.json">
+<script>
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/static/sw.js");
+}
+</script>
 
-    <script>
-    if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/static/sw.js");
-    }
-    </script>
-
-    <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #fef6e4;
-        text-align: center;
-        padding: 30px;
-    }
-
-    h1 { color: #f582ae; }
-
-    button {
-        font-size: 18px;
-        padding: 12px 20px;
-        margin: 6px;
-        border: none;
-        border-radius: 10px;
-        background: #8bd3dd;
-        cursor: pointer;
-    }
-
-    button:hover { background: #5ec2c9; }
-
-    .choice { background: #ffd803; }
-
-    #box {
-        margin-top: 20px;
-        font-size: 20px;
-        white-space: pre-line;
-    }
-
-    #score {
-        margin-top: 20px;
-        font-size: 18px;
-        background: #e3f6f5;
-        padding: 10px;
-        border-radius: 10px;
-        display: inline-block;
-    }
-
-    #teacher {
-        background: #fde68a;
-        padding: 15px;
-        border-radius: 15px;
-        margin-bottom: 20px;
-        font-size: 18px;
-    }
-    </style>
+<style>
+body { font-family: Arial; background:#fef6e4; text-align:center; padding:30px; }
+h1 { color:#f582ae; }
+button { font-size:18px; padding:12px 20px; margin:6px; border-radius:10px; border:none; background:#8bd3dd; }
+.choice { background:#ffd803; }
+#box { margin-top:20px; font-size:20px; white-space:pre-line; }
+#teacher { background:#fde68a; padding:15px; border-radius:15px; }
+#score { margin-top:15px; background:#e3f6f5; padding:10px; border-radius:10px; }
+</style>
 </head>
 
 <body>
 
 <h1>École de Mama Binta 👧📚</h1>
 
-<div id="teacher">
-    👩🏾‍🏫 <b>La maîtresse est là</b><br>
-    Elle explique et t’aide à apprendre 💛
-</div>
+<div id="teacher">👩🏾‍🏫 La maîtresse est là pour t’aider</div>
 
 <div id="score">
-    ⭐ Points : <span id="points">0</span><br>
-    🏅 Niveau : <span id="level">1</span>
+⭐ Points : <span id="points">0</span> | 🏅 Niveau : <span id="level">1</span>
 </div>
 
-<h2>👩🏾‍🏫 Mode Maîtresse</h2>
-<button onclick="teacherLesson()">Leçon avec explication</button>
+<button onclick="teacherLesson()">Leçon de la maîtresse</button>
 <button onclick="teacherExercise()">Question de la maîtresse</button>
 
 <div id="box"></div>
 
 <script>
-let correctAnswer = null;
-let points = 0;
-let level = 1;
+let points = 0, level = 1, current = null;
 
-/* ---------- SCORE ---------- */
-function updateScore() {
-    document.getElementById("points").innerText = points;
-    document.getElementById("level").innerText = level;
+/* -------- VOIX -------- */
+function speak(t){
+    if(!("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    let u=new SpeechSynthesisUtterance(t);
+    u.lang="fr-FR"; u.rate=0.85; u.pitch=1.2;
+    speechSynthesis.speak(u);
 }
 
-function addPoint() {
+/* -------- SCORE -------- */
+function addPoint(){
     points++;
-    if (points % 5 === 0) level++;
-    updateScore();
+    if(points%5===0) level++;
+    document.getElementById("points").innerText=points;
+    document.getElementById("level").innerText=level;
 }
 
-/* ---------- VOIX ---------- */
-function speak(text) {
-    if (!("speechSynthesis" in window)) return;
+/* -------- BANQUE DE LEÇONS -------- */
+const lessons = [
+"Un mot est composé de lettres. Chaque lettre a un son.",
+"Pour bien lire, regarde chaque lettre doucement.",
+"Une phrase commence par une majuscule et finit par un point."
+];
 
-    window.speechSynthesis.cancel();
+/* -------- BANQUE DE QUESTIONS -------- */
+const questions = [
+{q:"Quel mot commence par la lettre B ?", c:["Banane","Chat","Soleil"], a:"Banane"},
+{q:"Quel mot est un animal ?", c:["Maison","Chat","Table"], a:"Chat"},
+{q:"Quel mot commence par la lettre M ?", c:["Moto","Banane","École"], a:"Moto"},
+{q:"Quel mot est un fruit ?", c:["Banane","Chaise","Livre"], a:"Banane"},
+{q:"Quel mot commence par la lettre S ?", c:["Soleil","Chat","Moto"], a:"Soleil"}
+];
 
-    const msg = new SpeechSynthesisUtterance(text);
-    msg.lang = "fr-FR";
-    msg.rate = 0.85;
-    msg.pitch = 1.2;
-
-    window.speechSynthesis.speak(msg);
+/* -------- LEÇON -------- */
+function teacherLesson(){
+    const text = lessons[Math.floor(Math.random()*lessons.length)];
+    document.getElementById("box").innerText=text;
+    speak("Écoute bien. " + text);
 }
 
-/* ---------- MODE MAÎTRESSE ---------- */
-
-function teacherLesson() {
-    const text =
-        "Bonjour Mama Binta. Aujourd’hui, nous allons apprendre la lecture. " +
-        "Un mot est composé de lettres. " +
-        "Par exemple : le mot chat commence par la lettre C. " +
-        "Répète après moi : chat.";
-
-    document.getElementById("box").innerText = text;
-    speak(text);
-}
-
-function teacherExercise() {
-    const question =
-        "Écoute bien. Quel mot commence par la lettre B ?";
-
-    correctAnswer = "Banane";
-
-    let html = question + "\n\n";
-    ["Chat", "Banane", "Soleil"].forEach(c => {
-        html += `<button class="choice" onclick="check('${c}')">${c}</button><br>`;
+/* -------- QUESTION -------- */
+function teacherExercise(){
+    current = questions[Math.floor(Math.random()*questions.length)];
+    let html = current.q + "\n\n";
+    current.c.forEach(x=>{
+        html += `<button class="choice" onclick="check('${x}')">${x}</button><br>`;
     });
-
     document.getElementById("box").innerHTML = html;
-    speak(question);
+    speak(current.q);
 }
 
-/* ---------- CHECK ---------- */
-function check(choice) {
-    if (choice === correctAnswer) {
+/* -------- CHECK -------- */
+function check(x){
+    if(x===current.a){
         addPoint();
-        const text = "Bravo Mama Binta. Tu as bien répondu. Continue comme ça.";
-        document.getElementById("box").innerText = text;
-        speak(text);
-    } else {
-        const text = "Ce n’est pas grave. Réfléchis encore. Tu peux y arriver.";
-        document.getElementById("box").innerText = text;
-        speak(text);
+        speak("Bravo Mama Binta. Bonne réponse.");
+        document.getElementById("box").innerText="Bravo 🎉";
+    }else{
+        speak("Ce n’est pas grave. Essaie encore.");
+        document.getElementById("box").innerText="Essaie encore 😊";
     }
 }
 </script>
