@@ -5,6 +5,7 @@
 <title>École de Mama Binta</title>
 
 <link rel="manifest" href="/static/manifest.json">
+<script src="/static/generator.js"></script>
 
 <script>
 if ("serviceWorker" in navigator) {
@@ -27,17 +28,15 @@ button { font-size:18px; padding:12px 20px; margin:6px; border-radius:10px; bord
 <h1>École de Mama Binta 👧📚</h1>
 <div id="teacher">👩🏾‍🏫 La maîtresse intelligente</div>
 
-<button onclick="loadQuestion('lecture')">Lecture</button>
-<button onclick="loadQuestion('ecriture')">Écriture</button>
-<button onclick="loadQuestion('maths')">Maths</button>
+<button onclick="reading()">Lecture</button>
+<button onclick="maths()">Maths</button>
 
 <div id="box"></div>
 
 <script>
-let data = {};
 let current = null;
 
-/* ----- VOIX ----- */
+/* ---- VOIX ---- */
 function speak(t){
     if(!("speechSynthesis" in window)) return;
     speechSynthesis.cancel();
@@ -46,33 +45,36 @@ function speak(t){
     speechSynthesis.speak(u);
 }
 
-/* ----- CHARGER QUESTIONS ----- */
-fetch("/static/questions.json")
-.then(r=>r.json())
-.then(j=>data=j);
+/* ---- LECTURE ---- */
+function reading(){
+    current = generateReadingQuestion();
+    show();
+}
 
-/* ----- QUESTION ----- */
-function loadQuestion(type){
-    const list = data[type];
-    current = list[Math.floor(Math.random()*list.length)];
+/* ---- MATHS ---- */
+function maths(){
+    current = generateMathQuestion();
+    show();
+}
 
+/* ---- AFFICHAGE ---- */
+function show(){
     let html = current.question + "\n\n";
     current.choices.forEach(c=>{
         html += `<button class="choice" onclick="check('${c}')">${c}</button><br>`;
     });
-
     document.getElementById("box").innerHTML = html;
     speak(current.question);
 }
 
-/* ----- CHECK ----- */
+/* ---- CHECK ---- */
 function check(x){
-    if(x===current.answer){
+    if(x === current.answer){
         speak("Bravo Mama Binta !");
-        document.getElementById("box").innerText="Bonne réponse 🎉";
-    }else{
+        document.getElementById("box").innerText = "Bonne réponse 🎉";
+    } else {
         speak("Essaie encore.");
-        document.getElementById("box").innerText="Essaie encore 😊";
+        document.getElementById("box").innerText = "Essaie encore 😊";
     }
 }
 </script>
