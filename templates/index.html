@@ -5,6 +5,7 @@
 <title>École de Mama Binta</title>
 
 <link rel="manifest" href="/static/manifest.json">
+
 <script>
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/static/sw.js");
@@ -18,29 +19,25 @@ button { font-size:18px; padding:12px 20px; margin:6px; border-radius:10px; bord
 .choice { background:#ffd803; }
 #box { margin-top:20px; font-size:20px; white-space:pre-line; }
 #teacher { background:#fde68a; padding:15px; border-radius:15px; }
-#score { margin-top:15px; background:#e3f6f5; padding:10px; border-radius:10px; }
 </style>
 </head>
 
 <body>
 
 <h1>École de Mama Binta 👧📚</h1>
+<div id="teacher">👩🏾‍🏫 La maîtresse intelligente</div>
 
-<div id="teacher">👩🏾‍🏫 La maîtresse est là pour t’aider</div>
-
-<div id="score">
-⭐ Points : <span id="points">0</span> | 🏅 Niveau : <span id="level">1</span>
-</div>
-
-<button onclick="teacherLesson()">Leçon de la maîtresse</button>
-<button onclick="teacherExercise()">Question de la maîtresse</button>
+<button onclick="loadQuestion('lecture')">Lecture</button>
+<button onclick="loadQuestion('ecriture')">Écriture</button>
+<button onclick="loadQuestion('maths')">Maths</button>
 
 <div id="box"></div>
 
 <script>
-let points = 0, level = 1, current = null;
+let data = {};
+let current = null;
 
-/* -------- VOIX -------- */
+/* ----- VOIX ----- */
 function speak(t){
     if(!("speechSynthesis" in window)) return;
     speechSynthesis.cancel();
@@ -49,56 +46,32 @@ function speak(t){
     speechSynthesis.speak(u);
 }
 
-/* -------- SCORE -------- */
-function addPoint(){
-    points++;
-    if(points%5===0) level++;
-    document.getElementById("points").innerText=points;
-    document.getElementById("level").innerText=level;
-}
+/* ----- CHARGER QUESTIONS ----- */
+fetch("/static/questions.json")
+.then(r=>r.json())
+.then(j=>data=j);
 
-/* -------- BANQUE DE LEÇONS -------- */
-const lessons = [
-"Un mot est composé de lettres. Chaque lettre a un son.",
-"Pour bien lire, regarde chaque lettre doucement.",
-"Une phrase commence par une majuscule et finit par un point."
-];
+/* ----- QUESTION ----- */
+function loadQuestion(type){
+    const list = data[type];
+    current = list[Math.floor(Math.random()*list.length)];
 
-/* -------- BANQUE DE QUESTIONS -------- */
-const questions = [
-{q:"Quel mot commence par la lettre B ?", c:["Banane","Chat","Soleil"], a:"Banane"},
-{q:"Quel mot est un animal ?", c:["Maison","Chat","Table"], a:"Chat"},
-{q:"Quel mot commence par la lettre M ?", c:["Moto","Banane","École"], a:"Moto"},
-{q:"Quel mot est un fruit ?", c:["Banane","Chaise","Livre"], a:"Banane"},
-{q:"Quel mot commence par la lettre S ?", c:["Soleil","Chat","Moto"], a:"Soleil"}
-];
-
-/* -------- LEÇON -------- */
-function teacherLesson(){
-    const text = lessons[Math.floor(Math.random()*lessons.length)];
-    document.getElementById("box").innerText=text;
-    speak("Écoute bien. " + text);
-}
-
-/* -------- QUESTION -------- */
-function teacherExercise(){
-    current = questions[Math.floor(Math.random()*questions.length)];
-    let html = current.q + "\n\n";
-    current.c.forEach(x=>{
-        html += `<button class="choice" onclick="check('${x}')">${x}</button><br>`;
+    let html = current.question + "\n\n";
+    current.choices.forEach(c=>{
+        html += `<button class="choice" onclick="check('${c}')">${c}</button><br>`;
     });
+
     document.getElementById("box").innerHTML = html;
-    speak(current.q);
+    speak(current.question);
 }
 
-/* -------- CHECK -------- */
+/* ----- CHECK ----- */
 function check(x){
-    if(x===current.a){
-        addPoint();
-        speak("Bravo Mama Binta. Bonne réponse.");
-        document.getElementById("box").innerText="Bravo 🎉";
+    if(x===current.answer){
+        speak("Bravo Mama Binta !");
+        document.getElementById("box").innerText="Bonne réponse 🎉";
     }else{
-        speak("Ce n’est pas grave. Essaie encore.");
+        speak("Essaie encore.");
         document.getElementById("box").innerText="Essaie encore 😊";
     }
 }
