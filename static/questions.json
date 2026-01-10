@@ -1,0 +1,30 @@
+{
+  "lecture": [
+    {
+      "question": "Quel mot commence par la lettre B ?",
+      "choices": ["Banane", "Chat", "Maison"],
+      "answer": "Banane"
+    },
+    {
+      "question": "Quel mot est un animal ?",
+      "choices": ["Livre", "Chat", "Table"],
+      "answer": "Chat"
+    }
+  ],
+
+  "ecriture": [
+    {
+      "question": "Quel mot est bien écrit ?",
+      "choices": ["Bananne", "Banane", "Bananna"],
+      "answer": "Banane"
+    }
+  ],
+
+  "maths": [
+    {
+      "question": "Combien font 3 + 2 ?",
+      "choices": ["4", "5", "6"],
+      "answer": "5"
+    }
+  ]
+}
