@@ -5,8 +5,32 @@ const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 // Mots simples pour enfants
 const WORDS = [
-  "Banane","Chat","Maison","Soleil","Moto",
-  "Livre","École","Table","Pomme","Ballon"
+  "Avion","Arbre",
+  "Banane","Ballon",
+  "Chat","Chien",
+  "Drapeau","Dinosaure",
+  "École","Éléphant",
+  "Fleur","Forêt",
+  "Gâteau","Girafe",
+  "Hôpital","Hibou",
+  "Igloo","Image",
+  "Jardin","Jouet",
+  "Koala","Kangourou",
+  "Livre","Lune",
+  "Maison","Moto",
+  "Nuage","Navire",
+  "Orange","Oiseau",
+  "Pomme","Poisson",
+  "Question","Quatre",
+  "Robot","Roue",
+  "Soleil","Stylo",
+  "Table","Train",
+  "Usine","Uniforme",
+  "Voiture","Vache",
+  "Wagon","Web",
+  "Xylophone","Xavier",
+  "Yaourt","Yoyo",
+  "Zèbre","Zoo"
 ];
 
 // Mélange
