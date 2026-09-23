@@ -12,6 +12,9 @@
 <!-- CHARGEMENT DE L'AGENT VÉRIFICATEUR -->
 <script src="/static/verifier.js"></script>
 
+<!-- CHARGEMENT DE L'AGENT PROFESSEUR -->
+<script src="/static/teacher.js"></script>
+
 <script>
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/static/sw.js");
@@ -25,7 +28,11 @@ body {
     text-align: center;
     padding: 30px;
 }
-h1 { color: #f582ae; }
+
+h1 {
+    color: #f582ae;
+}
+
 button {
     font-size: 18px;
     padding: 12px 20px;
@@ -34,12 +41,17 @@ button {
     border: none;
     background: #8bd3dd;
 }
-.choice { background: #ffd803; }
+
+.choice {
+    background: #ffd803;
+}
+
 #box {
     margin-top: 20px;
     font-size: 20px;
     white-space: pre-line;
 }
+
 #teacher {
     background: #fde68a;
     padding: 15px;
@@ -62,21 +74,26 @@ button {
 <div id="box"></div>
 
 <script>
+
 let current = null;
 
 /* ---- VOIX ---- */
+
 function speak(text) {
+
     if (!("speechSynthesis" in window)) return;
 
     speechSynthesis.cancel();
 
     const u = new SpeechSynthesisUtterance(text);
+
     u.lang = "fr-FR";
     u.rate = 0.85;
     u.pitch = 1.2;
 
     speechSynthesis.speak(u);
 }
+
 
 /* ---- VÉRIFICATION D'UNE QUESTION ---- */
 
@@ -91,8 +108,11 @@ function getVerifiedQuestion(generator) {
         const verification = verifyQuestion(question);
 
         if (verification.valid) {
+
             current = question;
+
             showQuestion();
+
             return;
         }
 
@@ -102,23 +122,30 @@ function getVerifiedQuestion(generator) {
     /*
      * Sécurité :
      * si aucune question n'est validée après plusieurs essais,
-     * on affiche une nouvelle question plutôt que de bloquer l'application.
+     * on génère une nouvelle question.
      */
+
     current = generator();
+
     showQuestion();
 }
+
 
 /* ---- LECTURE ---- */
 
 function startReading() {
+
     getVerifiedQuestion(generateReadingQuestion);
 }
+
 
 /* ---- MATHS ---- */
 
 function startMaths() {
+
     getVerifiedQuestion(generateMathQuestion);
 }
+
 
 /* ---- AFFICHAGE ---- */
 
@@ -127,7 +154,14 @@ function showQuestion() {
     let html = current.question + "\n\n";
 
     current.choices.forEach(c => {
-        html += `<button class="choice" onclick="checkAnswer('${c}')">${c}</button><br>`;
+
+        html += `
+            <button class="choice"
+                    onclick="checkAnswer('${c}')">
+                ${c}
+            </button>
+            <br>
+        `;
     });
 
     document.getElementById("box").innerHTML = html;
@@ -135,25 +169,18 @@ function showQuestion() {
     speak(current.question);
 }
 
+
 /* ---- RÉPONSE ---- */
 
 function checkAnswer(choice) {
 
-    if (choice === current.answer) {
+    const result = teacherExplain(current, choice);
 
-        document.getElementById("box").innerText =
-            "Bravo Mama Binta 🎉";
+    document.getElementById("box").innerText = result.message;
 
-        speak("Bravo Mama Binta !");
-
-    } else {
-
-        document.getElementById("box").innerText =
-            "Essaie encore 😊";
-
-        speak("Essaie encore.");
-    }
+    speak(result.speech);
 }
+
 </script>
 
 </body>
