@@ -1,29 +1,131 @@
 // =====================================================
 // 👩🏾‍🏫 AGENT PROFESSEUR DE MAMA BINTA
 // =====================================================
-// Le professeur peut maintenant recevoir
-// la recommandation de l'agent analyste.
+// Le professeur reçoit maintenant la recommandation
+// de l'agent analyste et adapte son encouragement.
 // =====================================================
 
 
+// =====================================================
+// 🔎 RÉCUPÉRER LA RECOMMANDATION DE L'ANALYSTE
+// =====================================================
+
 function teacherGetRecommendation() {
 
-    // Vérifier que l'analyste existe
     if (typeof analyzeStudent !== "function") {
-
         return null;
     }
 
-    // Demander une analyse
     const analysis = analyzeStudent();
 
-    // Retourner la recommandation
     return analysis.recommendation || null;
 }
 
 
 // =====================================================
-// EXPLICATION D'UNE RÉPONSE
+// 👩🏾‍🏫 ADAPTATION DU PROFESSEUR
+// =====================================================
+
+function teacherAdaptation() {
+
+    const recommendation =
+        teacherGetRecommendation();
+
+
+    if (!recommendation) {
+
+        return {
+
+            message: "",
+
+            speech: ""
+        };
+    }
+
+
+    // ================================================
+    // DIFFICULTÉ EN MATHS
+    // ================================================
+
+    if (
+        recommendation.subject === "Maths" &&
+        recommendation.action === "entrainer"
+    ) {
+
+        return {
+
+            message:
+                "\n\n👩🏾‍🏫 La maîtresse :\n" +
+                "On va encore nous entraîner un peu en maths. " +
+                "Ne t'inquiète pas, Mama Binta. " +
+                "Avec un peu de pratique, tu vas progresser ! 💪🏾🧮",
+
+            speech:
+                "On va encore nous entraîner un peu en maths. " +
+                "Ne t'inquiète pas Mama Binta. " +
+                "Avec un peu de pratique, tu vas progresser."
+        };
+    }
+
+
+    // ================================================
+    // DIFFICULTÉ EN LECTURE
+    // ================================================
+
+    if (
+        recommendation.subject === "Lecture" &&
+        recommendation.action === "entrainer"
+    ) {
+
+        return {
+
+            message:
+                "\n\n👩🏾‍🏫 La maîtresse :\n" +
+                "On va encore pratiquer un peu la lecture. " +
+                "Regarde bien les premières lettres et prends ton temps. " +
+                "Tu vas progresser ! 💪🏾📖",
+
+            speech:
+                "On va encore pratiquer un peu la lecture. " +
+                "Regarde bien les premières lettres et prends ton temps. " +
+                "Tu vas progresser."
+        };
+    }
+
+
+    // ================================================
+    // TOUT VA BIEN
+    // ================================================
+
+    if (
+        recommendation.action === "continuer"
+    ) {
+
+        return {
+
+            message:
+                "\n\n👩🏾‍🏫 La maîtresse :\n" +
+                "Très bien ! Continue tes exercices normalement. " +
+                "Chaque exercice te fait progresser. 🌟",
+
+            speech:
+                "Très bien ! Continue tes exercices normalement. " +
+                "Chaque exercice te fait progresser."
+        };
+    }
+
+
+    return {
+
+        message: "",
+
+        speech: ""
+    };
+}
+
+
+// =====================================================
+// 👩🏾‍🏫 EXPLICATION D'UNE RÉPONSE
 // =====================================================
 
 function teacherExplain(questionData, studentAnswer) {
@@ -65,6 +167,12 @@ function teacherExplain(questionData, studentAnswer) {
 
     const correctAnswer =
         questionData.answer;
+
+
+    // Récupérer l'adaptation du professeur
+    // après analyse de la mémoire.
+    const adaptation =
+        teacherAdaptation();
 
 
     // =================================================
@@ -119,7 +227,8 @@ function teacherExplain(questionData, studentAnswer) {
                     ", qui commence par la lettre " +
                     correctLetter +
                     ".\n\n" +
-                    "Regarde bien la première lettre et essaie encore ! 📚",
+                    "Regarde bien la première lettre et essaie encore ! 📚" +
+                    adaptation.message,
 
                 speech:
                     "Ce n'est pas la bonne réponse. " +
@@ -132,7 +241,8 @@ function teacherExplain(questionData, studentAnswer) {
                     ", qui commence par la lettre " +
                     correctLetter +
                     ". " +
-                    "Regarde bien la première lettre et essaie encore."
+                    "Regarde bien la première lettre et essaie encore." +
+                    adaptation.speech
             };
         }
     }
@@ -220,38 +330,14 @@ function teacherExplain(questionData, studentAnswer) {
             return {
 
                 message:
-                    explanation,
+                    explanation +
+                    adaptation.message,
 
                 speech:
-                    speech
+                    speech +
+                    adaptation.speech
             };
         }
-    }
-
-
-    // =================================================
-    // RECOMMANDATION DE L'ANALYSTE
-    // =================================================
-
-    const recommendation =
-        teacherGetRecommendation();
-
-
-    let recommendationText = "";
-
-    let recommendationSpeech = "";
-
-
-    if (recommendation) {
-
-        recommendationText =
-            "\n\n🧠 Recommandation de l'analyste :\n" +
-            recommendation.message;
-
-
-        recommendationSpeech =
-            " L'analyste recommande aussi : " +
-            recommendation.message;
     }
 
 
@@ -267,7 +353,7 @@ function teacherExplain(questionData, studentAnswer) {
             correctAnswer +
             ".\n\n" +
             "Regardons la question encore une fois ensemble. 📚" +
-            recommendationText,
+            adaptation.message,
 
         speech:
             "Ce n'est pas la bonne réponse. " +
@@ -275,6 +361,6 @@ function teacherExplain(questionData, studentAnswer) {
             correctAnswer +
             ". " +
             "Regardons la question encore une fois ensemble." +
-            recommendationSpeech
+            adaptation.speech
     };
 }
