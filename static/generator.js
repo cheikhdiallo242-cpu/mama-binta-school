@@ -1,7 +1,20 @@
-// ===== GÉNÉRATEUR STABLE — ÉTAPE 1 =====
+// =====================================================
+// ✏️ AGENT GÉNÉRATEUR DE MAMA BINTA
+// =====================================================
+// Le générateur crée les questions.
+//
+// Il peut maintenant consulter l'analyste
+// pour savoir quelle matière mérite davantage
+// d'entraînement.
+// =====================================================
 
-// Mots simples pour enfants
+
+// =====================================================
+// MOTS POUR LA LECTURE
+// =====================================================
+
 const WORDS = [
+
     "Avion", "Arbre",
     "Banane", "Ballon",
     "Chat", "Chien",
@@ -30,13 +43,25 @@ const WORDS = [
     "Zèbre", "Zoo"
 ];
 
-// Mélange fiable
+
+// =====================================================
+// MÉLANGE
+// =====================================================
+
 function shuffle(arr) {
-    return [...arr].sort(() => Math.random() - 0.5);
+
+    return [...arr].sort(
+        () => Math.random() - 0.5
+    );
 }
 
-// Première lettre normalisée
+
+// =====================================================
+// PREMIÈRE LETTRE
+// =====================================================
+
 function firstLetter(word) {
+
     return word
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -44,73 +69,244 @@ function firstLetter(word) {
         .toUpperCase();
 }
 
-// ----- LECTURE -----
+
+// =====================================================
+// 🔎 CONSULTER L'ANALYSTE
+// =====================================================
+
+function getRecommendedSubject() {
+
+    // Si l'analyste n'est pas disponible,
+    // on continue normalement.
+
+    if (
+        typeof analyzeStudent !== "function"
+    ) {
+
+        return null;
+    }
+
+
+    const analysis =
+        analyzeStudent();
+
+
+    if (
+        analysis &&
+        analysis.subject
+    ) {
+
+        return analysis.subject;
+    }
+
+
+    return null;
+}
+
+
+// =====================================================
+// 📖 GÉNÉRATEUR DE LECTURE
+// =====================================================
 
 function generateReadingQuestion() {
 
-    // Choisir une lettre qui possède plusieurs mots
     const availableLetters = [
+
         "A", "B", "C", "D", "E", "F", "G",
         "H", "I", "J", "K", "L", "M", "N",
         "O", "P", "Q", "R", "S", "T", "U",
         "V", "W", "X", "Y", "Z"
+
     ];
+
 
     const letter =
         availableLetters[
-            Math.floor(Math.random() * availableLetters.length)
+            Math.floor(
+                Math.random() *
+                availableLetters.length
+            )
         ];
 
-    // Mots qui commencent réellement par cette lettre
-    const correctWords = WORDS.filter(
-        word => firstLetter(word) === letter
-    );
 
-    // Mots qui ne commencent PAS par cette lettre
-    const wrongWords = WORDS.filter(
-        word => firstLetter(word) !== letter
-    );
+    const correctWords =
+        WORDS.filter(
+            word =>
+                firstLetter(word) === letter
+        );
 
-    // Bonne réponse
+
+    const wrongWords =
+        WORDS.filter(
+            word =>
+                firstLetter(word) !== letter
+        );
+
+
     const answer =
         correctWords[
-            Math.floor(Math.random() * correctWords.length)
+            Math.floor(
+                Math.random() *
+                correctWords.length
+            )
         ];
 
-    // Deux mauvaises réponses
-    const wrongChoices = shuffle(wrongWords).slice(0, 2);
 
-    // Les trois choix
-    const choices = shuffle([
-        answer,
-        ...wrongChoices
-    ]);
+    const wrongChoices =
+        shuffle(
+            wrongWords
+        ).slice(0, 2);
+
+
+    const choices =
+        shuffle([
+            answer,
+            ...wrongChoices
+        ]);
+
 
     return {
-        question: "Quel mot commence par la lettre " + letter + " ?",
-        choices: choices,
-        answer: answer
+
+        question:
+            "Quel mot commence par la lettre " +
+            letter +
+            " ?",
+
+        choices:
+            choices,
+
+        answer:
+            answer
     };
 }
 
-// ----- MATHS -----
+
+// =====================================================
+// 🧮 GÉNÉRATEUR DE MATHS
+// =====================================================
 
 function generateMathQuestion() {
 
-    const a = Math.floor(Math.random() * 10) + 1;
-    const b = Math.floor(Math.random() * 10) + 1;
+    const a =
+        Math.floor(
+            Math.random() * 10
+        ) + 1;
 
-    const res = a + b;
+
+    const b =
+        Math.floor(
+            Math.random() * 10
+        ) + 1;
+
+
+    const result =
+        a + b;
+
 
     return {
-        question: "Combien font " + a + " + " + b + " ?",
 
-        choices: shuffle([
-            res.toString(),
-            (res + 1).toString(),
-            (res - 1).toString()
-        ]),
+        question:
+            "Combien font " +
+            a +
+            " + " +
+            b +
+            " ?",
 
-        answer: res.toString()
+
+        choices:
+            shuffle([
+
+                result.toString(),
+
+                (result + 1).toString(),
+
+                (result - 1).toString()
+
+            ]),
+
+
+        answer:
+            result.toString()
     };
+}
+
+
+// =====================================================
+// 🤖 GÉNÉRATEUR INTELLIGENT
+// =====================================================
+// Cette fonction demande à l'analyste quelle matière
+// mérite davantage d'entraînement.
+//
+// Elle ne remplace pas encore les boutons Lecture
+// et Maths : elle prépare simplement la décision.
+// =====================================================
+
+function generateAdaptiveQuestion() {
+
+    const recommendedSubject =
+        getRecommendedSubject();
+
+
+    // ================================================
+    // L'ANALYSTE RECOMMANDE LES MATHS
+    // ================================================
+
+    if (
+        recommendedSubject === "Maths"
+    ) {
+
+        console.log(
+            "🔎 Analyste → ✏️ Générateur : " +
+            "priorité aux maths."
+        );
+
+
+        return generateMathQuestion();
+    }
+
+
+    // ================================================
+    // L'ANALYSTE RECOMMANDE LA LECTURE
+    // ================================================
+
+    if (
+        recommendedSubject === "Lecture"
+    ) {
+
+        console.log(
+            "🔎 Analyste → ✏️ Générateur : " +
+            "priorité à la lecture."
+        );
+
+
+        return generateReadingQuestion();
+    }
+
+
+    // ================================================
+    // AUCUNE PRIORITÉ
+    // ================================================
+
+    const randomSubject =
+        Math.random() < 0.5
+            ? "Lecture"
+            : "Maths";
+
+
+    console.log(
+        "✏️ Générateur : aucune difficulté " +
+        "prioritaire détectée."
+    );
+
+
+    if (
+        randomSubject === "Maths"
+    ) {
+
+        return generateMathQuestion();
+
+    }
+
+
+    return generateReadingQuestion();
 }
