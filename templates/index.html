@@ -3,27 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <title>École de Mama Binta</title>
-
 <link rel="manifest" href="/static/manifest.json">
-
 <!-- CHARGEMENT DU GÉNÉRATEUR -->
 <script src="/static/generator.js"></script>
-
 <!-- CHARGEMENT DE L'AGENT VÉRIFICATEUR -->
 <script src="/static/verifier.js"></script>
-
 <!-- CHARGEMENT DE L'AGENT PROFESSEUR -->
 <script src="/static/teacher.js"></script>
-
 <!-- CHARGEMENT DE L'AGENT MÉMOIRE -->
 <script src="/static/memory.js"></script>
-
 <script>
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/static/sw.js");
 }
 </script>
-
 <style>
 body {
     font-family: Arial;
@@ -31,11 +24,9 @@ body {
     text-align: center;
     padding: 30px;
 }
-
 h1 {
     color: #f582ae;
 }
-
 button {
     font-size: 18px;
     padding: 12px 20px;
@@ -45,21 +36,20 @@ button {
     background: #8bd3dd;
     cursor: pointer;
 }
-
 .choice {
     background: #ffd803;
 }
-
 .progress {
     background: #c3f0ca;
 }
-
+.mistakes {
+    background: #ffb6b6;
+}
 #box {
     margin-top: 20px;
     font-size: 20px;
     white-space: pre-line;
 }
-
 #teacher {
     background: #fde68a;
     padding: 15px;
@@ -67,102 +57,63 @@ button {
 }
 </style>
 </head>
-
 <body>
-
 <h1>École de Mama Binta 👧📚</h1>
-
 <div id="teacher">
 👩🏾‍🏫 La maîtresse intelligente est avec toi
 </div>
 
-<button onclick="startReading()">📖 Lecture</button>
+📖 Lecture
 
-<button onclick="startMaths()">➕ Maths</button>
+➕ Maths
 
 <button class="progress" onclick="showProgress()">
 🧠 Ma progression
 </button>
-
+<button class="mistakes" onclick="showMistakes()">
+📚 Mes erreurs
+</button>
 <div id="box"></div>
-
 <script>
-
 let current = null;
-
-
 /* ---- VOIX ---- */
-
 function speak(text) {
-
     if (!("speechSynthesis" in window)) return;
-
     speechSynthesis.cancel();
-
     const u = new SpeechSynthesisUtterance(text);
-
     u.lang = "fr-FR";
     u.rate = 0.85;
     u.pitch = 1.2;
-
     speechSynthesis.speak(u);
 }
-
-
 /* ---- VÉRIFICATION D'UNE QUESTION ---- */
-
 function getVerifiedQuestion(generator) {
-
     let attempts = 0;
-
     while (attempts < 10) {
-
         const question = generator();
-
         const verification = verifyQuestion(question);
-
         if (verification.valid) {
-
             current = question;
-
             showQuestion();
-
             return;
         }
-
         attempts++;
     }
-
     current = generator();
-
     showQuestion();
 }
-
-
 /* ---- LECTURE ---- */
-
 function startReading() {
-
     getVerifiedQuestion(generateReadingQuestion);
 }
-
-
 /* ---- MATHS ---- */
-
 function startMaths() {
-
     getVerifiedQuestion(generateMathQuestion);
 }
-
-
 /* ---- AFFICHAGE ---- */
-
 function showQuestion() {
-
     let html = current.question + "\n\n";
-
     current.choices.forEach(c => {
-
         html += `
             <button class="choice"
                     onclick="checkAnswer('${c}')">
@@ -171,37 +122,23 @@ function showQuestion() {
             <br>
         `;
     });
-
     document.getElementById("box").innerHTML = html;
-
     speak(current.question);
 }
-
-
 /* ---- RÉPONSE ---- */
-
 function checkAnswer(choice) {
-
     // Le professeur analyse la réponse
     const result = teacherExplain(current, choice);
-
     // La mémoire enregistre la réponse
     rememberAnswer(current, choice);
-
     // Afficher l'explication du professeur
     document.getElementById("box").innerText = result.message;
-
     // Faire parler le professeur
     speak(result.speech);
 }
-
-
 /* ---- PROGRESSION ---- */
-
 function showProgress() {
-
     const report = getMemoryReport();
-
     const message =
         "🧠 PROGRESSION DE MAMA BINTA\n\n" +
         report.general +
@@ -211,9 +148,7 @@ function showProgress() {
         report.maths +
         "\n\n" +
         "Continue tes efforts ! 💪🏾📚";
-
     document.getElementById("box").innerText = message;
-
     speak(
         "Voici ta progression. " +
         "Tu as " +
@@ -222,8 +157,43 @@ function showProgress() {
         "Continue tes efforts !"
     );
 }
-
+/* ---- AFFICHER LES ERREURS ---- */
+function showMistakes() {
+    const mistakes = getMistakes();
+    // Aucune erreur
+    if (mistakes.length === 0) {
+        const message =
+            "📚 MES ERREURS\n\n" +
+            "🎉 Aucune erreur enregistrée !\n\n" +
+            "Continue comme ça Mama Binta ! 💪🏾";
+        document.getElementById("box").innerText = message;
+        speak(
+            "Aucune erreur enregistrée. " +
+            "Continue comme ça Mama Binta !"
+        );
+        return;
+    }
+    // Afficher les erreurs
+    let message =
+        "📚 MES ERREURS\n\n" +
+        "Voici les erreurs que nous allons revoir ensemble :\n\n";
+    mistakes.forEach((mistake, index) => {
+        message +=
+            "❌ Erreur " + (index + 1) + "\n" +
+            "Matière : " + mistake.subject + "\n" +
+            "Question : " + mistake.question + "\n" +
+            "Ta réponse : " + mistake.studentAnswer + "\n" +
+            "Bonne réponse : " + mistake.correctAnswer + "\n\n";
+    });
+    message +=
+        "💡 Les erreurs sont des occasions d'apprendre !";
+    document.getElementById("box").innerText = message;
+    speak(
+        "Voici tes erreurs. " +
+        "Nous allons les revoir ensemble. " +
+        "Les erreurs sont des occasions d'apprendre."
+    );
+}
 </script>
-
 </body>
 </html>
