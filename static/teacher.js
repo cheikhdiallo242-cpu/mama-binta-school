@@ -1,20 +1,55 @@
-// ===== AGENT PROFESSEUR DE MAMA BINTA =====
+// =====================================================
+// 👩🏾‍🏫 AGENT PROFESSEUR DE MAMA BINTA
+// =====================================================
+// Le professeur peut maintenant recevoir
+// la recommandation de l'agent analyste.
+// =====================================================
+
+
+function teacherGetRecommendation() {
+
+    // Vérifier que l'analyste existe
+    if (typeof analyzeStudent !== "function") {
+
+        return null;
+    }
+
+    // Demander une analyse
+    const analysis = analyzeStudent();
+
+    // Retourner la recommandation
+    return analysis.recommendation || null;
+}
+
+
+// =====================================================
+// EXPLICATION D'UNE RÉPONSE
+// =====================================================
 
 function teacherExplain(questionData, studentAnswer) {
 
     // Sécurité
     if (!questionData || !studentAnswer) {
+
         return {
-            message: "Regardons la question ensemble 😊",
-            speech: "Regardons la question ensemble."
+
+            message:
+                "Regardons la question ensemble 😊",
+
+            speech:
+                "Regardons la question ensemble."
         };
     }
 
-    // ===== BONNE RÉPONSE =====
+
+    // =================================================
+    // BONNE RÉPONSE
+    // =================================================
 
     if (studentAnswer === questionData.answer) {
 
         return {
+
             message:
                 "Bravo Mama Binta 🎉\n\n" +
                 "Tu as trouvé la bonne réponse ! 👏🏾",
@@ -24,22 +59,38 @@ function teacherExplain(questionData, studentAnswer) {
         };
     }
 
-    const question = questionData.question;
-    const correctAnswer = questionData.answer;
 
-    // ===== LECTURE =====
+    const question =
+        questionData.question;
 
-    if (question.startsWith("Quel mot commence par la lettre")) {
+    const correctAnswer =
+        questionData.answer;
 
-        const match = question.match(
-            /lettre ([A-ZÉÈÊËÀÂÎÏÔÙÛÜÇ])/
-        );
+
+    // =================================================
+    // LECTURE
+    // =================================================
+
+    if (
+        question.startsWith(
+            "Quel mot commence par la lettre"
+        )
+    ) {
+
+        const match =
+            question.match(
+                /lettre ([A-ZÉÈÊËÀÂÎÏÔÙÛÜÇ])/
+            );
+
 
         if (match) {
 
-            const letter = match[1];
+            const letter =
+                match[1];
+
 
             function firstLetter(word) {
+
                 return word
                     .normalize("NFD")
                     .replace(/[\u0300-\u036f]/g, "")
@@ -47,10 +98,16 @@ function teacherExplain(questionData, studentAnswer) {
                     .toUpperCase();
             }
 
-            const studentLetter = firstLetter(studentAnswer);
-            const correctLetter = firstLetter(correctAnswer);
+
+            const studentLetter =
+                firstLetter(studentAnswer);
+
+            const correctLetter =
+                firstLetter(correctAnswer);
+
 
             return {
+
                 message:
                     "Ce n'est pas la bonne réponse 😊\n\n" +
                     studentAnswer +
@@ -80,69 +137,144 @@ function teacherExplain(questionData, studentAnswer) {
         }
     }
 
-    // ===== MATHS =====
 
-    if (question.startsWith("Combien font")) {
+    // =================================================
+    // MATHS
+    // =================================================
 
-        const match = question.match(
-            /Combien font (\d+) \+ (\d+)/
-        );
+    if (
+        question.startsWith(
+            "Combien font"
+        )
+    ) {
+
+        const match =
+            question.match(
+                /Combien font (\d+) \+ (\d+)/
+            );
+
 
         if (match) {
 
-            const a = parseInt(match[1]);
-            const b = parseInt(match[2]);
+            const a =
+                parseInt(match[1]);
+
+            const b =
+                parseInt(match[2]);
+
 
             let steps = [];
 
-            for (let i = 1; i <= b; i++) {
-                steps.push(a + i);
+
+            for (
+                let i = 1;
+                i <= b;
+                i++
+            ) {
+
+                steps.push(
+                    a + i
+                );
             }
 
+
             const explanation =
-                a + " + " + b + " signifie que nous ajoutons " +
-                b + " à " + a + ".\n\n" +
+                a +
+                " + " +
+                b +
+                " signifie que nous ajoutons " +
+                b +
+                " à " +
+                a +
+                ".\n\n" +
                 "On compte : " +
-                a + ", " +
+                a +
+                ", " +
                 steps.join(", ") +
                 ".\n\n" +
                 "Donc la bonne réponse est " +
                 correctAnswer +
                 ". 🧮";
 
+
             const speech =
                 "Ce n'est pas la bonne réponse. " +
-                a + " plus " + b +
+                a +
+                " plus " +
+                b +
                 " signifie que nous ajoutons " +
-                b + " à " + a + ". " +
+                b +
+                " à " +
+                a +
+                ". " +
                 "On compte : " +
-                a + ", " +
+                a +
+                ", " +
                 steps.join(", ") +
                 ". " +
                 "Donc la bonne réponse est " +
-                correctAnswer + ".";
+                correctAnswer +
+                ".";
+
 
             return {
-                message: explanation,
-                speech: speech
+
+                message:
+                    explanation,
+
+                speech:
+                    speech
             };
         }
     }
 
-    // ===== EXPLICATION PAR DÉFAUT =====
+
+    // =================================================
+    // RECOMMANDATION DE L'ANALYSTE
+    // =================================================
+
+    const recommendation =
+        teacherGetRecommendation();
+
+
+    let recommendationText = "";
+
+    let recommendationSpeech = "";
+
+
+    if (recommendation) {
+
+        recommendationText =
+            "\n\n🧠 Recommandation de l'analyste :\n" +
+            recommendation.message;
+
+
+        recommendationSpeech =
+            " L'analyste recommande aussi : " +
+            recommendation.message;
+    }
+
+
+    // =================================================
+    // EXPLICATION PAR DÉFAUT
+    // =================================================
 
     return {
+
         message:
             "Ce n'est pas la bonne réponse 😊\n\n" +
             "La bonne réponse est " +
             correctAnswer +
             ".\n\n" +
-            "Regardons la question encore une fois ensemble. 📚",
+            "Regardons la question encore une fois ensemble. 📚" +
+            recommendationText,
 
         speech:
             "Ce n'est pas la bonne réponse. " +
             "La bonne réponse est " +
             correctAnswer +
-            ". Regardons la question encore une fois ensemble."
+            ". " +
+            "Regardons la question encore une fois ensemble." +
+            recommendationSpeech
     };
 }
