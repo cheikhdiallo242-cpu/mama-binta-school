@@ -80,6 +80,7 @@ button {
 
 let current = null;
 
+
 /* ---- VOIX ---- */
 
 function speak(text) {
@@ -177,10 +178,16 @@ function showQuestion() {
 
 function checkAnswer(choice) {
 
+    // Le professeur analyse la réponse
     const result = teacherExplain(current, choice);
 
+    // La mémoire enregistre la réponse
+    rememberAnswer(current, choice);
+
+    // Afficher l'explication du professeur
     document.getElementById("box").innerText = result.message;
 
+    // Faire parler le professeur
     speak(result.speech);
 }
 
