@@ -7,7 +7,8 @@ const defaultMemory = {
     readingCorrect: 0,
     readingIncorrect: 0,
     mathsCorrect: 0,
-    mathsIncorrect: 0
+    mathsIncorrect: 0,
+    mistakes: []
 };
 
 
@@ -22,9 +23,16 @@ function loadStudentMemory() {
 
         if (savedMemory) {
 
+            const memory = JSON.parse(savedMemory);
+
             return {
                 ...defaultMemory,
-                ...JSON.parse(savedMemory)
+                ...memory,
+
+                // Sécurité : vérifier que mistakes est bien une liste
+                mistakes: Array.isArray(memory.mistakes)
+                    ? memory.mistakes
+                    : []
             };
         }
 
@@ -37,7 +45,8 @@ function loadStudentMemory() {
     }
 
     return {
-        ...defaultMemory
+        ...defaultMemory,
+        mistakes: []
     };
 }
 
@@ -107,6 +116,7 @@ function rememberAnswer(questionData, studentAnswer) {
         } else {
 
             studentMemory.readingIncorrect++;
+
         }
     }
 
@@ -126,7 +136,56 @@ function rememberAnswer(questionData, studentAnswer) {
         } else {
 
             studentMemory.mathsIncorrect++;
+
         }
+    }
+
+
+    // ===== MÉMORISER L'ERREUR =====
+
+    if (!correct) {
+
+        let subject = "Autre";
+
+        if (
+            questionData.question.startsWith(
+                "Quel mot commence par la lettre"
+            )
+        ) {
+
+            subject = "Lecture";
+
+        } else if (
+            questionData.question.startsWith(
+                "Combien font"
+            )
+        ) {
+
+            subject = "Maths";
+        }
+
+
+        const mistake = {
+
+            subject: subject,
+
+            question: questionData.question,
+
+            studentAnswer: studentAnswer,
+
+            correctAnswer: questionData.answer,
+
+            date: new Date().toISOString()
+        };
+
+
+        studentMemory.mistakes.push(mistake);
+
+
+        console.log(
+            "❌ Nouvelle erreur mémorisée :",
+            mistake
+        );
     }
 
 
@@ -138,7 +197,7 @@ function rememberAnswer(questionData, studentAnswer) {
     // ===== JOURNAL =====
 
     console.log(
-        "🧠 Mémoire de Mama Binta :",
+        "🧠 Mémoire complète de Mama Binta :",
         studentMemory
     );
 }
@@ -178,4 +237,12 @@ function getMemoryReport() {
             studentMemory.mathsIncorrect +
             " erreur(s)"
     };
+}
+
+
+// ===== LIRE LES ERREURS =====
+
+function getMistakes() {
+
+    return studentMemory.mistakes;
 }
