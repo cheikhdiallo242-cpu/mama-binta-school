@@ -1,37 +1,82 @@
-// ===== AGENT MÉMOIRE DE MAMA BINTA =====
+// =====================================================
+// 🧠 AGENT MÉMOIRE DE MAMA BINTA
+// =====================================================
+// La mémoire enregistre :
+// - les bonnes réponses
+// - les erreurs
+// - les matières
+// - les derniers résultats
+// - les séries de réussites
+// - les séries d'erreurs
+// =====================================================
 
-// Mémoire par défaut
 const defaultMemory = {
+
     correct: 0,
     incorrect: 0,
+
     readingCorrect: 0,
     readingIncorrect: 0,
+
     mathsCorrect: 0,
     mathsIncorrect: 0,
+
+    // Derniers résultats
+    recentResults: [],
+
+    // Série actuelle
+    currentCorrectStreak: 0,
+    currentIncorrectStreak: 0,
+
+    // Séries spécifiques aux maths
+    mathsCorrectStreak: 0,
+    mathsIncorrectStreak: 0,
+
+    // Séries spécifiques à la lecture
+    readingCorrectStreak: 0,
+    readingIncorrectStreak: 0,
+
     mistakes: []
 };
 
 
-// ===== CHARGER LA MÉMOIRE =====
+// =====================================================
+// 📥 CHARGER LA MÉMOIRE
+// =====================================================
 
 function loadStudentMemory() {
 
     try {
 
         const savedMemory =
-            localStorage.getItem("mamaBintaMemory");
+            localStorage.getItem(
+                "mamaBintaMemory"
+            );
 
         if (savedMemory) {
 
-            const memory = JSON.parse(savedMemory);
+            const memory =
+                JSON.parse(savedMemory);
 
             return {
+
                 ...defaultMemory,
+
                 ...memory,
 
-                mistakes: Array.isArray(memory.mistakes)
-                    ? memory.mistakes
-                    : []
+                recentResults:
+                    Array.isArray(
+                        memory.recentResults
+                    )
+                        ? memory.recentResults
+                        : [],
+
+                mistakes:
+                    Array.isArray(
+                        memory.mistakes
+                    )
+                        ? memory.mistakes
+                        : []
             };
         }
 
@@ -43,19 +88,22 @@ function loadStudentMemory() {
         );
     }
 
+
     return {
         ...defaultMemory,
+        recentResults: [],
         mistakes: []
     };
 }
 
 
-// ===== MÉMOIRE DE MAMA BINTA =====
+let studentMemory =
+    loadStudentMemory();
 
-let studentMemory = loadStudentMemory();
 
-
-// ===== SAUVEGARDER LA MÉMOIRE =====
+// =====================================================
+// 💾 SAUVEGARDER
+// =====================================================
 
 function saveStudentMemory() {
 
@@ -63,7 +111,9 @@ function saveStudentMemory() {
 
         localStorage.setItem(
             "mamaBintaMemory",
-            JSON.stringify(studentMemory)
+            JSON.stringify(
+                studentMemory
+            )
         );
 
     } catch (error) {
@@ -76,31 +126,39 @@ function saveStudentMemory() {
 }
 
 
-// ===== ENREGISTRER UNE RÉPONSE =====
+// =====================================================
+// 🧠 ENREGISTRER UNE RÉPONSE
+// =====================================================
 
-function rememberAnswer(questionData, studentAnswer) {
+function rememberAnswer(
+    questionData,
+    studentAnswer
+) {
 
-    if (!questionData || !studentAnswer) {
+    if (
+        !questionData ||
+        !studentAnswer
+    ) {
         return;
     }
 
+
+    // -----------------------------------------
+    // Vérifier la réponse
+    // -----------------------------------------
+
     const correct =
-        studentAnswer === questionData.answer;
+        studentAnswer ===
+        questionData.answer;
 
 
-    // ===== COMPTEUR GÉNÉRAL =====
+    // -----------------------------------------
+    // Matière
+    // -----------------------------------------
 
-    if (correct) {
+    let subject =
+        "Autre";
 
-        studentMemory.correct++;
-
-    } else {
-
-        studentMemory.incorrect++;
-    }
-
-
-    // ===== LECTURE =====
 
     if (
         questionData.question.startsWith(
@@ -108,77 +166,154 @@ function rememberAnswer(questionData, studentAnswer) {
         )
     ) {
 
-        if (correct) {
+        subject =
+            "Lecture";
 
-            studentMemory.readingCorrect++;
-
-        } else {
-
-            studentMemory.readingIncorrect++;
-
-        }
-    }
-
-
-    // ===== MATHS =====
-
-    if (
+    } else if (
         questionData.question.startsWith(
             "Combien font"
         )
     ) {
 
+        subject =
+            "Maths";
+    }
+
+
+    // =================================================
+    // 📊 STATISTIQUES GÉNÉRALES
+    // =================================================
+
+    if (correct) {
+
+        studentMemory.correct++;
+
+        studentMemory.currentCorrectStreak++;
+
+        studentMemory.currentIncorrectStreak = 0;
+
+    } else {
+
+        studentMemory.incorrect++;
+
+        studentMemory.currentIncorrectStreak++;
+
+        studentMemory.currentCorrectStreak = 0;
+    }
+
+
+    // =================================================
+    // 🧮 MATHS
+    // =================================================
+
+    if (subject === "Maths") {
+
         if (correct) {
 
             studentMemory.mathsCorrect++;
+
+            studentMemory.mathsCorrectStreak++;
+
+            studentMemory.mathsIncorrectStreak = 0;
 
         } else {
 
             studentMemory.mathsIncorrect++;
 
+            studentMemory.mathsIncorrectStreak++;
+
+            studentMemory.mathsCorrectStreak = 0;
         }
     }
 
 
-    // ===== MÉMORISER L'ERREUR =====
+    // =================================================
+    // 📖 LECTURE
+    // =================================================
+
+    if (subject === "Lecture") {
+
+        if (correct) {
+
+            studentMemory.readingCorrect++;
+
+            studentMemory.readingCorrectStreak++;
+
+            studentMemory.readingIncorrectStreak = 0;
+
+        } else {
+
+            studentMemory.readingIncorrect++;
+
+            studentMemory.readingIncorrectStreak++;
+
+            studentMemory.readingCorrectStreak = 0;
+        }
+    }
+
+
+    // =================================================
+    // 🕐 RÉSULTATS RÉCENTS
+    // =================================================
+
+    studentMemory.recentResults.push({
+
+        subject: subject,
+
+        correct: correct,
+
+        question:
+            questionData.question,
+
+        studentAnswer:
+            studentAnswer,
+
+        correctAnswer:
+            questionData.answer,
+
+        date:
+            new Date().toISOString()
+    });
+
+
+    // Garder seulement les 10 derniers résultats
+
+    if (
+        studentMemory.recentResults.length > 10
+    ) {
+
+        studentMemory.recentResults =
+            studentMemory.recentResults.slice(-10);
+    }
+
+
+    // =================================================
+    // ❌ ENREGISTRER L'ERREUR
+    // =================================================
 
     if (!correct) {
-
-        let subject = "Autre";
-
-        if (
-            questionData.question.startsWith(
-                "Quel mot commence par la lettre"
-            )
-        ) {
-
-            subject = "Lecture";
-
-        } else if (
-            questionData.question.startsWith(
-                "Combien font"
-            )
-        ) {
-
-            subject = "Maths";
-        }
-
 
         const mistake = {
 
             subject: subject,
 
-            question: questionData.question,
+            question:
+                questionData.question,
 
-            studentAnswer: studentAnswer,
+            studentAnswer:
+                studentAnswer,
 
-            correctAnswer: questionData.answer,
+            correctAnswer:
+                questionData.answer,
 
-            date: new Date().toISOString()
+            date:
+                new Date().toISOString()
         };
 
 
-        studentMemory.mistakes.push(mistake);
+        studentMemory.mistakes.push(
+            mistake
+        );
 
 
         console.log(
@@ -188,21 +323,23 @@ function rememberAnswer(questionData, studentAnswer) {
     }
 
 
-    // ===== SAUVEGARDER =====
+    // =================================================
+    // 💾 SAUVEGARDER
+    // =================================================
 
     saveStudentMemory();
 
 
-    // ===== JOURNAL =====
-
     console.log(
-        "🧠 Mémoire complète de Mama Binta :",
+        "🧠 Mémoire de Mama Binta :",
         studentMemory
     );
 }
 
 
-// ===== LIRE LA MÉMOIRE =====
+// =====================================================
+// 📤 RÉCUPÉRER LA MÉMOIRE
+// =====================================================
 
 function getStudentMemory() {
 
@@ -210,7 +347,9 @@ function getStudentMemory() {
 }
 
 
-// ===== RAPPORT DE PROGRESSION =====
+// =====================================================
+// 📊 RAPPORT
+// =====================================================
 
 function getMemoryReport() {
 
@@ -234,12 +373,23 @@ function getMemoryReport() {
             studentMemory.mathsCorrect +
             " bonne(s) réponse(s) / " +
             studentMemory.mathsIncorrect +
-            " erreur(s)"
+            " erreur(s)",
+
+        streak:
+            "🔥 Série actuelle : " +
+            studentMemory.currentCorrectStreak +
+            " réussite(s) consécutive(s)",
+
+        recent:
+            "🕐 Résultats récents : " +
+            studentMemory.recentResults.length
     };
 }
 
 
-// ===== LIRE LES ERREURS =====
+// =====================================================
+// ❌ RÉCUPÉRER LES ERREURS
+// =====================================================
 
 function getMistakes() {
 
@@ -247,38 +397,41 @@ function getMistakes() {
 }
 
 
-// ===== REMETTRE LA PROGRESSION À ZÉRO =====
+// =====================================================
+// 🔄 RÉINITIALISER
+// =====================================================
 
 function resetStudentMemory() {
 
-    const confirmation = confirm(
-        "⚠️ Veux-tu vraiment remettre la progression de Mama Binta à zéro ?\n\n" +
-        "Les scores et les erreurs mémorisées seront supprimés."
-    );
+    const confirmation =
+        confirm(
+            "⚠️ Veux-tu vraiment remettre la progression de Mama Binta à zéro ?\n\n" +
+            "Les scores, les séries et les erreurs mémorisées seront supprimés."
+        );
+
 
     if (!confirmation) {
-
         return;
     }
 
 
-    // Nouvelle mémoire vide
     studentMemory = {
+
         ...defaultMemory,
+
+        recentResults: [],
+
         mistakes: []
     };
 
 
-    // Sauvegarder la nouvelle mémoire
     saveStudentMemory();
 
 
-    // Message de confirmation
     alert(
         "✅ La progression de Mama Binta a été remise à zéro !"
     );
 
 
-    // Recharger l'application
     location.reload();
 }
