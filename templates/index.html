@@ -1,36 +1,40 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+
 <meta charset="UTF-8">
+
 <title>École de Mama Binta</title>
+
 <link rel="manifest" href="/static/manifest.json">
-<!-- AGENT GÉNÉRATEUR -->
+
 <script src="/static/generator.js"></script>
-<!-- AGENT VÉRIFICATEUR -->
 <script src="/static/verifier.js"></script>
-<!-- AGENT PROFESSEUR -->
 <script src="/static/teacher.js"></script>
-<!-- AGENT MÉMOIRE -->
 <script src="/static/memory.js"></script>
-<!-- AGENT ANALYSTE -->
 <script src="/static/analyzer.js"></script>
+
 <script>
+
 if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register(
-        "/static/sw.js"
-    );
+    navigator.serviceWorker.register("/static/sw.js");
 }
+
 </script>
+
 <style>
+
 body {
     font-family: Arial;
     background: #fef6e4;
     text-align: center;
     padding: 30px;
 }
+
 h1 {
     color: #f582ae;
 }
+
 button {
     font-size: 18px;
     padding: 12px 20px;
@@ -40,198 +44,249 @@ button {
     cursor: pointer;
     background: #8bd3dd;
 }
+
 .choice {
     background: #ffd803;
 }
+
 .progress {
     background: #c3f0ca;
 }
+
 .mistakes {
     background: #ffb6b6;
 }
-.reset {
-    background: #ff8a8a;
-}
+
 .analysis {
     background: #cdb4db;
 }
+
+.reset {
+    background: #ff8a8a;
+}
+
 #box {
     margin-top: 20px;
     font-size: 20px;
     white-space: pre-line;
 }
+
 #teacher {
     background: #fde68a;
     padding: 15px;
     border-radius: 15px;
 }
+
 </style>
+
 </head>
+
 <body>
-<h1>
-École de Mama Binta 👧📚
-</h1>
+
+<h1>École de Mama Binta 👧📚</h1>
+
 <div id="teacher">
 👩🏾‍🏫 La maîtresse intelligente est avec toi
 </div>
+
 <br>
-<!-- COURS -->
+
 <button onclick="startReading()">
 📖 Lecture
 </button>
+
 <button onclick="startMaths()">
 ➕ Maths
 </button>
+
 <br>
-<!-- MÉMOIRE -->
-<button
-    class="progress"
-    onclick="showProgress()">
+
+<button class="progress" onclick="showProgress()">
 🧠 Ma progression
 </button>
-<button
-    class="mistakes"
-    onclick="showMistakes()">
+
+<button class="mistakes" onclick="showMistakes()">
 📚 Mes erreurs
 </button>
+
 <br>
-<!-- ANALYSE -->
-<button
-    class="analysis"
-    onclick="showAnalysis()">
+
+<button class="analysis" onclick="showAnalysis()">
 🔎 Analyse de mes difficultés
 </button>
+
 <br>
-<!-- RESET -->
-<button
-    class="reset"
-    onclick="resetStudentMemory()">
+
+<button class="reset" onclick="resetStudentMemory()">
 🔄 Recommencer à zéro
 </button>
+
 <div id="box"></div>
+
 <script>
+
 let current = null;
+
+
 /* =====================================================
    VOIX
 ===================================================== */
+
 function speak(text) {
+
     if (!("speechSynthesis" in window)) {
         return;
     }
+
     speechSynthesis.cancel();
-    const u =
-        new SpeechSynthesisUtterance(text);
+
+    const u = new SpeechSynthesisUtterance(text);
+
     u.lang = "fr-FR";
     u.rate = 0.85;
     u.pitch = 1.2;
+
     speechSynthesis.speak(u);
 }
+
+
 /* =====================================================
    QUESTION VÉRIFIÉE
 ===================================================== */
+
 function getVerifiedQuestion(generator) {
+
     try {
+
         let attempts = 0;
+
         while (attempts < 10) {
-            const question =
-                generator();
-            const verification =
-                verifyQuestion(question);
+
+            const question = generator();
+
+            const verification = verifyQuestion(question);
+
             if (verification.valid) {
-                current =
-                    question;
+
+                current = question;
+
                 showQuestion();
+
                 return;
             }
+
             attempts++;
         }
-        current =
-            generator();
+
+        current = generator();
+
         showQuestion();
+
     } catch (error) {
+
         console.error(
             "Erreur entre les agents :",
             error
         );
-        document.getElementById(
-            "box"
-        ).innerText =
+
+        document.getElementById("box").innerText =
             "⚠️ Petit problème technique.\n\n" +
             "La maîtresse prépare une nouvelle question. 😊";
+
         speak(
             "Petit problème technique. " +
             "La maîtresse prépare une nouvelle question."
         );
     }
 }
+
+
 /* =====================================================
    LECTURE
 ===================================================== */
+
 function startReading() {
+
     getVerifiedQuestion(
         generateReadingQuestion
     );
 }
+
+
 /* =====================================================
    MATHS
 ===================================================== */
+
 function startMaths() {
+
     getVerifiedQuestion(
         generateMathQuestion
     );
 }
+
+
 /* =====================================================
-   AFFICHAGE QUESTION
+   AFFICHAGE
 ===================================================== */
+
 function showQuestion() {
+
     let html =
         current.question +
         "\n\n";
-    current.choices.forEach(
-        function(c) {
-            html +=
-                '<button class="choice" ' +
-                'onclick="checkAnswer(\'' +
-                c +
-                '\')">' +
-                c +
-                '</button><br>';
-        }
-    );
-    document.getElementById(
-        "box"
-    ).innerHTML = html;
-    speak(
-        current.question
-    );
+
+    current.choices.forEach(function(c) {
+
+        html +=
+            '<button class="choice" ' +
+            'onclick="checkAnswer(\'' +
+            c +
+            '\')">' +
+            c +
+            '</button><br>';
+
+    });
+
+    document.getElementById("box").innerHTML =
+        html;
+
+    speak(current.question);
 }
+
+
 /* =====================================================
    RÉPONSE
 ===================================================== */
+
 function checkAnswer(choice) {
+
     const result =
         teacherExplain(
             current,
             choice
         );
+
     rememberAnswer(
         current,
         choice
     );
-    document.getElementById(
-        "box"
-    ).innerText =
+
+    document.getElementById("box").innerText =
         result.message;
-    speak(
-        result.speech
-    );
+
+    speak(result.speech);
 }
+
+
 /* =====================================================
    PROGRESSION
 ===================================================== */
+
 function showProgress() {
+
     const report =
         getMemoryReport();
+
     const message =
         "🧠 PROGRESSION DE MAMA BINTA\n\n" +
         report.general +
@@ -241,10 +296,10 @@ function showProgress() {
         report.maths +
         "\n\n" +
         "Continue tes efforts ! 💪🏾📚";
-    document.getElementById(
-        "box"
-    ).innerText =
+
+    document.getElementById("box").innerText =
         message;
+
     speak(
         "Voici ta progression. " +
         "Tu as " +
@@ -253,122 +308,97 @@ function showProgress() {
         "Continue tes efforts !"
     );
 }
+
+
 /* =====================================================
    MES ERREURS
 ===================================================== */
+
 function showMistakes() {
+
     const mistakes =
         getMistakes();
+
     if (mistakes.length === 0) {
+
         const message =
             "📚 MES ERREURS\n\n" +
             "🎉 Aucune erreur enregistrée !\n\n" +
             "Continue comme ça Mama Binta ! 💪🏾";
-        document.getElementById(
-            "box"
-        ).innerText =
+
+        document.getElementById("box").innerText =
             message;
+
         speak(
             "Aucune erreur enregistrée. " +
             "Continue comme ça Mama Binta !"
         );
+
         return;
     }
+
     let message =
         "📚 MES ERREURS\n\n" +
         "Voici les erreurs que nous allons revoir ensemble :\n\n";
-    mistakes.forEach(
-        function(mistake, index) {
-            message +=
-                "❌ Erreur " +
-                (index + 1) +
-                "\n" +
-                "Matière : " +
-                mistake.subject +
-                "\n" +
-                "Question : " +
-                mistake.question +
-                "\n" +
-                "Ta réponse : " +
-                mistake.studentAnswer +
-                "\n" +
-                "Bonne réponse : " +
-                mistake.correctAnswer +
-                "\n\n";
-        }
-    );
+
+    mistakes.forEach(function(mistake, index) {
+
+        message +=
+            "❌ Erreur " +
+            (index + 1) +
+            "\n" +
+            "Matière : " +
+            mistake.subject +
+            "\n" +
+            "Question : " +
+            mistake.question +
+            "\n" +
+            "Ta réponse : " +
+            mistake.studentAnswer +
+            "\n" +
+            "Bonne réponse : " +
+            mistake.correctAnswer +
+            "\n\n";
+
+    });
+
     message +=
         "💡 Les erreurs sont des occasions d'apprendre !";
-    document.getElementById(
-        "box"
-    ).innerText =
+
+    document.getElementById("box").innerText =
         message;
+
     speak(
         "Voici tes erreurs. " +
         "Nous allons les revoir ensemble. " +
         "Les erreurs sont des occasions d'apprendre."
     );
 }
+
+
 /* =====================================================
-   ANALYSE DES DIFFICULTÉS
+   ANALYSE
 ===================================================== */
+
 function showAnalysis() {
+
     const analysis =
         analyzeStudent();
+
     const message =
         "🔎 ANALYSE DE MAMA BINTA\n\n" +
         analysis.message;
-    document.getElementById(
-        "box"
-    ).innerText =
+
+    document.getElementById("box").innerText =
         message;
+
     speak(
         analysis.message
     );
 }
-/* =====================================================
-   FIN
-===================================================== */
+
 </script>
+
 </body>
+
 </html>
-
-Étape 3 — tester
-
-Après le Commit changes, attends que Render redéploie.
-
-Puis ouvre l’application.
-
-Tu dois maintenant avoir un nouveau bouton :
-
-🔎 Analyse de mes difficultés
-
-Pour que l’analyste ait quelque chose à analyser, fais quelques exercices et donne volontairement quelques mauvaises réponses.
-
-Par exemple :
-
-* 1 erreur en Lecture
-* 3 erreurs en Maths
-
-Puis appuie sur :
-
-🔎 Analyse de mes difficultés
-
-L’analyste devrait constater que les erreurs de Maths sont plus nombreuses et afficher quelque chose comme :
-
-🧠 L’analyste remarque que Mama Binta a actuellement davantage d’erreurs en maths.
-Il serait utile de lui proposer davantage d’exercices de maths.
-
-⚠️ Important
-
-Pour l’instant, l’analyste observe seulement.
-
-Il ne modifie pas encore les questions et ne donne pas encore d’instructions au professeur.
-
-C’est volontaire.
-
-Notre prochaine étape sera justement de faire communiquer :
-
-🧠 Mémoire → 🔎 Analyste → 👩🏾‍🏫 Professeur
-
-C’est là que ça va commencer à devenir vraiment intéressant. 🚀
