@@ -43,10 +43,15 @@ button {
     border-radius: 10px;
     border: none;
     background: #8bd3dd;
+    cursor: pointer;
 }
 
 .choice {
     background: #ffd803;
+}
+
+.progress {
+    background: #c3f0ca;
 }
 
 #box {
@@ -72,7 +77,12 @@ button {
 </div>
 
 <button onclick="startReading()">📖 Lecture</button>
+
 <button onclick="startMaths()">➕ Maths</button>
+
+<button class="progress" onclick="showProgress()">
+🧠 Ma progression
+</button>
 
 <div id="box"></div>
 
@@ -122,12 +132,6 @@ function getVerifiedQuestion(generator) {
 
         attempts++;
     }
-
-    /*
-     * Sécurité :
-     * si aucune question n'est validée après plusieurs essais,
-     * on génère une nouvelle question.
-     */
 
     current = generator();
 
@@ -189,6 +193,34 @@ function checkAnswer(choice) {
 
     // Faire parler le professeur
     speak(result.speech);
+}
+
+
+/* ---- PROGRESSION ---- */
+
+function showProgress() {
+
+    const report = getMemoryReport();
+
+    const message =
+        "🧠 PROGRESSION DE MAMA BINTA\n\n" +
+        report.general +
+        "\n\n" +
+        report.reading +
+        "\n\n" +
+        report.maths +
+        "\n\n" +
+        "Continue tes efforts ! 💪🏾📚";
+
+    document.getElementById("box").innerText = message;
+
+    speak(
+        "Voici ta progression. " +
+        "Tu as " +
+        getStudentMemory().correct +
+        " bonnes réponses. " +
+        "Continue tes efforts !"
+    );
 }
 
 </script>
