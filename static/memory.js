@@ -29,7 +29,6 @@ function loadStudentMemory() {
                 ...defaultMemory,
                 ...memory,
 
-                // Sécurité : vérifier que mistakes est bien une liste
                 mistakes: Array.isArray(memory.mistakes)
                     ? memory.mistakes
                     : []
@@ -245,4 +244,41 @@ function getMemoryReport() {
 function getMistakes() {
 
     return studentMemory.mistakes;
+}
+
+
+// ===== REMETTRE LA PROGRESSION À ZÉRO =====
+
+function resetStudentMemory() {
+
+    const confirmation = confirm(
+        "⚠️ Veux-tu vraiment remettre la progression de Mama Binta à zéro ?\n\n" +
+        "Les scores et les erreurs mémorisées seront supprimés."
+    );
+
+    if (!confirmation) {
+
+        return;
+    }
+
+
+    // Nouvelle mémoire vide
+    studentMemory = {
+        ...defaultMemory,
+        mistakes: []
+    };
+
+
+    // Sauvegarder la nouvelle mémoire
+    saveStudentMemory();
+
+
+    // Message de confirmation
+    alert(
+        "✅ La progression de Mama Binta a été remise à zéro !"
+    );
+
+
+    // Recharger l'application
+    location.reload();
 }
