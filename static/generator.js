@@ -3,7 +3,8 @@
 // =====================================================
 // Le générateur consulte l'analyste pour savoir :
 // 1. quelle matière travailler
-// 2. quel niveau de difficulté utiliser
+// 2. quel niveau utiliser
+// 3. comment adapter les exercices
 // =====================================================
 
 const WORDS = [
@@ -41,6 +42,7 @@ const WORDS = [
 // =====================================================
 
 function shuffle(arr) {
+
     return [...arr].sort(
         () => Math.random() - 0.5
     );
@@ -123,12 +125,6 @@ function generateReadingQuestion() {
             wrongWords
         ).slice(0, 2);
 
-    const choices =
-        shuffle([
-            answer,
-            ...wrongChoices
-        ]);
-
     return {
         question:
             "Quel mot commence par la lettre " +
@@ -136,7 +132,10 @@ function generateReadingQuestion() {
             " ?",
 
         choices:
-            choices,
+            shuffle([
+                answer,
+                ...wrongChoices
+            ]),
 
         answer:
             answer
@@ -152,49 +151,103 @@ function generateMathQuestion(
     difficulty = "normal"
 ) {
 
+    let minNumber;
     let maxNumber;
+
+    // -----------------------------------------
+    // 🔴 TRÈS SIMPLE
+    // -----------------------------------------
 
     if (
         difficulty === "tres_simple"
     ) {
 
+        minNumber = 0;
         maxNumber = 5;
+    }
 
-    } else if (
+
+    // -----------------------------------------
+    // 🟡 SIMPLE
+    // -----------------------------------------
+
+    else if (
         difficulty === "simple"
     ) {
 
+        minNumber = 1;
         maxNumber = 10;
+    }
 
-    } else {
 
+    // -----------------------------------------
+    // 🟢 NORMAL
+    // -----------------------------------------
+
+    else if (
+        difficulty === "normal"
+    ) {
+
+        minNumber = 2;
         maxNumber = 20;
     }
+
+
+    // -----------------------------------------
+    // 🔵 DIFFICILE
+    // -----------------------------------------
+
+    else if (
+        difficulty === "difficile"
+    ) {
+
+        minNumber = 10;
+        maxNumber = 50;
+    }
+
+
+    // -----------------------------------------
+    // ⚪ VALEUR PAR DÉFAUT
+    // -----------------------------------------
+
+    else {
+
+        minNumber = 2;
+        maxNumber = 20;
+    }
+
 
     const a =
         Math.floor(
             Math.random() *
-            (maxNumber + 1)
-        );
+            (maxNumber - minNumber + 1)
+        ) + minNumber;
 
     const b =
         Math.floor(
             Math.random() *
-            (maxNumber + 1)
-        );
+            (maxNumber - minNumber + 1)
+        ) + minNumber;
 
     const result =
         a + b;
+
+
+    // -----------------------------------------
+    // Mauvaises réponses
+    // -----------------------------------------
 
     const wrong1 =
         result + 1;
 
     const wrong2 =
-        result > 0
+        result > 1
             ? result - 1
             : result + 2;
 
+
     return {
+
         question:
             "Combien font " +
             a +
@@ -224,8 +277,9 @@ function generateAdaptiveQuestion() {
     const analysis =
         getAnalysis();
 
+
     // -----------------------------------------
-    // Aucun analyste disponible
+    // Analyste indisponible
     // -----------------------------------------
 
     if (!analysis) {
@@ -297,7 +351,7 @@ function generateAdaptiveQuestion() {
 
 
     // -----------------------------------------
-    // ⚖️ AUCUNE DIFFICULTÉ PRIORITAIRE
+    // ⚖️ AUCUNE MATIÈRE PRIORITAIRE
     // -----------------------------------------
 
     const randomSubject =
@@ -305,9 +359,11 @@ function generateAdaptiveQuestion() {
             ? "Lecture"
             : "Maths";
 
+
     console.log(
         "✏️ Générateur : aucune difficulté prioritaire."
     );
+
 
     if (
         randomSubject === "Maths"
@@ -317,6 +373,7 @@ function generateAdaptiveQuestion() {
             "normal"
         );
     }
+
 
     return generateReadingQuestion();
 }
