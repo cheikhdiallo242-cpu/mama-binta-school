@@ -1,43 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>École de Mama Binta</title>
+<link rel="manifest" href="/static/manifest.json">
+<!-- AGENT GÉNÉRATEUR -->
+<script src="/static/generator.js"></script>
+<!-- AGENT VÉRIFICATEUR -->
+<script src="/static/verifier.js"></script>
+<!-- AGENT PROFESSEUR -->
+<script src="/static/teacher.js"></script>
+<!-- AGENT MÉMOIRE -->
+<script src="/static/memory.js"></script>
+<script>
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/static/sw.js");
+}
+</script>
+<style>
+body {
+    font-family: Arial;
+    background: #fef6e4;
+    text-align: center;
+    padding: 30px;
+}
+h1 {
+    color: #f582ae;
+}
+button {
+    font-size: 18px;
+    padding: 12px 20px;
+    margin: 6px;
+    border-radius: 10px;
+    border: none;
+    background: #8bd3dd;
+    cursor: pointer;
+}
+.choice {
+    background: #ffd803;
+}
+.progress {
+    background: #c3f0ca;
+}
+.mistakes {
+    background: #ffb6b6;
+}
+#box {
+    margin-top: 20px;
+    font-size: 20px;
+    white-space: pre-line;
+}
+#teacher {
+    background: #fde68a;
+    padding: 15px;
+    border-radius: 15px;
+}
+</style>
+</head>
+<body>
+<h1>École de Mama Binta 👧📚</h1>
+<div id="teacher">
+👩🏾‍🏫 La maîtresse intelligente est avec toi
+</div>
+<br>
+<button onclick="startReading()">
+📖 Lecture
+</button>
+<button onclick="startMaths()">
+➕ Maths
+</button>
+<br>
+<button class="progress" onclick="showProgress()">
+🧠 Ma progression
+</button>
+<button class="mistakes" onclick="showMistakes()">
+📚 Mes erreurs
+</button>
+<div id="box"></div>
+<script>
+let current = null;
+/* =====================================================
+   VOIX
+===================================================== */
+function speak(text) {
+    if (!("speechSynthesis" in window)) {
+        return;
+    }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "fr-FR";
+    u.rate = 0.85;
+    u.pitch = 1.2;
+    speechSynthesis.speak(u);
+}
+/* =====================================================
+   QUESTION VÉRIFIÉE
+===================================================== */
 function getVerifiedQuestion(generator) {
-
     try {
-
         let attempts = 0;
-
         while (attempts < 10) {
-
             const question = generator();
-
             const verification = verifyQuestion(question);
-
             if (verification.valid) {
-
                 current = question;
-
                 showQuestion();
-
                 return;
             }
-
             attempts++;
         }
-
-        // Sécurité : générer une dernière question
+        // Sécurité
         current = generator();
-
         showQuestion();
-
     } catch (error) {
-
-        console.error("Erreur entre les agents :", error);
-
+        console.error(
+            "Erreur entre les agents :",
+            error
+        );
         document.getElementById("box").innerText =
             "⚠️ Petit problème technique.\n\n" +
             "La maîtresse prépare une nouvelle question. 😊";
-
         speak(
             "Petit problème technique. " +
             "La maîtresse prépare une nouvelle question."
         );
     }
 }
+/* =====================================================
+   LECTURE
+===================================================== */
+function startReading() {
+    getVerifiedQuestion(
+        generateReadingQuestion
+    );
+}
+/* =====================================================
+   MATHS
+===================================================== */
+function startMaths() {
+    getVerifiedQuestion(
+        generateMathQuestion
+    );
+}
+/* =====================================================
+   AFFICHAGE DE LA QUESTION
+===================================================== */
+function showQuestion() {
+    let html =
+        current.question +
+        "\n\n";
+    current.choices.forEach(function(c) {
+        html +=
+            '<button class="choice" ' +
+            'onclick="checkAnswer(\'' +
+            c +
+            '\')">' +
+            c +
+            '</button><br>';
+    });
+    document.getElementById("box").innerHTML =
+        html;
+    speak(current.question);
+}
+/* =====================================================
+   RÉPONSE DE L'ÉLÈVE
+===================================================== */
+function checkAnswer(choice) {
+    // Le professeur analyse
+    const result =
+        teacherExplain(
+            current,
+            choice
+        );
+    // La mémoire enregistre
+    rememberAnswer(
+        current,
+        choice
+    );
+    // Afficher le professeur
+    document.getElementById("box").innerText =
+        result.message;
+    // Faire parler le professeur
+    speak(result.speech);
+}
+/* =====================================================
+   PROGRESSION
+===================================================== */
+function showProgress() {
+    const report =
+        getMemoryReport();
+    const message =
+        "🧠 PROGRESSION DE MAMA BINTA\n\n" +
+        report.general +
+        "\n\n" +
+        report.reading +
+        "\n\n" +
+        report.maths +
+        "\n\n" +
+        "Continue tes efforts ! 💪🏾📚";
+    document.getElementById("box").innerText =
+        message;
+    speak(
+        "Voici ta progression. " +
+        "Tu as " +
+        getStudentMemory().correct +
+        " bonnes réponses. " +
+        "Continue tes efforts !"
+    );
+}
+/* =====================================================
+   MES ERREURS
+===================================================== */
+function showMistakes() {
+    const mistakes =
+        getMistakes();
+    // Aucune erreur
+    if (mistakes.length === 0) {
+        const message =
+            "📚 MES ERREURS\n\n" +
+            "🎉 Aucune erreur enregistrée !\n\n" +
+            "Continue comme ça Mama Binta ! 💪🏾";
+        document.getElementById("box").innerText =
+            message;
+        speak(
+            "Aucune erreur enregistrée. " +
+            "Continue comme ça Mama Binta !"
+        );
+        return;
+    }
+    let message =
+        "📚 MES ERREURS\n\n" +
+        "Voici les erreurs que nous allons revoir ensemble :\n\n";
+    mistakes.forEach(
+        function(mistake, index) {
+            message +=
+                "❌ Erreur " +
+                (index + 1) +
+                "\n" +
+                "Matière : " +
+                mistake.subject +
+                "\n" +
+                "Question : " +
+                mistake.question +
+                "\n" +
+                "Ta réponse : " +
+                mistake.studentAnswer +
+                "\n" +
+                "Bonne réponse : " +
+                mistake.correctAnswer +
+                "\n\n";
+        }
+    );
+    message +=
+        "💡 Les erreurs sont des occasions d'apprendre !";
+    document.getElementById("box").innerText =
+        message;
+    speak(
+        "Voici tes erreurs. " +
+        "Nous allons les revoir ensemble. " +
+        "Les erreurs sont des occasions d'apprendre."
+    );
+}
+</script>
+</body>
+</html>
