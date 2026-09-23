@@ -21,7 +21,8 @@ function rememberAnswer(questionData, studentAnswer) {
     const correct =
         studentAnswer === questionData.answer;
 
-    // Compteur général
+
+    // ===== COMPTEUR GÉNÉRAL =====
 
     if (correct) {
         studentMemory.correct++;
@@ -30,7 +31,7 @@ function rememberAnswer(questionData, studentAnswer) {
     }
 
 
-    // Lecture
+    // ===== LECTURE =====
 
     if (
         questionData.question.startsWith(
@@ -46,7 +47,7 @@ function rememberAnswer(questionData, studentAnswer) {
     }
 
 
-    // Maths
+    // ===== MATHS =====
 
     if (
         questionData.question.startsWith(
@@ -62,6 +63,8 @@ function rememberAnswer(questionData, studentAnswer) {
     }
 
 
+    // ===== JOURNAL DE LA MÉMOIRE =====
+
     console.log(
         "🧠 Mémoire de Mama Binta :",
         studentMemory
@@ -74,4 +77,32 @@ function rememberAnswer(questionData, studentAnswer) {
 function getStudentMemory() {
 
     return studentMemory;
+}
+
+
+// ===== AFFICHER LA PROGRESSION =====
+
+function getMemoryReport() {
+
+    return {
+        general:
+            "✅ Bonnes réponses : " +
+            studentMemory.correct +
+            "\n❌ Erreurs : " +
+            studentMemory.incorrect,
+
+        reading:
+            "📖 Lecture : " +
+            studentMemory.readingCorrect +
+            " bonne(s) réponse(s) / " +
+            studentMemory.readingIncorrect +
+            " erreur(s)",
+
+        maths:
+            "🧮 Maths : " +
+            studentMemory.mathsCorrect +
+            " bonne(s) réponse(s) / " +
+            studentMemory.mathsIncorrect +
+            " erreur(s)"
+    };
 }
