@@ -2,7 +2,7 @@
 
 function teacherExplain(questionData, studentAnswer) {
 
-    // Sécurité : vérifier que les informations existent
+    // Sécurité
     if (!questionData || !studentAnswer) {
         return {
             message: "Regardons la question ensemble 😊",
@@ -10,20 +10,24 @@ function teacherExplain(questionData, studentAnswer) {
         };
     }
 
-    // La réponse est correcte
+    // ===== BONNE RÉPONSE =====
+
     if (studentAnswer === questionData.answer) {
 
         return {
-            message: "Bravo Mama Binta 🎉 Tu as trouvé la bonne réponse !",
-            speech: "Bravo Mama Binta ! Tu as trouvé la bonne réponse !"
+            message:
+                "Bravo Mama Binta 🎉\n\n" +
+                "Tu as trouvé la bonne réponse ! 👏🏾",
+
+            speech:
+                "Bravo Mama Binta ! Tu as trouvé la bonne réponse !"
         };
     }
 
-    // Réponse incorrecte
     const question = questionData.question;
     const correctAnswer = questionData.answer;
 
-    // ----- LECTURE : lettre initiale -----
+    // ===== LECTURE =====
 
     if (question.startsWith("Quel mot commence par la lettre")) {
 
@@ -49,46 +53,83 @@ function teacherExplain(questionData, studentAnswer) {
             return {
                 message:
                     "Ce n'est pas la bonne réponse 😊\n\n" +
-                    studentAnswer + " commence par la lettre " +
-                    studentLetter + ".\n\n" +
+                    studentAnswer +
+                    " commence par la lettre " +
+                    studentLetter +
+                    ".\n\n" +
                     "La bonne réponse est " +
-                    correctAnswer + ", qui commence par la lettre " +
-                    correctLetter + ".\n\n" +
+                    correctAnswer +
+                    ", qui commence par la lettre " +
+                    correctLetter +
+                    ".\n\n" +
                     "Regarde bien la première lettre et essaie encore ! 📚",
 
                 speech:
                     "Ce n'est pas la bonne réponse. " +
-                    studentAnswer + " commence par la lettre " +
-                    studentLetter + ". " +
+                    studentAnswer +
+                    " commence par la lettre " +
+                    studentLetter +
+                    ". " +
                     "La bonne réponse est " +
-                    correctAnswer + ", qui commence par la lettre " +
-                    correctLetter + ". " +
+                    correctAnswer +
+                    ", qui commence par la lettre " +
+                    correctLetter +
+                    ". " +
                     "Regarde bien la première lettre et essaie encore."
             };
         }
     }
 
-    // ----- MATHS -----
+    // ===== MATHS =====
 
     if (question.startsWith("Combien font")) {
 
-        return {
-            message:
-                "Ce n'est pas la bonne réponse 😊\n\n" +
-                "La bonne réponse est " +
-                correctAnswer +
-                ".\n\n" +
-                "Prenons notre temps et essayons de comprendre le calcul. 🧮",
+        const match = question.match(
+            /Combien font (\d+) \+ (\d+)/
+        );
 
-            speech:
-                "Ce n'est pas la bonne réponse. " +
-                "La bonne réponse est " +
+        if (match) {
+
+            const a = parseInt(match[1]);
+            const b = parseInt(match[2]);
+
+            let steps = [];
+
+            for (let i = 1; i <= b; i++) {
+                steps.push(a + i);
+            }
+
+            const explanation =
+                a + " + " + b + " signifie que nous ajoutons " +
+                b + " à " + a + ".\n\n" +
+                "On compte : " +
+                a + ", " +
+                steps.join(", ") +
+                ".\n\n" +
+                "Donc la bonne réponse est " +
                 correctAnswer +
-                ". Prenons notre temps et essayons de comprendre le calcul."
-        };
+                ". 🧮";
+
+            const speech =
+                "Ce n'est pas la bonne réponse. " +
+                a + " plus " + b +
+                " signifie que nous ajoutons " +
+                b + " à " + a + ". " +
+                "On compte : " +
+                a + ", " +
+                steps.join(", ") +
+                ". " +
+                "Donc la bonne réponse est " +
+                correctAnswer + ".";
+
+            return {
+                message: explanation,
+                speech: speech
+            };
+        }
     }
 
-    // ----- EXPLICATION PAR DÉFAUT -----
+    // ===== EXPLICATION PAR DÉFAUT =====
 
     return {
         message:
