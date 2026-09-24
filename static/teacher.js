@@ -2,31 +2,20 @@
 // 👩🏾‍🏫 AGENT PROFESSEUR DE MAMA BINTA
 // =====================================================
 // Le professeur reçoit les informations de l'analyste
-// et adapte son explication à la situation de l'élève.
+// et adapte son explication à la situation actuelle.
+//
+// RÈGLE IMPORTANTE :
+// Une mauvaise réponse doit toujours être traitée
+// comme une erreur AVANT toute recommandation.
+//
+// La maîtresse ne doit jamais dire :
+// "Tu réussis très bien"
+// juste après une mauvaise réponse.
 // =====================================================
 
 
 // =====================================================
-// 🔎 RÉCUPÉRER LA RECOMMANDATION DE L'ANALYSTE
-// =====================================================
-
-function teacherGetRecommendation() {
-
-    if (
-        typeof analyzeStudent !== "function"
-    ) {
-        return null;
-    }
-
-    const analysis =
-        analyzeStudent();
-
-    return analysis.recommendation || null;
-}
-
-
-// =====================================================
-// 🧠 RÉCUPÉRER L'ANALYSE COMPLÈTE
+// 🔎 RÉCUPÉRER L'ANALYSE
 // =====================================================
 
 function teacherGetAnalysis() {
@@ -34,10 +23,32 @@ function teacherGetAnalysis() {
     if (
         typeof analyzeStudent !== "function"
     ) {
+
         return null;
     }
 
+
     return analyzeStudent();
+}
+
+
+// =====================================================
+// 🔎 RÉCUPÉRER LA RECOMMANDATION
+// =====================================================
+
+function teacherGetRecommendation() {
+
+    const analysis =
+        teacherGetAnalysis();
+
+
+    if (!analysis) {
+
+        return null;
+    }
+
+
+    return analysis.recommendation || null;
 }
 
 
@@ -54,7 +65,9 @@ function teacherAdaptation() {
     if (!analysis) {
 
         return {
+
             message: "",
+
             speech: ""
         };
     }
@@ -67,14 +80,16 @@ function teacherAdaptation() {
     if (!recommendation) {
 
         return {
+
             message: "",
+
             speech: ""
         };
     }
 
 
     // =================================================
-    // 🎯 FRONTIÈRE DE DIFFICULTÉ EN MATHS
+    // 🎯 FRONTIÈRE EN MATHS
     // =================================================
 
     if (
@@ -97,8 +112,8 @@ function teacherAdaptation() {
                 "Tu réussis déjà des additions jusqu'à " +
                 mastered +
                 ". 🌟\n\n" +
-                "On va maintenant travailler tranquillement " +
-                "autour de " +
+                "Nous allons maintenant travailler " +
+                "tranquillement autour de " +
                 difficulty +
                 ". " +
                 "Pas besoin d'aller trop vite. " +
@@ -108,8 +123,8 @@ function teacherAdaptation() {
                 "Tu réussis déjà des additions jusqu'à " +
                 mastered +
                 ". " +
-                "On va maintenant travailler tranquillement " +
-                "autour de " +
+                "Nous allons maintenant travailler " +
+                "tranquillement autour de " +
                 difficulty +
                 ". " +
                 "Pas besoin d'aller trop vite. " +
@@ -119,7 +134,7 @@ function teacherAdaptation() {
 
 
     // =================================================
-    // 📈 PROGRESSION EN MATHS
+    // 📈 PROGRESSION MATHS
     // =================================================
 
     if (
@@ -131,14 +146,15 @@ function teacherAdaptation() {
 
             message:
                 "\n\n👩🏾‍🏫 La maîtresse :\n" +
-                "Bravo ! 🌟 Tu réussis très bien tes exercices de maths. " +
-                "On peut maintenant essayer des additions un peu plus difficiles. " +
-                "Je suis sûre que tu peux progresser encore ! 💪🏾🧮",
+                "Tu as montré de beaux progrès en maths. 🌟\n" +
+                "Quand tu seras prête, nous pourrons " +
+                "essayer des additions un peu plus difficiles. " +
+                "💪🏾🧮",
 
             speech:
-                "Bravo ! Tu réussis très bien tes exercices de maths. " +
-                "On peut maintenant essayer des additions un peu plus difficiles. " +
-                "Je suis sûre que tu peux progresser encore."
+                "Tu as montré de beaux progrès en maths. " +
+                "Quand tu seras prête, nous pourrons " +
+                "essayer des additions un peu plus difficiles."
         };
     }
 
@@ -156,14 +172,14 @@ function teacherAdaptation() {
 
             message:
                 "\n\n👩🏾‍🏫 La maîtresse :\n" +
-                "On va encore nous entraîner un peu en maths. " +
-                "Ne t'inquiète pas, Mama Binta. " +
-                "Avec un peu de pratique, tu vas progresser ! 💪🏾🧮",
+                "Nous allons encore nous entraîner un peu en maths. " +
+                "Ne t'inquiète pas. " +
+                "Avec de la pratique, tu vas progresser ! 💪🏾🧮",
 
             speech:
-                "On va encore nous entraîner un peu en maths. " +
-                "Ne t'inquiète pas Mama Binta. " +
-                "Avec un peu de pratique, tu vas progresser."
+                "Nous allons encore nous entraîner un peu en maths. " +
+                "Ne t'inquiète pas. " +
+                "Avec de la pratique, tu vas progresser."
         };
     }
 
@@ -181,16 +197,14 @@ function teacherAdaptation() {
 
             message:
                 "\n\n👩🏾‍🏫 La maîtresse :\n" +
-                "Tu es en train d'apprendre quelque chose de nouveau. 🧠 " +
-                "On va refaire quelques additions autour de ce niveau " +
-                "pour bien consolider tes bases. " +
-                "Prends ton temps. 💪🏾🧮",
+                "Nous allons prendre notre temps et refaire " +
+                "quelques additions pour bien consolider tes bases. " +
+                "Tu peux y arriver. 💪🏾🧮",
 
             speech:
-                "Tu es en train d'apprendre quelque chose de nouveau. " +
-                "On va refaire quelques additions autour de ce niveau " +
-                "pour bien consolider tes bases. " +
-                "Prends ton temps."
+                "Nous allons prendre notre temps et refaire " +
+                "quelques additions pour bien consolider tes bases. " +
+                "Tu peux y arriver."
         };
     }
 
@@ -208,12 +222,12 @@ function teacherAdaptation() {
 
             message:
                 "\n\n👩🏾‍🏫 La maîtresse :\n" +
-                "On va encore pratiquer un peu la lecture. " +
+                "Nous allons encore pratiquer un peu la lecture. " +
                 "Regarde bien les premières lettres et prends ton temps. " +
                 "Tu vas progresser ! 💪🏾📖",
 
             speech:
-                "On va encore pratiquer un peu la lecture. " +
+                "Nous allons encore pratiquer un peu la lecture. " +
                 "Regarde bien les premières lettres et prends ton temps. " +
                 "Tu vas progresser."
         };
@@ -233,14 +247,14 @@ function teacherAdaptation() {
 
             message:
                 "\n\n👩🏾‍🏫 La maîtresse :\n" +
-                "Bravo ! 🌟 Tu réussis très bien tes exercices de lecture. " +
-                "On peut maintenant essayer des mots un peu plus difficiles. " +
-                "Continue comme ça ! 📖💪🏾",
+                "Tu as montré de beaux progrès en lecture. 🌟\n" +
+                "Nous pourrons bientôt essayer des mots " +
+                "un peu plus difficiles. 📖💪🏾",
 
             speech:
-                "Bravo ! Tu réussis très bien tes exercices de lecture. " +
-                "On peut maintenant essayer des mots un peu plus difficiles. " +
-                "Continue comme ça."
+                "Tu as montré de beaux progrès en lecture. " +
+                "Nous pourrons bientôt essayer des mots " +
+                "un peu plus difficiles."
         };
     }
 
@@ -268,7 +282,9 @@ function teacherAdaptation() {
 
 
     return {
+
         message: "",
+
         speech: ""
     };
 }
@@ -300,7 +316,7 @@ function teacherExplain(
 
 
     // =================================================
-    // 🎉 BONNE RÉPONSE
+    // 🎯 SAVOIR SI LA RÉPONSE EST CORRECTE
     // =================================================
 
     const correct =
@@ -308,16 +324,27 @@ function teacherExplain(
         questionData.answer;
 
 
+    // =================================================
+    // 🎉 BONNE RÉPONSE
+    // =================================================
+
     if (correct) {
+
+        const adaptation =
+            teacherAdaptation();
+
 
         return {
 
             message:
                 "Bravo Mama Binta 🎉\n\n" +
-                "Tu as trouvé la bonne réponse ! 👏🏾",
+                "Tu as trouvé la bonne réponse ! 👏🏾" +
+                adaptation.message,
 
             speech:
-                "Bravo Mama Binta ! Tu as trouvé la bonne réponse !"
+                "Bravo Mama Binta ! " +
+                "Tu as trouvé la bonne réponse. " +
+                adaptation.speech
         };
     }
 
@@ -325,6 +352,12 @@ function teacherExplain(
     // =================================================
     // ❌ MAUVAISE RÉPONSE
     // =================================================
+    //
+    // IMPORTANT :
+    // Ici nous ne faisons PAS immédiatement confiance
+    // à une recommandation de progression.
+    //
+    // L'explication de l'erreur passe en premier.
 
     const question =
         questionData.question;
@@ -332,10 +365,6 @@ function teacherExplain(
 
     const correctAnswer =
         questionData.answer;
-
-
-    const adaptation =
-        teacherAdaptation();
 
 
     // =================================================
@@ -395,8 +424,7 @@ function teacherExplain(
                     ", qui commence par la lettre " +
                     correctLetter +
                     ".\n\n" +
-                    "Regarde bien la première lettre et essaie encore ! 📚" +
-                    adaptation.message,
+                    "Regarde bien la première lettre et essaie encore ! 📚",
 
                 speech:
                     "Ce n'est pas la bonne réponse. " +
@@ -410,8 +438,7 @@ function teacherExplain(
                     "Elle commence par la lettre " +
                     correctLetter +
                     ". " +
-                    "Regarde bien la première lettre et essaie encore." +
-                    adaptation.speech
+                    "Regarde bien la première lettre et essaie encore."
             };
         }
     }
@@ -436,11 +463,15 @@ function teacherExplain(
         if (match) {
 
             const a =
-                parseInt(match[1]);
+                parseInt(
+                    match[1]
+                );
 
 
             const b =
-                parseInt(match[2]);
+                parseInt(
+                    match[2]
+                );
 
 
             let steps = [];
@@ -500,12 +531,10 @@ function teacherExplain(
             return {
 
                 message:
-                    explanation +
-                    adaptation.message,
+                    explanation,
 
                 speech:
-                    speech +
-                    adaptation.speech
+                    speech
             };
         }
     }
@@ -522,15 +551,13 @@ function teacherExplain(
             "La bonne réponse est " +
             correctAnswer +
             ".\n\n" +
-            "Regardons la question encore une fois ensemble. 📚" +
-            adaptation.message,
+            "Regardons la question encore une fois ensemble. 📚",
 
         speech:
             "Ce n'est pas la bonne réponse. " +
             "La bonne réponse est " +
             correctAnswer +
             ". " +
-            "Regardons la question encore une fois ensemble." +
-            adaptation.speech
+            "Regardons la question encore une fois ensemble."
     };
 }
