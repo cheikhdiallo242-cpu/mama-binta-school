@@ -305,6 +305,15 @@ function showQuestion() {
 
 function checkAnswer(choice) {
 
+    // 🧠 1. La mémoire enregistre d'abord la réponse
+    rememberAnswer(
+        current,
+        choice
+    );
+
+
+    // 🔎 2. Le professeur analyse ensuite
+    // la situation avec la mémoire mise à jour
     const result =
         teacherExplain(
             current,
@@ -312,16 +321,12 @@ function checkAnswer(choice) {
         );
 
 
-    rememberAnswer(
-        current,
-        choice
-    );
-
-
+    // 💬 3. Afficher l'explication
     document.getElementById("box").innerText =
         result.message;
 
 
+    // 🔊 4. Faire parler la maîtresse
     speak(
         result.speech
     );
