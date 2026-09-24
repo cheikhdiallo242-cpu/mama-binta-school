@@ -8,6 +8,7 @@
 // - les derniers résultats
 // - les séries de réussites
 // - les séries d'erreurs
+// - le niveau des additions réussies/ratées
 // =====================================================
 
 const defaultMemory = {
@@ -36,6 +37,11 @@ const defaultMemory = {
     readingCorrectStreak: 0,
     readingIncorrectStreak: 0,
 
+    // 🧮 Niveau observé en maths
+    mathsHighestCorrectSum: 0,
+    mathsLowestIncorrectSum: null,
+
+    // Erreurs
     mistakes: []
 };
 
@@ -87,7 +93,6 @@ function loadStudentMemory() {
             error
         );
     }
-
 
     return {
         ...defaultMemory,
@@ -208,6 +213,80 @@ function rememberAnswer(
 
     if (subject === "Maths") {
 
+        // ---------------------------------------------
+        // Récupérer les nombres de l'addition
+        // ---------------------------------------------
+
+        const match =
+            questionData.question.match(
+                /Combien font (\d+) \+ (\d+)/
+            );
+
+
+        if (match) {
+
+            const a =
+                parseInt(match[1]);
+
+            const b =
+                parseInt(match[2]);
+
+            const sum =
+                a + b;
+
+
+            // -----------------------------------------
+            // Mémoriser le niveau maximum réussi
+            // -----------------------------------------
+
+            if (correct) {
+
+                if (
+                    sum >
+                    studentMemory.mathsHighestCorrectSum
+                ) {
+
+                    studentMemory.mathsHighestCorrectSum =
+                        sum;
+
+                    console.log(
+                        "🌟 Nouveau niveau record en maths : " +
+                        sum
+                    );
+                }
+
+            }
+
+
+            // -----------------------------------------
+            // Mémoriser la première difficulté détectée
+            // -----------------------------------------
+
+            if (!correct) {
+
+                if (
+                    studentMemory.mathsLowestIncorrectSum === null ||
+                    sum <
+                    studentMemory.mathsLowestIncorrectSum
+                ) {
+
+                    studentMemory.mathsLowestIncorrectSum =
+                        sum;
+
+                    console.log(
+                        "🔎 Première difficulté observée autour de : " +
+                        sum
+                    );
+                }
+
+            }
+        }
+
+
+        // ---------------------------------------------
+        // Statistiques maths
+        // ---------------------------------------------
+
         if (correct) {
 
             studentMemory.mathsCorrect++;
@@ -248,6 +327,7 @@ function rememberAnswer(
             studentMemory.readingIncorrectStreak++;
 
             studentMemory.readingCorrectStreak = 0;
+
         }
     }
 
@@ -374,6 +454,16 @@ function getMemoryReport() {
             " bonne(s) réponse(s) / " +
             studentMemory.mathsIncorrect +
             " erreur(s)",
+
+        mathsLevel:
+            "📈 Plus grande addition réussie : " +
+            studentMemory.mathsHighestCorrectSum,
+
+        mathsDifficulty:
+            studentMemory.mathsLowestIncorrectSum === null
+                ? "🔎 Aucune difficulté détectée."
+                : "⚠️ Première difficulté observée autour de : " +
+                  studentMemory.mathsLowestIncorrectSum,
 
         streak:
             "🔥 Série actuelle : " +
