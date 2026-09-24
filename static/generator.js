@@ -1,12 +1,19 @@
 // =====================================================
 // ✏️ AGENT GÉNÉRATEUR DE MAMA BINTA
 // =====================================================
-// Le générateur consulte l'analyste pour savoir :
-// 1. quelle matière travailler
-// 2. quel niveau utiliser
-// 3. quelle zone de difficulté travailler
+// Le générateur reçoit maintenant son plan du
+// 🎯 Planificateur pédagogique.
+//
+// Le générateur ne choisit plus arbitrairement
+// un niveau de difficulté.
+//
+// Il respecte le niveau décidé par le planificateur.
 // =====================================================
 
+
+// =====================================================
+// 📚 MOTS POUR LA LECTURE
+// =====================================================
 
 const WORDS = [
 
@@ -66,24 +73,7 @@ function firstLetter(word) {
 
 
 // =====================================================
-// 🔎 RÉCUPÉRER L'ANALYSE
-// =====================================================
-
-function getAnalysis() {
-
-    if (
-        typeof analyzeStudent !== "function"
-    ) {
-
-        return null;
-    }
-
-    return analyzeStudent();
-}
-
-
-// =====================================================
-// 📖 GÉNÉRATEUR DE LECTURE
+// 📖 GÉNÉRER UNE QUESTION DE LECTURE
 // =====================================================
 
 function generateReadingQuestion() {
@@ -120,6 +110,18 @@ function generateReadingQuestion() {
         );
 
 
+    // Sécurité :
+    // si aucune réponse correcte n'existe
+    // pour une lettre, on recommence.
+
+    if (
+        correctWords.length === 0
+    ) {
+
+        return generateReadingQuestion();
+    }
+
+
     const answer =
         correctWords[
             Math.floor(
@@ -132,7 +134,10 @@ function generateReadingQuestion() {
     const wrongChoices =
         shuffle(
             wrongWords
-        ).slice(0, 2);
+        ).slice(
+            0,
+            2
+        );
 
 
     return {
@@ -155,271 +160,129 @@ function generateReadingQuestion() {
 
 
 // =====================================================
-// 🧮 GÉNÉRER UN EXERCICE DE MATHS
+// 🧮 GÉNÉRER UNE ADDITION DANS UNE ZONE
+// =====================================================
+// Exemple :
+// niveau 1 → résultat entre 1 et 10
+// niveau 2 → résultat entre 1 et 20
+// niveau 3 → résultat entre 1 et 30
+//
+// Le résultat final est toujours contrôlé.
 // =====================================================
 
 function generateMathQuestion(
-    difficulty = "normal"
+    minSum = 1,
+    maxSum = 10
 ) {
 
-    let minNumber;
-
-    let maxNumber;
-
-
     // ---------------------------------------------
-    // NIVEAU TRÈS SIMPLE
+    // Sécurité
     // ---------------------------------------------
 
-    if (
-        difficulty === "tres_simple"
-    ) {
-
-        minNumber = 0;
-
-        maxNumber = 5;
-    }
-
-
-    // ---------------------------------------------
-    // NIVEAU SIMPLE
-    // ---------------------------------------------
-
-    else if (
-        difficulty === "simple"
-    ) {
-
-        minNumber = 1;
-
-        maxNumber = 10;
-    }
-
-
-    // ---------------------------------------------
-    // NIVEAU NORMAL
-    // ---------------------------------------------
-
-    else if (
-        difficulty === "normal"
-    ) {
-
-        minNumber = 2;
-
-        maxNumber = 20;
-    }
-
-
-    // ---------------------------------------------
-    // NIVEAU INTERMÉDIAIRE
-    // ---------------------------------------------
-
-    else if (
-        difficulty === "intermediaire"
-    ) {
-
-        minNumber = 5;
-
-        maxNumber = 30;
-    }
-
-
-    // ---------------------------------------------
-    // NIVEAU DIFFICILE
-    // ---------------------------------------------
-
-    else if (
-        difficulty === "difficile"
-    ) {
-
-        minNumber = 10;
-
-        maxNumber = 50;
-    }
-
-
-    else {
-
-        minNumber = 2;
-
-        maxNumber = 20;
-    }
-
-
-    // =================================================
-    // 🔢 CRÉER LES NOMBRES
-    // =================================================
-
-    const a =
-        Math.floor(
-            Math.random() *
-            (
-                maxNumber -
-                minNumber +
-                1
-            )
-        ) +
-        minNumber;
-
-
-    const b =
-        Math.floor(
-            Math.random() *
-            (
-                maxNumber -
-                minNumber +
-                1
-            )
-        ) +
-        minNumber;
-
-
-    const result =
-        a + b;
-
-
-    const wrong1 =
-        result + 1;
-
-
-    const wrong2 =
-        result > 1
-            ? result - 1
-            : result + 2;
-
-
-    return {
-
-        question:
-            "Combien font " +
-            a +
-            " + " +
-            b +
-            " ?",
-
-        choices:
-            shuffle([
-                result.toString(),
-                wrong1.toString(),
-                wrong2.toString()
-            ]),
-
-        answer:
-            result.toString()
-    };
-}
-
-
-// =====================================================
-// 🎯 GÉNÉRER AUTOUR D'UNE FRONTIÈRE
-// =====================================================
-// Exemple :
-// Mama Binta réussit jusqu'à 20
-// difficulté autour de 24
-//
-// Le générateur travaille autour de cette zone.
-// =====================================================
-
-function generateBoundaryMathQuestion(
-    masteredSum,
-    difficultySum
-) {
-
-    let lowerBound =
+    minSum =
         Math.max(
-            0,
-            masteredSum - 3
+            1,
+            Number(minSum)
         );
 
 
-    let upperBound =
-        difficultySum + 3;
+    maxSum =
+        Math.max(
+            minSum,
+            Number(maxSum)
+        );
 
 
-    // Éviter une zone trop grande
+    // ---------------------------------------------
+    // Choisir le résultat cible
+    // ---------------------------------------------
 
-    if (
-        upperBound -
-        lowerBound >
-        15
-    ) {
-
-        upperBound =
-            lowerBound + 15;
-    }
-
-
-    let targetSum =
+    const targetSum =
         Math.floor(
             Math.random() *
             (
-                upperBound -
-                lowerBound +
+                maxSum -
+                minSum +
                 1
             )
         ) +
-        lowerBound;
-
-
-    // Éviter de refaire uniquement des additions
-    // extrêmement faciles.
-
-    if (
-        targetSum < 2
-    ) {
-
-        targetSum = 2;
-    }
+        minSum;
 
 
     // ---------------------------------------------
     // Choisir le premier nombre
     // ---------------------------------------------
+    //
+    // On limite volontairement le premier nombre
+    // afin d'obtenir des additions adaptées à un enfant.
 
-    let a =
+    const a =
         Math.floor(
             Math.random() *
             (
-                Math.min(
-                    targetSum,
-                    20
-                ) + 1
+                targetSum + 1
             )
         );
 
 
     // ---------------------------------------------
-    // Deuxième nombre
+    // Calculer le deuxième nombre
     // ---------------------------------------------
 
-    let b =
+    const b =
         targetSum - a;
-
-
-    // Sécurité
-    // Éviter un deuxième nombre négatif.
-
-    if (
-        b < 0
-    ) {
-
-        a = 0;
-
-        b = targetSum;
-    }
 
 
     const result =
         a + b;
 
 
-    const wrong1 =
+    // =================================================
+    // ❌ MAUVAISES RÉPONSES
+    // =================================================
+
+    let wrong1 =
         result + 1;
 
 
-    const wrong2 =
-        result > 1
-            ? result - 1
-            : result + 2;
+    let wrong2 =
+        result - 1;
+
+
+    // ---------------------------------------------
+    // Éviter une réponse négative
+    // ---------------------------------------------
+
+    if (
+        wrong2 < 0
+    ) {
+
+        wrong2 =
+            result + 2;
+    }
+
+
+    // ---------------------------------------------
+    // Éviter les doublons
+    // ---------------------------------------------
+
+    if (
+        wrong1 === result
+    ) {
+
+        wrong1 =
+            result + 1;
+    }
+
+
+    if (
+        wrong2 === result ||
+        wrong2 === wrong1
+    ) {
+
+        wrong2 =
+            result + 2;
+    }
 
 
     return {
@@ -439,168 +302,151 @@ function generateBoundaryMathQuestion(
             ]),
 
         answer:
-            result.toString()
+            result.toString(),
+
+        // Informations internes utiles
+        // aux futurs agents.
+
+        subject:
+            "Maths",
+
+        levelMax:
+            maxSum,
+
+        targetSum:
+            result
     };
+}
+
+
+// =====================================================
+// 🎯 GÉNÉRER UNE QUESTION À PARTIR DU PLAN
+// =====================================================
+
+function generatePlannedMathQuestion(
+    plan
+) {
+
+    if (
+        !plan
+    ) {
+
+        return generateMathQuestion(
+            1,
+            10
+        );
+    }
+
+
+    console.log(
+        "🎯 Planificateur → Générateur"
+    );
+
+
+    console.log(
+        "Niveau : " +
+        plan.level
+    );
+
+
+    console.log(
+        "Zone : " +
+        plan.minSum +
+        " → " +
+        plan.maxSum
+    );
+
+
+    return generateMathQuestion(
+
+        plan.minSum,
+
+        plan.maxSum
+    );
 }
 
 
 // =====================================================
 // 🤖 GÉNÉRATEUR ADAPTATIF
 // =====================================================
+// C'est maintenant le point central.
+//
+// 1. Le planificateur décide.
+// 2. Le générateur exécute.
+// 3. La question respecte le niveau.
+// =====================================================
 
 function generateAdaptiveQuestion() {
 
-    const analysis =
-        getAnalysis();
-
-
     // =================================================
-    // 🛑 ANALYSTE INDISPONIBLE
-    // =================================================
-
-    if (!analysis) {
-
-        console.log(
-            "✏️ Générateur : analyste indisponible."
-        );
-
-
-        return generateMathQuestion(
-            "normal"
-        );
-    }
-
-
-    // =================================================
-    // 🧮 MATHS
+    // 🎯 DEMANDER LE PLAN
     // =================================================
 
     if (
-        analysis.subject === "Maths"
+        typeof getMathPlan !== "function"
     ) {
 
-        // ---------------------------------------------
-        // Nouvelle frontière détectée
-        // ---------------------------------------------
-
-        if (
-            analysis.status === "frontière" &&
-            analysis.highestCorrectSum > 0 &&
-            analysis.lowestIncorrectSum !== null
-        ) {
-
-            console.log(
-                "🎯 Générateur : travail autour de la frontière."
-            );
-
-
-            console.log(
-                "✅ Niveau maîtrisé : " +
-                analysis.highestCorrectSum
-            );
-
-
-            console.log(
-                "⚠️ Difficulté autour de : " +
-                analysis.lowestIncorrectSum
-            );
-
-
-            return generateBoundaryMathQuestion(
-
-                analysis.highestCorrectSum,
-
-                analysis.lowestIncorrectSum
-            );
-        }
-
-
-        // ---------------------------------------------
-        // Niveau recommandé par l'analyste
-        // ---------------------------------------------
-
-        const difficulty =
-            analysis.difficulty ||
-            "normal";
-
-
         console.log(
-            "🔎 Analyste → ✏️ Générateur"
+            "⚠️ Planificateur indisponible."
         );
 
 
-        console.log(
-            "Matière : Maths"
-        );
-
-
-        console.log(
-            "Niveau : " +
-            difficulty
-        );
-
+        // Sécurité :
+        // l'application peut quand même fonctionner.
 
         return generateMathQuestion(
-            difficulty
+            1,
+            10
         );
     }
 
 
-    // =================================================
-    // 📖 LECTURE
-    // =================================================
-
-    if (
-        analysis.subject === "Lecture"
-    ) {
-
-        console.log(
-            "🔎 Analyste → ✏️ Générateur"
-        );
-
-
-        console.log(
-            "Matière : Lecture"
-        );
-
-
-        console.log(
-            "Niveau : " +
-            (
-                analysis.difficulty ||
-                "normal"
-            )
-        );
-
-
-        return generateReadingQuestion();
-    }
-
-
-    // =================================================
-    // ⚖️ AUCUNE PRIORITÉ
-    // =================================================
-
-    const randomSubject =
-        Math.random() < 0.5
-            ? "Lecture"
-            : "Maths";
+    const plan =
+        getMathPlan();
 
 
     console.log(
-        "✏️ Générateur : aucune difficulté prioritaire."
+        "🎯 Plan pédagogique :",
+        plan
     );
 
 
+    // =================================================
+    // 🧮 LE PLAN DIT DE TRAVAILLER LES MATHS
+    // =================================================
+
     if (
-        randomSubject === "Maths"
+        plan &&
+        plan.action !== "apprendre" &&
+        typeof plan.level === "number"
     ) {
 
-        return generateMathQuestion(
-            "normal"
+        return generatePlannedMathQuestion(
+            plan
         );
     }
 
+
+    // =================================================
+    // 🌱 DÉBUT
+    // =================================================
+
+    if (
+        plan &&
+        plan.action === "apprendre"
+    ) {
+
+        return generatePlannedMathQuestion(
+            plan
+        );
+    }
+
+
+    // =================================================
+    // 📖 POUR L'INSTANT :
+    // SI LE PLANIFICATEUR NE DEMANDE PAS DE MATHS,
+    // ON UTILISE LA LECTURE.
+    // =================================================
 
     return generateReadingQuestion();
 }
