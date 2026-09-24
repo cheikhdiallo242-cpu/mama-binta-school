@@ -1,13 +1,15 @@
 // =====================================================
 // ✏️ AGENT GÉNÉRATEUR DE MAMA BINTA
 // =====================================================
-// Le générateur reçoit maintenant son plan du
+// Le générateur reçoit son plan du
 // 🎯 Planificateur pédagogique.
 //
-// Le générateur ne choisit plus arbitrairement
-// un niveau de difficulté.
-//
-// Il respecte le niveau décidé par le planificateur.
+// Il doit :
+// - respecter le niveau actuel
+// - varier les additions
+// - éviter les répétitions
+// - éviter les inversions inutiles
+// - produire des exercices adaptés
 // =====================================================
 
 
@@ -73,7 +75,7 @@ function firstLetter(word) {
 
 
 // =====================================================
-// 📖 GÉNÉRER UNE QUESTION DE LECTURE
+// 📖 QUESTION DE LECTURE
 // =====================================================
 
 function generateReadingQuestion() {
@@ -109,10 +111,6 @@ function generateReadingQuestion() {
                 firstLetter(word) !== letter
         );
 
-
-    // Sécurité :
-    // si aucune réponse correcte n'existe
-    // pour une lettre, on recommence.
 
     if (
         correctWords.length === 0
@@ -160,24 +158,190 @@ function generateReadingQuestion() {
 
 
 // =====================================================
-// 🧮 GÉNÉRER UNE ADDITION DANS UNE ZONE
+// 🧠 RÉCUPÉRER LES ADDITIONS RÉCENTES
 // =====================================================
-// Exemple :
-// niveau 1 → résultat entre 1 et 10
-// niveau 2 → résultat entre 1 et 20
-// niveau 3 → résultat entre 1 et 30
+
+function getRecentMathQuestions() {
+
+    if (
+        typeof getStudentMemory !== "function"
+    ) {
+
+        return [];
+    }
+
+
+    const memory =
+        getStudentMemory();
+
+
+    if (
+        !memory ||
+        !Array.isArray(
+            memory.recentResults
+        )
+    ) {
+
+        return [];
+    }
+
+
+    return memory.recentResults.filter(
+        result =>
+            result.subject === "Maths"
+    );
+}
+
+
+// =====================================================
+// 🔑 CRÉER UNE SIGNATURE D'ADDITION
+// =====================================================
+// 1 + 4 et 4 + 1 auront la même signature :
+// "1+4"
 //
-// Le résultat final est toujours contrôlé.
+// Cela nous permet d'éviter les inversions inutiles.
+// =====================================================
+
+function getAdditionSignature(
+    a,
+    b
+) {
+
+    const first =
+        Math.min(
+            a,
+            b
+        );
+
+
+    const second =
+        Math.max(
+            a,
+            b
+        );
+
+
+    return (
+        first +
+        "+" +
+        second
+    );
+}
+
+
+// =====================================================
+// 🧠 RÉCUPÉRER LES ADDITIONS DÉJÀ UTILISÉES
+// =====================================================
+
+function getRecentAdditionSignatures() {
+
+    const recentQuestions =
+        getRecentMathQuestions();
+
+
+    const signatures =
+        new Set();
+
+
+    for (
+        const result
+        of recentQuestions
+    ) {
+
+        if (
+            !result.question
+        ) {
+            continue;
+        }
+
+
+        const match =
+            result.question.match(
+                /Combien font (\d+) \+ (\d+)/
+            );
+
+
+        if (
+            !match
+        ) {
+            continue;
+        }
+
+
+        const a =
+            parseInt(
+                match[1]
+            );
+
+
+        const b =
+            parseInt(
+                match[2]
+            );
+
+
+        signatures.add(
+            getAdditionSignature(
+                a,
+                b
+            )
+        );
+    }
+
+
+    return signatures;
+}
+
+
+// =====================================================
+// 🧮 CRÉER UNE ADDITION
+// =====================================================
+
+function createAddition(
+    targetSum
+) {
+
+    // ---------------------------------------------
+    // Choisir a
+    // ---------------------------------------------
+
+    const a =
+        Math.floor(
+            Math.random() *
+            (
+                targetSum + 1
+            )
+        );
+
+
+    // ---------------------------------------------
+    // Calculer b
+    // ---------------------------------------------
+
+    const b =
+        targetSum - a;
+
+
+    return {
+
+        a: a,
+
+        b: b,
+
+        result:
+            targetSum
+    };
+}
+
+
+// =====================================================
+// 🧮 GÉNÉRER UNE ADDITION VARIÉE
 // =====================================================
 
 function generateMathQuestion(
     minSum = 1,
     maxSum = 10
 ) {
-
-    // ---------------------------------------------
-    // Sécurité
-    // ---------------------------------------------
 
     minSum =
         Math.max(
@@ -193,48 +357,120 @@ function generateMathQuestion(
         );
 
 
-    // ---------------------------------------------
-    // Choisir le résultat cible
-    // ---------------------------------------------
+    // =================================================
+    // 🧠 MÉMOIRE DES QUESTIONS RÉCENTES
+    // =================================================
 
-    const targetSum =
-        Math.floor(
-            Math.random() *
-            (
-                maxSum -
-                minSum +
-                1
-            )
-        ) +
-        minSum;
+    const recentSignatures =
+        getRecentAdditionSignatures();
 
 
-    // ---------------------------------------------
-    // Choisir le premier nombre
-    // ---------------------------------------------
+    // =================================================
+    // 🎯 CRÉER PLUSIEURS CANDIDATS
+    // =================================================
     //
-    // On limite volontairement le premier nombre
-    // afin d'obtenir des additions adaptées à un enfant.
+    // On ne prend pas la première addition venue.
+    // On crée plusieurs possibilités puis on choisit
+    // une addition qui n'a pas été utilisée récemment.
 
-    const a =
-        Math.floor(
-            Math.random() *
-            (
-                targetSum + 1
-            )
+    const candidates = [];
+
+
+    for (
+        let i = 0;
+        i < 50;
+        i++
+    ) {
+
+        const targetSum =
+            Math.floor(
+                Math.random() *
+                (
+                    maxSum -
+                    minSum +
+                    1
+                )
+            ) +
+            minSum;
+
+
+        const addition =
+            createAddition(
+                targetSum
+            );
+
+
+        const signature =
+            getAdditionSignature(
+                addition.a,
+                addition.b
+            );
+
+
+        candidates.push({
+
+            ...addition,
+
+            signature: signature,
+
+            wasRecent:
+                recentSignatures.has(
+                    signature
+                )
+        });
+    }
+
+
+    // =================================================
+    // 🟢 PRIORITÉ AUX NOUVELLES ADDITIONS
+    // =================================================
+
+    let freshCandidates =
+        candidates.filter(
+            candidate =>
+                !candidate.wasRecent
         );
 
 
-    // ---------------------------------------------
-    // Calculer le deuxième nombre
-    // ---------------------------------------------
+    // =================================================
+    // 🔄 SI TOUT EST DÉJÀ UTILISÉ
+    // =================================================
+    // On accepte alors une ancienne addition.
+    //
+    // Cela évite de bloquer le générateur.
+
+    if (
+        freshCandidates.length === 0
+    ) {
+
+        freshCandidates =
+            candidates;
+    }
+
+
+    // =================================================
+    // 🎯 CHOISIR UNE ADDITION
+    // =================================================
+
+    const selected =
+        freshCandidates[
+            Math.floor(
+                Math.random() *
+                freshCandidates.length
+            )
+        ];
+
+
+    const a =
+        selected.a;
+
 
     const b =
-        targetSum - a;
+        selected.b;
 
 
     const result =
-        a + b;
+        selected.result;
 
 
     // =================================================
@@ -249,10 +485,6 @@ function generateMathQuestion(
         result - 1;
 
 
-    // ---------------------------------------------
-    // Éviter une réponse négative
-    // ---------------------------------------------
-
     if (
         wrong2 < 0
     ) {
@@ -261,10 +493,6 @@ function generateMathQuestion(
             result + 2;
     }
 
-
-    // ---------------------------------------------
-    // Éviter les doublons
-    // ---------------------------------------------
 
     if (
         wrong1 === result
@@ -285,6 +513,10 @@ function generateMathQuestion(
     }
 
 
+    // =================================================
+    // 📦 QUESTION FINALE
+    // =================================================
+
     return {
 
         question:
@@ -304,9 +536,6 @@ function generateMathQuestion(
         answer:
             result.toString(),
 
-        // Informations internes utiles
-        // aux futurs agents.
-
         subject:
             "Maths",
 
@@ -320,7 +549,7 @@ function generateMathQuestion(
 
 
 // =====================================================
-// 🎯 GÉNÉRER UNE QUESTION À PARTIR DU PLAN
+// 🎯 GÉNÉRER SELON LE PLANIFICATEUR
 // =====================================================
 
 function generatePlannedMathQuestion(
@@ -369,17 +598,11 @@ function generatePlannedMathQuestion(
 // =====================================================
 // 🤖 GÉNÉRATEUR ADAPTATIF
 // =====================================================
-// C'est maintenant le point central.
-//
-// 1. Le planificateur décide.
-// 2. Le générateur exécute.
-// 3. La question respecte le niveau.
-// =====================================================
 
 function generateAdaptiveQuestion() {
 
     // =================================================
-    // 🎯 DEMANDER LE PLAN
+    // 🎯 VÉRIFIER LE PLANIFICATEUR
     // =================================================
 
     if (
@@ -390,9 +613,6 @@ function generateAdaptiveQuestion() {
             "⚠️ Planificateur indisponible."
         );
 
-
-        // Sécurité :
-        // l'application peut quand même fonctionner.
 
         return generateMathQuestion(
             1,
@@ -412,12 +632,11 @@ function generateAdaptiveQuestion() {
 
 
     // =================================================
-    // 🧮 LE PLAN DIT DE TRAVAILLER LES MATHS
+    // 🧮 MATHS
     // =================================================
 
     if (
         plan &&
-        plan.action !== "apprendre" &&
         typeof plan.level === "number"
     ) {
 
@@ -428,24 +647,7 @@ function generateAdaptiveQuestion() {
 
 
     // =================================================
-    // 🌱 DÉBUT
-    // =================================================
-
-    if (
-        plan &&
-        plan.action === "apprendre"
-    ) {
-
-        return generatePlannedMathQuestion(
-            plan
-        );
-    }
-
-
-    // =================================================
-    // 📖 POUR L'INSTANT :
-    // SI LE PLANIFICATEUR NE DEMANDE PAS DE MATHS,
-    // ON UTILISE LA LECTURE.
+    // 📖 LECTURE
     // =================================================
 
     return generateReadingQuestion();
