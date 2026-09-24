@@ -3,12 +3,12 @@
 // =====================================================
 // L'analyste observe :
 // - les résultats récents
-// - les séries de réussites
-// - les séries d'erreurs
+// - les séries
 // - les résultats par matière
+// - le niveau maximum réussi en maths
+// - le niveau où une difficulté apparaît
 //
-// Son objectif : déterminer le niveau actuel
-// de Mama Binta et conseiller les autres agents.
+// Son objectif : conseiller les autres agents.
 // =====================================================
 
 function analyzeStudent() {
@@ -29,7 +29,7 @@ function analyzeStudent() {
 
             subject: null,
 
-            difficulty: null,
+            difficulty: "normal",
 
             recommendation: null,
 
@@ -94,7 +94,7 @@ function analyzeStudent() {
 
 
     // =================================================
-    // 🔎 ANALYSER LES RÉSULTATS RÉCENTS
+    // 🔎 OUTILS D'ANALYSE
     // =================================================
 
     function countRecentErrors(results) {
@@ -157,6 +157,80 @@ function analyzeStudent() {
 
     const readingIncorrectStreak =
         memory.readingIncorrectStreak || 0;
+
+
+    // =================================================
+    // 🧮 NOUVELLE ANALYSE DU NIVEAU MATHS
+    // =================================================
+
+    const highestCorrectSum =
+        Number(
+            memory.mathsHighestCorrectSum || 0
+        );
+
+
+    const lowestIncorrectSum =
+        memory.mathsLowestIncorrectSum === null ||
+        memory.mathsLowestIncorrectSum === undefined
+            ? null
+            : Number(
+                memory.mathsLowestIncorrectSum
+            );
+
+
+    // -------------------------------------------------
+    // Zone de difficulté détectée
+    // -------------------------------------------------
+
+    if (
+        lowestIncorrectSum !== null &&
+        highestCorrectSum > 0 &&
+        lowestIncorrectSum > highestCorrectSum
+    ) {
+
+        return {
+
+            status: "frontière",
+
+            subject: "Maths",
+
+            difficulty: "intermediaire",
+
+            recommendation: {
+
+                subject: "Maths",
+
+                action: "consolider",
+
+                level: "intermediaire",
+
+                targetSum:
+                    lowestIncorrectSum,
+
+                masteredSum:
+                    highestCorrectSum,
+
+                message:
+                    "Continuer progressivement autour de la limite actuelle."
+            },
+
+            message:
+                "🎯 L'analyste observe que Mama Binta réussit " +
+                "des additions jusqu'à " +
+                highestCorrectSum +
+                ", mais une difficulté apparaît autour de " +
+                lowestIncorrectSum +
+                ". " +
+                "Il recommande de travailler progressivement " +
+                "autour de cette limite.",
+
+            highestCorrectSum:
+                highestCorrectSum,
+
+            lowestIncorrectSum:
+                lowestIncorrectSum
+        };
+    }
 
 
     // =================================================
@@ -246,7 +320,10 @@ function analyzeStudent() {
                 recentMathsCorrect,
 
             recentMathsErrors:
-                recentMathsErrors
+                recentMathsErrors,
+
+            highestCorrectSum:
+                highestCorrectSum
         };
     }
 
@@ -289,7 +366,10 @@ function analyzeStudent() {
                 recentMathsCorrect,
 
             recentMathsErrors:
-                recentMathsErrors
+                recentMathsErrors,
+
+            highestCorrectSum:
+                highestCorrectSum
         };
     }
 
