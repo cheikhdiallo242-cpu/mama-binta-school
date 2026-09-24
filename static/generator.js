@@ -4,10 +4,12 @@
 // Le générateur consulte l'analyste pour savoir :
 // 1. quelle matière travailler
 // 2. quel niveau utiliser
-// 3. comment adapter les exercices
+// 3. quelle zone de difficulté travailler
 // =====================================================
 
+
 const WORDS = [
+
     "Avion", "Arbre",
     "Banane", "Ballon",
     "Chat", "Chien",
@@ -38,7 +40,7 @@ const WORDS = [
 
 
 // =====================================================
-// 🔀 MÉLANGE
+// 🔀 MÉLANGER
 // =====================================================
 
 function shuffle(arr) {
@@ -64,7 +66,7 @@ function firstLetter(word) {
 
 
 // =====================================================
-// 🔎 CONSULTATION DE L'ANALYSTE
+// 🔎 RÉCUPÉRER L'ANALYSE
 // =====================================================
 
 function getAnalysis() {
@@ -72,6 +74,7 @@ function getAnalysis() {
     if (
         typeof analyzeStudent !== "function"
     ) {
+
         return null;
     }
 
@@ -80,17 +83,19 @@ function getAnalysis() {
 
 
 // =====================================================
-// 📖 QUESTION DE LECTURE
+// 📖 GÉNÉRATEUR DE LECTURE
 // =====================================================
 
 function generateReadingQuestion() {
 
     const availableLetters = [
+
         "A", "B", "C", "D", "E", "F", "G",
         "H", "I", "J", "K", "L", "M", "N",
         "O", "P", "Q", "R", "S", "T", "U",
         "V", "W", "X", "Y", "Z"
     ];
+
 
     const letter =
         availableLetters[
@@ -100,17 +105,20 @@ function generateReadingQuestion() {
             )
         ];
 
+
     const correctWords =
         WORDS.filter(
             word =>
                 firstLetter(word) === letter
         );
 
+
     const wrongWords =
         WORDS.filter(
             word =>
                 firstLetter(word) !== letter
         );
+
 
     const answer =
         correctWords[
@@ -120,12 +128,15 @@ function generateReadingQuestion() {
             )
         ];
 
+
     const wrongChoices =
         shuffle(
             wrongWords
         ).slice(0, 2);
 
+
     return {
+
         question:
             "Quel mot commence par la lettre " +
             letter +
@@ -144,7 +155,7 @@ function generateReadingQuestion() {
 
 
 // =====================================================
-// 🧮 QUESTION DE MATHS
+// 🧮 GÉNÉRER UN EXERCICE DE MATHS
 // =====================================================
 
 function generateMathQuestion(
@@ -152,93 +163,123 @@ function generateMathQuestion(
 ) {
 
     let minNumber;
+
     let maxNumber;
 
-    // -----------------------------------------
-    // 🔴 TRÈS SIMPLE
-    // -----------------------------------------
+
+    // ---------------------------------------------
+    // NIVEAU TRÈS SIMPLE
+    // ---------------------------------------------
 
     if (
         difficulty === "tres_simple"
     ) {
 
         minNumber = 0;
+
         maxNumber = 5;
     }
 
 
-    // -----------------------------------------
-    // 🟡 SIMPLE
-    // -----------------------------------------
+    // ---------------------------------------------
+    // NIVEAU SIMPLE
+    // ---------------------------------------------
 
     else if (
         difficulty === "simple"
     ) {
 
         minNumber = 1;
+
         maxNumber = 10;
     }
 
 
-    // -----------------------------------------
-    // 🟢 NORMAL
-    // -----------------------------------------
+    // ---------------------------------------------
+    // NIVEAU NORMAL
+    // ---------------------------------------------
 
     else if (
         difficulty === "normal"
     ) {
 
         minNumber = 2;
+
         maxNumber = 20;
     }
 
 
-    // -----------------------------------------
-    // 🔵 DIFFICILE
-    // -----------------------------------------
+    // ---------------------------------------------
+    // NIVEAU INTERMÉDIAIRE
+    // ---------------------------------------------
+
+    else if (
+        difficulty === "intermediaire"
+    ) {
+
+        minNumber = 5;
+
+        maxNumber = 30;
+    }
+
+
+    // ---------------------------------------------
+    // NIVEAU DIFFICILE
+    // ---------------------------------------------
 
     else if (
         difficulty === "difficile"
     ) {
 
         minNumber = 10;
+
         maxNumber = 50;
     }
 
 
-    // -----------------------------------------
-    // ⚪ VALEUR PAR DÉFAUT
-    // -----------------------------------------
-
     else {
 
         minNumber = 2;
+
         maxNumber = 20;
     }
 
 
+    // =================================================
+    // 🔢 CRÉER LES NOMBRES
+    // =================================================
+
     const a =
         Math.floor(
             Math.random() *
-            (maxNumber - minNumber + 1)
-        ) + minNumber;
+            (
+                maxNumber -
+                minNumber +
+                1
+            )
+        ) +
+        minNumber;
+
 
     const b =
         Math.floor(
             Math.random() *
-            (maxNumber - minNumber + 1)
-        ) + minNumber;
+            (
+                maxNumber -
+                minNumber +
+                1
+            )
+        ) +
+        minNumber;
+
 
     const result =
         a + b;
 
 
-    // -----------------------------------------
-    // Mauvaises réponses
-    // -----------------------------------------
-
     const wrong1 =
         result + 1;
+
 
     const wrong2 =
         result > 1
@@ -269,7 +310,142 @@ function generateMathQuestion(
 
 
 // =====================================================
-// 🤖 EXERCICE PERSONNALISÉ
+// 🎯 GÉNÉRER AUTOUR D'UNE FRONTIÈRE
+// =====================================================
+// Exemple :
+// Mama Binta réussit jusqu'à 20
+// difficulté autour de 24
+//
+// Le générateur travaille autour de cette zone.
+// =====================================================
+
+function generateBoundaryMathQuestion(
+    masteredSum,
+    difficultySum
+) {
+
+    let lowerBound =
+        Math.max(
+            0,
+            masteredSum - 3
+        );
+
+
+    let upperBound =
+        difficultySum + 3;
+
+
+    // Éviter une zone trop grande
+
+    if (
+        upperBound -
+        lowerBound >
+        15
+    ) {
+
+        upperBound =
+            lowerBound + 15;
+    }
+
+
+    let targetSum =
+        Math.floor(
+            Math.random() *
+            (
+                upperBound -
+                lowerBound +
+                1
+            )
+        ) +
+        lowerBound;
+
+
+    // Éviter de refaire uniquement des additions
+    // extrêmement faciles.
+
+    if (
+        targetSum < 2
+    ) {
+
+        targetSum = 2;
+    }
+
+
+    // ---------------------------------------------
+    // Choisir le premier nombre
+    // ---------------------------------------------
+
+    let a =
+        Math.floor(
+            Math.random() *
+            (
+                Math.min(
+                    targetSum,
+                    20
+                ) + 1
+            )
+        );
+
+
+    // ---------------------------------------------
+    // Deuxième nombre
+    // ---------------------------------------------
+
+    let b =
+        targetSum - a;
+
+
+    // Sécurité
+    // Éviter un deuxième nombre négatif.
+
+    if (
+        b < 0
+    ) {
+
+        a = 0;
+
+        b = targetSum;
+    }
+
+
+    const result =
+        a + b;
+
+
+    const wrong1 =
+        result + 1;
+
+
+    const wrong2 =
+        result > 1
+            ? result - 1
+            : result + 2;
+
+
+    return {
+
+        question:
+            "Combien font " +
+            a +
+            " + " +
+            b +
+            " ?",
+
+        choices:
+            shuffle([
+                result.toString(),
+                wrong1.toString(),
+                wrong2.toString()
+            ]),
+
+        answer:
+            result.toString()
+    };
+}
+
+
+// =====================================================
+// 🤖 GÉNÉRATEUR ADAPTATIF
 // =====================================================
 
 function generateAdaptiveQuestion() {
@@ -278,9 +454,9 @@ function generateAdaptiveQuestion() {
         getAnalysis();
 
 
-    // -----------------------------------------
-    // Analyste indisponible
-    // -----------------------------------------
+    // =================================================
+    // 🛑 ANALYSTE INDISPONIBLE
+    // =================================================
 
     if (!analysis) {
 
@@ -288,36 +464,81 @@ function generateAdaptiveQuestion() {
             "✏️ Générateur : analyste indisponible."
         );
 
+
         return generateMathQuestion(
             "normal"
         );
     }
 
 
-    // -----------------------------------------
+    // =================================================
     // 🧮 MATHS
-    // -----------------------------------------
+    // =================================================
 
     if (
         analysis.subject === "Maths"
     ) {
 
+        // ---------------------------------------------
+        // Nouvelle frontière détectée
+        // ---------------------------------------------
+
+        if (
+            analysis.status === "frontière" &&
+            analysis.highestCorrectSum > 0 &&
+            analysis.lowestIncorrectSum !== null
+        ) {
+
+            console.log(
+                "🎯 Générateur : travail autour de la frontière."
+            );
+
+
+            console.log(
+                "✅ Niveau maîtrisé : " +
+                analysis.highestCorrectSum
+            );
+
+
+            console.log(
+                "⚠️ Difficulté autour de : " +
+                analysis.lowestIncorrectSum
+            );
+
+
+            return generateBoundaryMathQuestion(
+
+                analysis.highestCorrectSum,
+
+                analysis.lowestIncorrectSum
+            );
+        }
+
+
+        // ---------------------------------------------
+        // Niveau recommandé par l'analyste
+        // ---------------------------------------------
+
         const difficulty =
             analysis.difficulty ||
             "normal";
+
 
         console.log(
             "🔎 Analyste → ✏️ Générateur"
         );
 
+
         console.log(
             "Matière : Maths"
         );
+
 
         console.log(
             "Niveau : " +
             difficulty
         );
+
 
         return generateMathQuestion(
             difficulty
@@ -325,9 +546,9 @@ function generateAdaptiveQuestion() {
     }
 
 
-    // -----------------------------------------
+    // =================================================
     // 📖 LECTURE
-    // -----------------------------------------
+    // =================================================
 
     if (
         analysis.subject === "Lecture"
@@ -337,22 +558,28 @@ function generateAdaptiveQuestion() {
             "🔎 Analyste → ✏️ Générateur"
         );
 
+
         console.log(
             "Matière : Lecture"
         );
 
+
         console.log(
             "Niveau : " +
-            (analysis.difficulty || "normal")
+            (
+                analysis.difficulty ||
+                "normal"
+            )
         );
+
 
         return generateReadingQuestion();
     }
 
 
-    // -----------------------------------------
-    // ⚖️ AUCUNE MATIÈRE PRIORITAIRE
-    // -----------------------------------------
+    // =================================================
+    // ⚖️ AUCUNE PRIORITÉ
+    // =================================================
 
     const randomSubject =
         Math.random() < 0.5
