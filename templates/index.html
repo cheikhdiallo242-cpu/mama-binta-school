@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -9,77 +8,165 @@
 
 <link rel="manifest" href="/static/manifest.json">
 
+
+<!-- =====================================================
+     🧠 AGENTS DE MAMA BINTA
+     
+     Ordre important :
+     
+     1. Mémoire
+     2. Analyste
+     3. Planificateur
+     4. Générateur
+     5. Vérificateur
+     6. Professeur
+     
+     Chaque agent doit être disponible avant que
+     l'application commence à utiliser les autres.
+===================================================== -->
+
+<script src="/static/memory.js"></script>
+<script src="/static/analyzer.js"></script>
+<script src="/static/planner.js"></script>
 <script src="/static/generator.js"></script>
 <script src="/static/verifier.js"></script>
 <script src="/static/teacher.js"></script>
-<script src="/static/memory.js"></script>
-<script src="/static/analyzer.js"></script>
+
+
+<!-- =====================================================
+     📱 SERVICE WORKER
+===================================================== -->
 
 <script>
 
 if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/static/sw.js");
+
+    navigator.serviceWorker.register(
+        "/static/sw.js"
+    );
+
 }
 
 </script>
 
+
+<!-- =====================================================
+     🎨 STYLE
+===================================================== -->
+
 <style>
 
 body {
+
     font-family: Arial;
+
     background: #fef6e4;
+
     text-align: center;
+
     padding: 30px;
+
 }
+
 
 h1 {
+
     color: #f582ae;
+
 }
+
 
 button {
+
     font-size: 18px;
+
     padding: 12px 20px;
+
     margin: 6px;
+
     border-radius: 10px;
+
     border: none;
+
     cursor: pointer;
+
     background: #8bd3dd;
+
 }
+
 
 .choice {
+
     background: #ffd803;
+
 }
+
 
 .progress {
+
     background: #c3f0ca;
+
 }
+
 
 .mistakes {
+
     background: #ffb6b6;
+
 }
+
 
 .analysis {
+
     background: #cdb4db;
+
 }
+
 
 .adaptive {
+
     background: #a7d8ff;
+
 }
+
 
 .reset {
+
     background: #ff8a8a;
+
 }
+
 
 #box {
+
     margin-top: 20px;
+
     font-size: 20px;
+
     white-space: pre-line;
+
 }
 
+
 #teacher {
+
     background: #fde68a;
+
     padding: 15px;
+
     border-radius: 15px;
+
+}
+
+
+#level {
+
+    margin-top: 15px;
+
+    font-size: 17px;
+
+    font-weight: bold;
+
 }
 
 </style>
@@ -89,53 +176,122 @@ button {
 
 <body>
 
-<h1>École de Mama Binta 👧📚</h1>
+
+<h1>
+École de Mama Binta 👧📚
+</h1>
+
 
 <div id="teacher">
+
 👩🏾‍🏫 La maîtresse intelligente est avec toi
+
 </div>
 
+
+<div id="level">
+
+🎯 Niveau pédagogique : 1
+
+</div>
+
+
 <br>
 
+
+<!-- =====================================================
+     📚 MATIÈRES
+===================================================== -->
 
 <button onclick="startReading()">
+
 📖 Lecture
+
 </button>
+
 
 <button onclick="startMaths()">
+
 ➕ Maths
+
 </button>
+
 
 <br>
 
 
-<button class="adaptive" onclick="startAdaptive()">
+<!-- =====================================================
+     🤖 EXERCICE ADAPTATIF
+===================================================== -->
+
+<button
+    class="adaptive"
+    onclick="startAdaptive()"
+>
+
 🤖 Exercice personnalisé
+
 </button>
+
 
 <br>
 
 
-<button class="progress" onclick="showProgress()">
+<!-- =====================================================
+     🧠 PROGRESSION
+===================================================== -->
+
+<button
+    class="progress"
+    onclick="showProgress()"
+>
+
 🧠 Ma progression
+
 </button>
 
-<button class="mistakes" onclick="showMistakes()">
+
+<button
+    class="mistakes"
+    onclick="showMistakes()"
+>
+
 📚 Mes erreurs
+
 </button>
+
 
 <br>
 
 
-<button class="analysis" onclick="showAnalysis()">
+<!-- =====================================================
+     🔎 ANALYSE
+===================================================== -->
+
+<button
+    class="analysis"
+    onclick="showAnalysis()"
+>
+
 🔎 Analyse de mes difficultés
+
 </button>
+
 
 <br>
 
 
-<button class="reset" onclick="resetStudentMemory()">
+<!-- =====================================================
+     🔄 RESET
+===================================================== -->
+
+<button
+    class="reset"
+    onclick="resetStudentMemory()"
+>
+
 🔄 Recommencer à zéro
+
 </button>
 
 
@@ -144,69 +300,197 @@ button {
 
 <script>
 
+
+// =====================================================
+// 🎯 QUESTION ACTUELLE
+// =====================================================
+
 let current = null;
 
 
-/* =====================================================
-   VOIX
-===================================================== */
+
+// =====================================================
+// 🔊 VOIX DE LA MAÎTRESSE
+// =====================================================
 
 function speak(text) {
 
-    if (!("speechSynthesis" in window)) {
+    if (
+        !("speechSynthesis" in window)
+    ) {
+
         return;
+
     }
+
 
     speechSynthesis.cancel();
 
-    const u =
-        new SpeechSynthesisUtterance(text);
 
-    u.lang = "fr-FR";
-    u.rate = 0.85;
-    u.pitch = 1.2;
+    const u =
+        new SpeechSynthesisUtterance(
+            text
+        );
+
+
+    u.lang =
+        "fr-FR";
+
+
+    u.rate =
+        0.85;
+
+
+    u.pitch =
+        1.2;
+
 
     speechSynthesis.speak(u);
+
 }
 
 
-/* =====================================================
-   QUESTION VÉRIFIÉE
-===================================================== */
 
-function getVerifiedQuestion(generator) {
+// =====================================================
+// 🎯 AFFICHER LE NIVEAU ACTUEL
+// =====================================================
+
+function updateLevelDisplay() {
+
+    const levelElement =
+        document.getElementById(
+            "level"
+        );
+
+
+    if (
+        !levelElement
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        if (
+            typeof getMathPlan !==
+            "function"
+        ) {
+
+            levelElement.innerText =
+                "🎯 Niveau pédagogique : 1";
+
+            return;
+
+        }
+
+
+        const plan =
+            getMathPlan();
+
+
+        levelElement.innerText =
+
+            "🎯 Niveau pédagogique : " +
+            plan.level +
+            "\n🧮 Additions jusqu'à " +
+            plan.maxSum;
+
+
+    } catch (error) {
+
+        console.error(
+            "Erreur affichage niveau :",
+            error
+        );
+
+        levelElement.innerText =
+            "🎯 Niveau pédagogique : 1";
+
+    }
+
+}
+
+
+
+// =====================================================
+// 🛡️ QUESTION VÉRIFIÉE
+// =====================================================
+//
+// Le générateur propose.
+// Le vérificateur contrôle.
+// L'application n'affiche que les questions
+// considérées comme valides.
+// =====================================================
+
+function getVerifiedQuestion(
+    generator
+) {
 
     try {
 
         let attempts = 0;
 
-        while (attempts < 10) {
+
+        while (
+            attempts < 10
+        ) {
 
             const question =
                 generator();
 
+
             const verification =
-                verifyQuestion(question);
+                verifyQuestion(
+                    question
+                );
 
-            if (verification.valid) {
 
-                current = question;
+            if (
+                verification.valid
+            ) {
+
+                current =
+                    question;
+
 
                 showQuestion();
 
+
+                updateLevelDisplay();
+
+
                 return;
+
             }
 
+
+            console.warn(
+                "❌ Question refusée :",
+                verification.reason
+            );
+
+
             attempts++;
+
         }
 
 
-        document.getElementById("box").innerText =
-            "⚠️ La maîtresse prépare une nouvelle question.";
+        document.getElementById(
+            "box"
+        ).innerText =
+
+            "⚠️ La maîtresse prépare " +
+            "une nouvelle question.";
+
 
         speak(
-            "La maîtresse prépare une nouvelle question."
+            "La maîtresse prépare " +
+            "une nouvelle question."
         );
+
 
     } catch (error) {
 
@@ -215,57 +499,77 @@ function getVerifiedQuestion(generator) {
             error
         );
 
-        document.getElementById("box").innerText =
+
+        document.getElementById(
+            "box"
+        ).innerText =
+
             "⚠️ Petit problème technique.\n\n" +
             "La maîtresse prépare une nouvelle question. 😊";
+
 
         speak(
             "Petit problème technique. " +
             "La maîtresse prépare une nouvelle question."
         );
+
     }
+
 }
 
 
-/* =====================================================
-   LECTURE
-===================================================== */
+
+// =====================================================
+// 📖 LECTURE
+// =====================================================
 
 function startReading() {
 
     getVerifiedQuestion(
         generateReadingQuestion
     );
+
 }
 
 
-/* =====================================================
-   MATHS
-===================================================== */
+
+// =====================================================
+// ➕ MATHS
+// =====================================================
 
 function startMaths() {
 
     getVerifiedQuestion(
         generateMathQuestion
     );
+
 }
 
 
-/* =====================================================
-   🤖 EXERCICE PERSONNALISÉ
-===================================================== */
+
+// =====================================================
+// 🤖 EXERCICE PERSONNALISÉ
+// =====================================================
+//
+// Ici, le système utilise le Planificateur.
+// Le planificateur observe la progression,
+// puis indique au Générateur quelle difficulté
+// proposer.
+// =====================================================
 
 function startAdaptive() {
 
     getVerifiedQuestion(
         generateAdaptiveQuestion
     );
+
 }
 
 
-/* =====================================================
-   AFFICHAGE
-===================================================== */
+
+// =====================================================
+// 📝 AFFICHAGE DE LA QUESTION
+// =====================================================
 
 function showQuestion() {
 
@@ -278,42 +582,67 @@ function showQuestion() {
         function(c) {
 
             html +=
+
                 '<button class="choice" ' +
+
                 'onclick="checkAnswer(\'' +
                 c +
                 '\')">' +
+
                 c +
+
                 '</button><br>';
 
         }
     );
 
 
-    document.getElementById("box").innerHTML =
+    document.getElementById(
+        "box"
+    ).innerHTML =
         html;
 
 
     speak(
         current.question
     );
+
 }
 
 
-/* =====================================================
-   RÉPONSE
-===================================================== */
 
-function checkAnswer(choice) {
+// =====================================================
+// ✅ RÉPONSE DE L'ÉLÈVE
+// =====================================================
+//
+// Ordre très important :
+//
+// 1. Mémoire
+// 2. Professeur
+//
+// Ainsi le professeur peut utiliser
+// la réponse qui vient d'être enregistrée.
+// =====================================================
 
-    // 🧠 1. La mémoire enregistre d'abord la réponse
+function checkAnswer(
+    choice
+) {
+
+
+    // -------------------------------------------------
+    // 🧠 1. MÉMOIRE
+    // -------------------------------------------------
+
     rememberAnswer(
         current,
         choice
     );
 
 
-    // 🔎 2. Le professeur analyse ensuite
-    // la situation avec la mémoire mise à jour
+    // -------------------------------------------------
+    // 👩🏾‍🏫 2. PROFESSEUR
+    // -------------------------------------------------
+
     const result =
         teacherExplain(
             current,
@@ -321,21 +650,38 @@ function checkAnswer(choice) {
         );
 
 
-    // 💬 3. Afficher l'explication
-    document.getElementById("box").innerText =
+    // -------------------------------------------------
+    // 💬 3. AFFICHAGE
+    // -------------------------------------------------
+
+    document.getElementById(
+        "box"
+    ).innerText =
         result.message;
 
 
-    // 🔊 4. Faire parler la maîtresse
+    // -------------------------------------------------
+    // 🔊 4. VOIX
+    // -------------------------------------------------
+
     speak(
         result.speech
     );
+
+
+    // -------------------------------------------------
+    // 🎯 5. ACTUALISER LE NIVEAU
+    // -------------------------------------------------
+
+    updateLevelDisplay();
+
 }
 
 
-/* =====================================================
-   PROGRESSION
-===================================================== */
+
+// =====================================================
+// 🧠 PROGRESSION
+// =====================================================
 
 function showProgress() {
 
@@ -343,34 +689,104 @@ function showProgress() {
         getMemoryReport();
 
 
+    let levelMessage =
+        "";
+
+
+    try {
+
+        if (
+            typeof getMathPlan ===
+            "function"
+        ) {
+
+            const plan =
+                getMathPlan();
+
+
+            levelMessage =
+
+                "\n\n🎯 NIVEAU PÉDAGOGIQUE\n\n" +
+
+                "Niveau actuel : " +
+                plan.level +
+
+                "\nAdditions travaillées : jusqu'à " +
+                plan.maxSum +
+
+                "\nStatut : " +
+                plan.status +
+
+                "\n\n" +
+                plan.message;
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Erreur planificateur :",
+            error
+        );
+
+    }
+
+
     const message =
+
         "🧠 PROGRESSION DE MAMA BINTA\n\n" +
+
         report.general +
+
         "\n\n" +
+
         report.reading +
+
         "\n\n" +
+
         report.maths +
+
+        levelMessage +
+
         "\n\n" +
+
         "Continue tes efforts ! 💪🏾📚";
 
 
-    document.getElementById("box").innerText =
+    document.getElementById(
+        "box"
+    ).innerText =
         message;
 
 
+    const memory =
+        getStudentMemory();
+
+
     speak(
+
         "Voici ta progression. " +
+
         "Tu as " +
-        getStudentMemory().correct +
+
+        memory.correct +
+
         " bonnes réponses. " +
+
         "Continue tes efforts !"
+
     );
+
+
+    updateLevelDisplay();
+
 }
 
 
-/* =====================================================
-   MES ERREURS
-===================================================== */
+
+// =====================================================
+// 📚 MES ERREURS
+// =====================================================
 
 function showMistakes() {
 
@@ -378,50 +794,85 @@ function showMistakes() {
         getMistakes();
 
 
-    if (mistakes.length === 0) {
+    if (
+        mistakes.length === 0
+    ) {
 
         const message =
+
             "📚 MES ERREURS\n\n" +
+
             "🎉 Aucune erreur enregistrée !\n\n" +
+
             "Continue comme ça Mama Binta ! 💪🏾";
 
 
-        document.getElementById("box").innerText =
+        document.getElementById(
+            "box"
+        ).innerText =
             message;
 
 
         speak(
+
             "Aucune erreur enregistrée. " +
+
             "Continue comme ça Mama Binta !"
+
         );
 
+
         return;
+
     }
 
 
     let message =
+
         "📚 MES ERREURS\n\n" +
-        "Voici les erreurs que nous allons revoir ensemble :\n\n";
+
+        "Voici les erreurs que nous allons " +
+        "revoir ensemble :\n\n";
 
 
     mistakes.forEach(
-        function(mistake, index) {
+        function(
+            mistake,
+            index
+        ) {
 
             message +=
+
                 "❌ Erreur " +
-                (index + 1) +
+
+                (
+                    index + 1
+                ) +
+
                 "\n" +
+
                 "Matière : " +
+
                 mistake.subject +
+
                 "\n" +
+
                 "Question : " +
+
                 mistake.question +
+
                 "\n" +
+
                 "Ta réponse : " +
+
                 mistake.studentAnswer +
+
                 "\n" +
+
                 "Bonne réponse : " +
+
                 mistake.correctAnswer +
+
                 "\n\n";
 
         }
@@ -429,24 +880,34 @@ function showMistakes() {
 
 
     message +=
-        "💡 Les erreurs sont des occasions d'apprendre !";
+
+        "💡 Les erreurs sont des occasions " +
+        "d'apprendre !";
 
 
-    document.getElementById("box").innerText =
+    document.getElementById(
+        "box"
+    ).innerText =
         message;
 
 
     speak(
+
         "Voici tes erreurs. " +
+
         "Nous allons les revoir ensemble. " +
+
         "Les erreurs sont des occasions d'apprendre."
+
     );
+
 }
 
 
-/* =====================================================
-   ANALYSE
-===================================================== */
+
+// =====================================================
+// 🔎 ANALYSE DES DIFFICULTÉS
+// =====================================================
 
 function showAnalysis() {
 
@@ -455,20 +916,38 @@ function showAnalysis() {
 
 
     const message =
+
         "🔎 ANALYSE DE MAMA BINTA\n\n" +
+
         analysis.message;
 
 
-    document.getElementById("box").innerText =
+    document.getElementById(
+        "box"
+    ).innerText =
         message;
 
 
     speak(
         analysis.message
     );
+
+
+    updateLevelDisplay();
+
 }
 
+
+
+// =====================================================
+// 🚀 INITIALISATION
+// =====================================================
+
+updateLevelDisplay();
+
+
 </script>
+
 
 </body>
 
