@@ -1,8 +1,8 @@
 // =====================================================
 // 👩🏾‍🏫 AGENT PROFESSEUR DE MAMA BINTA
 // =====================================================
-// Le professeur reçoit maintenant la recommandation
-// de l'agent analyste et adapte son encouragement.
+// Le professeur reçoit les informations de l'analyste
+// et adapte son explication à la situation de l'élève.
 // =====================================================
 
 
@@ -12,13 +12,32 @@
 
 function teacherGetRecommendation() {
 
-    if (typeof analyzeStudent !== "function") {
+    if (
+        typeof analyzeStudent !== "function"
+    ) {
         return null;
     }
 
-    const analysis = analyzeStudent();
+    const analysis =
+        analyzeStudent();
 
     return analysis.recommendation || null;
+}
+
+
+// =====================================================
+// 🧠 RÉCUPÉRER L'ANALYSE COMPLÈTE
+// =====================================================
+
+function teacherGetAnalysis() {
+
+    if (
+        typeof analyzeStudent !== "function"
+    ) {
+        return null;
+    }
+
+    return analyzeStudent();
 }
 
 
@@ -28,24 +47,105 @@ function teacherGetRecommendation() {
 
 function teacherAdaptation() {
 
-    const recommendation =
-        teacherGetRecommendation();
+    const analysis =
+        teacherGetAnalysis();
 
 
-    if (!recommendation) {
+    if (!analysis) {
 
         return {
-
             message: "",
-
             speech: ""
         };
     }
 
 
-    // ================================================
-    // DIFFICULTÉ EN MATHS
-    // ================================================
+    const recommendation =
+        analysis.recommendation;
+
+
+    if (!recommendation) {
+
+        return {
+            message: "",
+            speech: ""
+        };
+    }
+
+
+    // =================================================
+    // 🎯 FRONTIÈRE DE DIFFICULTÉ EN MATHS
+    // =================================================
+
+    if (
+        analysis.status === "frontière" &&
+        analysis.subject === "Maths"
+    ) {
+
+        const mastered =
+            analysis.highestCorrectSum;
+
+
+        const difficulty =
+            analysis.lowestIncorrectSum;
+
+
+        return {
+
+            message:
+                "\n\n👩🏾‍🏫 La maîtresse :\n" +
+                "Tu réussis déjà des additions jusqu'à " +
+                mastered +
+                ". 🌟\n\n" +
+                "On va maintenant travailler tranquillement " +
+                "autour de " +
+                difficulty +
+                ". " +
+                "Pas besoin d'aller trop vite. " +
+                "On avance petit à petit. 💪🏾🧮",
+
+            speech:
+                "Tu réussis déjà des additions jusqu'à " +
+                mastered +
+                ". " +
+                "On va maintenant travailler tranquillement " +
+                "autour de " +
+                difficulty +
+                ". " +
+                "Pas besoin d'aller trop vite. " +
+                "On avance petit à petit."
+        };
+    }
+
+
+    // =================================================
+    // 📈 PROGRESSION EN MATHS
+    // =================================================
+
+    if (
+        recommendation.subject === "Maths" &&
+        recommendation.action === "progresser"
+    ) {
+
+        return {
+
+            message:
+                "\n\n👩🏾‍🏫 La maîtresse :\n" +
+                "Bravo ! 🌟 Tu réussis très bien tes exercices de maths. " +
+                "On peut maintenant essayer des additions un peu plus difficiles. " +
+                "Je suis sûre que tu peux progresser encore ! 💪🏾🧮",
+
+            speech:
+                "Bravo ! Tu réussis très bien tes exercices de maths. " +
+                "On peut maintenant essayer des additions un peu plus difficiles. " +
+                "Je suis sûre que tu peux progresser encore."
+        };
+    }
+
+
+    // =================================================
+    // 🧮 ENTRAÎNEMENT MATHS
+    // =================================================
 
     if (
         recommendation.subject === "Maths" &&
@@ -68,9 +168,36 @@ function teacherAdaptation() {
     }
 
 
-    // ================================================
-    // DIFFICULTÉ EN LECTURE
-    // ================================================
+    // =================================================
+    // 🧮 CONSOLIDATION MATHS
+    // =================================================
+
+    if (
+        recommendation.subject === "Maths" &&
+        recommendation.action === "consolider"
+    ) {
+
+        return {
+
+            message:
+                "\n\n👩🏾‍🏫 La maîtresse :\n" +
+                "Tu es en train d'apprendre quelque chose de nouveau. 🧠 " +
+                "On va refaire quelques additions autour de ce niveau " +
+                "pour bien consolider tes bases. " +
+                "Prends ton temps. 💪🏾🧮",
+
+            speech:
+                "Tu es en train d'apprendre quelque chose de nouveau. " +
+                "On va refaire quelques additions autour de ce niveau " +
+                "pour bien consolider tes bases. " +
+                "Prends ton temps."
+        };
+    }
+
+
+    // =================================================
+    // 📖 ENTRAÎNEMENT LECTURE
+    // =================================================
 
     if (
         recommendation.subject === "Lecture" &&
@@ -93,9 +220,34 @@ function teacherAdaptation() {
     }
 
 
-    // ================================================
-    // TOUT VA BIEN
-    // ================================================
+    // =================================================
+    // 📖 PROGRESSION LECTURE
+    // =================================================
+
+    if (
+        recommendation.subject === "Lecture" &&
+        recommendation.action === "progresser"
+    ) {
+
+        return {
+
+            message:
+                "\n\n👩🏾‍🏫 La maîtresse :\n" +
+                "Bravo ! 🌟 Tu réussis très bien tes exercices de lecture. " +
+                "On peut maintenant essayer des mots un peu plus difficiles. " +
+                "Continue comme ça ! 📖💪🏾",
+
+            speech:
+                "Bravo ! Tu réussis très bien tes exercices de lecture. " +
+                "On peut maintenant essayer des mots un peu plus difficiles. " +
+                "Continue comme ça."
+        };
+    }
+
+
+    // =================================================
+    // ⚖️ CONTINUER NORMALEMENT
+    // =================================================
 
     if (
         recommendation.action === "continuer"
@@ -116,22 +268,25 @@ function teacherAdaptation() {
 
 
     return {
-
         message: "",
-
         speech: ""
     };
 }
 
 
 // =====================================================
-// 👩🏾‍🏫 EXPLICATION D'UNE RÉPONSE
+// 👩🏾‍🏫 EXPLICATION APRÈS UNE RÉPONSE
 // =====================================================
 
-function teacherExplain(questionData, studentAnswer) {
+function teacherExplain(
+    questionData,
+    studentAnswer
+) {
 
-    // Sécurité
-    if (!questionData || !studentAnswer) {
+    if (
+        !questionData ||
+        !studentAnswer
+    ) {
 
         return {
 
@@ -145,10 +300,15 @@ function teacherExplain(questionData, studentAnswer) {
 
 
     // =================================================
-    // BONNE RÉPONSE
+    // 🎉 BONNE RÉPONSE
     // =================================================
 
-    if (studentAnswer === questionData.answer) {
+    const correct =
+        studentAnswer ===
+        questionData.answer;
+
+
+    if (correct) {
 
         return {
 
@@ -162,21 +322,24 @@ function teacherExplain(questionData, studentAnswer) {
     }
 
 
+    // =================================================
+    // ❌ MAUVAISE RÉPONSE
+    // =================================================
+
     const question =
         questionData.question;
+
 
     const correctAnswer =
         questionData.answer;
 
 
-    // Récupérer l'adaptation du professeur
-    // après analyse de la mémoire.
     const adaptation =
         teacherAdaptation();
 
 
     // =================================================
-    // LECTURE
+    // 📖 EXPLICATION LECTURE
     // =================================================
 
     if (
@@ -208,10 +371,15 @@ function teacherExplain(questionData, studentAnswer) {
 
 
             const studentLetter =
-                firstLetter(studentAnswer);
+                firstLetter(
+                    studentAnswer
+                );
+
 
             const correctLetter =
-                firstLetter(correctAnswer);
+                firstLetter(
+                    correctAnswer
+                );
 
 
             return {
@@ -238,7 +406,8 @@ function teacherExplain(questionData, studentAnswer) {
                     ". " +
                     "La bonne réponse est " +
                     correctAnswer +
-                    ", qui commence par la lettre " +
+                    ". " +
+                    "Elle commence par la lettre " +
                     correctLetter +
                     ". " +
                     "Regarde bien la première lettre et essaie encore." +
@@ -249,7 +418,7 @@ function teacherExplain(questionData, studentAnswer) {
 
 
     // =================================================
-    // MATHS
+    // 🧮 EXPLICATION MATHS
     // =================================================
 
     if (
@@ -268,6 +437,7 @@ function teacherExplain(questionData, studentAnswer) {
 
             const a =
                 parseInt(match[1]);
+
 
             const b =
                 parseInt(match[2]);
@@ -342,7 +512,7 @@ function teacherExplain(questionData, studentAnswer) {
 
 
     // =================================================
-    // EXPLICATION PAR DÉFAUT
+    // 📚 EXPLICATION GÉNÉRALE
     // =================================================
 
     return {
