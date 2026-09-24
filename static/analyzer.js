@@ -1,23 +1,38 @@
 // =====================================================
 // 🔎 AGENT ANALYSTE DE MAMA BINTA
 // =====================================================
-// Son rôle :
-// analyser les erreurs ET les réussites,
-// déterminer le niveau actuel,
-// puis transmettre une recommandation
-// au professeur et au générateur.
+// L'analyste observe :
+// - les résultats récents
+// - les séries de réussites
+// - les séries d'erreurs
+// - les résultats par matière
+//
+// Son objectif : déterminer le niveau actuel
+// de Mama Binta et conseiller les autres agents.
 // =====================================================
 
 function analyzeStudent() {
 
-    const memory = getStudentMemory();
+    const memory =
+        getStudentMemory();
+
+
+    // =================================================
+    // 🛑 MÉMOIRE INDISPONIBLE
+    // =================================================
 
     if (!memory) {
+
         return {
+
             status: "inconnu",
+
             subject: null,
+
             difficulty: null,
+
             recommendation: null,
+
             message:
                 "Je n'ai pas encore assez de données pour analyser la progression."
         };
@@ -25,24 +40,34 @@ function analyzeStudent() {
 
 
     // =================================================
-    // 📊 DONNÉES
+    // 📊 DONNÉES GÉNÉRALES
     // =================================================
 
     const total =
         memory.correct +
         memory.incorrect;
 
-    const readingCorrect =
-        memory.readingCorrect;
 
-    const readingErrors =
-        memory.readingIncorrect;
+    const recentResults =
+        Array.isArray(
+            memory.recentResults
+        )
+            ? memory.recentResults
+            : [];
 
-    const mathsCorrect =
-        memory.mathsCorrect;
 
-    const mathsErrors =
-        memory.mathsIncorrect;
+    const recentMaths =
+        recentResults.filter(
+            result =>
+                result.subject === "Maths"
+        );
+
+
+    const recentReading =
+        recentResults.filter(
+            result =>
+                result.subject === "Lecture"
+        );
 
 
     // =================================================
@@ -52,267 +77,386 @@ function analyzeStudent() {
     if (total === 0) {
 
         return {
+
             status: "début",
+
             subject: null,
+
             difficulty: "normal",
+
             recommendation: null,
 
             message:
                 "Mama Binta vient de commencer. " +
-                "Continuons les exercices pour mieux connaître ses progrès.",
-
-            readingCorrect: readingCorrect,
-            readingErrors: readingErrors,
-            mathsCorrect: mathsCorrect,
-            mathsErrors: mathsErrors
+                "Continuons les exercices pour mieux connaître ses progrès."
         };
     }
 
 
     // =================================================
-    // 🧮 MATHS PRIORITAIRES
+    // 🔎 ANALYSER LES RÉSULTATS RÉCENTS
     // =================================================
 
-    if (mathsErrors > readingErrors) {
+    function countRecentErrors(results) {
 
-        let difficulty = "simple";
-
-        let message =
-            "🧠 L'analyste remarque que Mama Binta " +
-            "a actuellement davantage d'erreurs en maths.";
-
-
-        // ---------------------------------------------
-        // 🔴 BEAUCOUP D'ERREURS
-        // ---------------------------------------------
-
-        if (mathsErrors >= 5) {
-
-            difficulty = "tres_simple";
-
-            message +=
-                " Plusieurs erreurs ont été enregistrées. " +
-                "Il vaut mieux revenir à des additions très simples " +
-                "pour consolider les bases.";
-        }
-
-
-        // ---------------------------------------------
-        // 🟡 QUELQUES ERREURS
-        // ---------------------------------------------
-
-        else if (mathsErrors >= 3) {
-
-            difficulty = "simple";
-
-            message +=
-                " Quelques erreurs ont été enregistrées. " +
-                "Le niveau doit rester simple.";
-        }
-
-
-        // ---------------------------------------------
-        // 🟢 PEU D'ERREURS
-        // ---------------------------------------------
-
-        else {
-
-            difficulty = "normal";
-
-            message +=
-                " Les difficultés restent limitées. " +
-                "Le niveau normal peut être conservé.";
-        }
-
-
-        return {
-            status: "attention",
-            subject: "Maths",
-            difficulty: difficulty,
-
-            recommendation: {
-                subject: "Maths",
-                action: "entrainer",
-                level: difficulty,
-                message:
-                    "Adapter les exercices de maths au niveau actuel."
-            },
-
-            message: message,
-
-            readingCorrect: readingCorrect,
-            readingErrors: readingErrors,
-            mathsCorrect: mathsCorrect,
-            mathsErrors: mathsErrors
-        };
+        return results.filter(
+            result =>
+                result.correct === false
+        ).length;
     }
 
 
-    // =================================================
-    // 📖 LECTURE PRIORITAIRE
-    // =================================================
+    function countRecentCorrect(results) {
 
-    if (readingErrors > mathsErrors) {
-
-        let difficulty = "simple";
-
-        let message =
-            "🧠 L'analyste remarque que Mama Binta " +
-            "a actuellement davantage d'erreurs en lecture.";
-
-
-        if (readingErrors >= 5) {
-
-            difficulty = "tres_simple";
-
-            message +=
-                " Plusieurs erreurs ont été enregistrées. " +
-                "Il vaut mieux revenir à des exercices très simples " +
-                "pour consolider les bases.";
-        }
-
-
-        else if (readingErrors >= 3) {
-
-            difficulty = "simple";
-
-            message +=
-                " Quelques erreurs ont été enregistrées. " +
-                "Le niveau doit rester simple.";
-        }
-
-
-        else {
-
-            difficulty = "normal";
-
-            message +=
-                " Les difficultés restent limitées. " +
-                "Le niveau normal peut être conservé.";
-        }
-
-
-        return {
-            status: "attention",
-            subject: "Lecture",
-            difficulty: difficulty,
-
-            recommendation: {
-                subject: "Lecture",
-                action: "entrainer",
-                level: difficulty,
-                message:
-                    "Adapter les exercices de lecture au niveau actuel."
-            },
-
-            message: message,
-
-            readingCorrect: readingCorrect,
-            readingErrors: readingErrors,
-            mathsCorrect: mathsCorrect,
-            mathsErrors: mathsErrors
-        };
+        return results.filter(
+            result =>
+                result.correct === true
+        ).length;
     }
 
 
+    const recentMathsErrors =
+        countRecentErrors(
+            recentMaths
+        );
+
+
+    const recentMathsCorrect =
+        countRecentCorrect(
+            recentMaths
+        );
+
+
+    const recentReadingErrors =
+        countRecentErrors(
+            recentReading
+        );
+
+
+    const recentReadingCorrect =
+        countRecentCorrect(
+            recentReading
+        );
+
+
     // =================================================
-    // 🌟 BEAUCOUP DE RÉUSSITES EN MATHS
+    // 🔥 SÉRIES
+    // =================================================
+
+    const mathsCorrectStreak =
+        memory.mathsCorrectStreak || 0;
+
+
+    const mathsIncorrectStreak =
+        memory.mathsIncorrectStreak || 0;
+
+
+    const readingCorrectStreak =
+        memory.readingCorrectStreak || 0;
+
+
+    const readingIncorrectStreak =
+        memory.readingIncorrectStreak || 0;
+
+
+    // =================================================
+    // 🧮 MATHS : ERREURS RÉCENTES
     // =================================================
 
     if (
-        mathsCorrect >= 5 &&
-        mathsCorrect > mathsErrors
+        recentMathsErrors >= 3 ||
+        mathsIncorrectStreak >= 3
     ) {
 
         return {
-            status: "progression",
+
+            status: "attention",
+
             subject: "Maths",
+
+            difficulty: "tres_simple",
+
+            recommendation: {
+
+                subject: "Maths",
+
+                action: "entrainer",
+
+                level: "tres_simple",
+
+                message:
+                    "Ralentir et proposer des additions très simples."
+            },
+
+            message:
+                "🔎 L'analyste observe plusieurs erreurs récentes " +
+                "en maths. " +
+                "Il recommande de revenir temporairement " +
+                "à des additions très simples.",
+
+            recentMathsCorrect:
+                recentMathsCorrect,
+
+            recentMathsErrors:
+                recentMathsErrors
+        };
+    }
+
+
+    // =================================================
+    // 🧮 MATHS : PROGRESSION
+    // =================================================
+
+    if (
+        mathsCorrectStreak >= 5 ||
+        (
+            recentMaths.length >= 4 &&
+            recentMathsCorrect >= 4
+        )
+    ) {
+
+        return {
+
+            status: "progression",
+
+            subject: "Maths",
+
             difficulty: "difficile",
 
             recommendation: {
+
                 subject: "Maths",
+
                 action: "progresser",
+
                 level: "difficile",
+
                 message:
-                    "Mama Binta réussit bien les maths. " +
+                    "Mama Binta réussit plusieurs exercices de maths. " +
                     "Augmenter progressivement la difficulté."
             },
 
             message:
-                "🌟 L'analyste remarque que Mama Binta " +
-                "réussit actuellement bien les maths. " +
+                "🌟 L'analyste observe une bonne série " +
+                "de réussites en maths. " +
                 "Il recommande d'augmenter progressivement " +
-                "la difficulté des exercices.",
+                "la difficulté.",
 
-            readingCorrect: readingCorrect,
-            readingErrors: readingErrors,
-            mathsCorrect: mathsCorrect,
-            mathsErrors: mathsErrors
+            recentMathsCorrect:
+                recentMathsCorrect,
+
+            recentMathsErrors:
+                recentMathsErrors
         };
     }
 
 
     // =================================================
-    // 🌟 BEAUCOUP DE RÉUSSITES EN LECTURE
+    // 🧮 MATHS : QUELQUES ERREURS
     // =================================================
 
     if (
-        readingCorrect >= 5 &&
-        readingCorrect > readingErrors
+        recentMathsErrors > 0 ||
+        memory.mathsIncorrect > memory.mathsCorrect
     ) {
 
         return {
-            status: "progression",
+
+            status: "attention",
+
+            subject: "Maths",
+
+            difficulty: "simple",
+
+            recommendation: {
+
+                subject: "Maths",
+
+                action: "entrainer",
+
+                level: "simple",
+
+                message:
+                    "Continuer avec des exercices simples de maths."
+            },
+
+            message:
+                "🧠 L'analyste recommande de continuer " +
+                "avec des exercices simples de maths " +
+                "afin de consolider les bases.",
+
+            recentMathsCorrect:
+                recentMathsCorrect,
+
+            recentMathsErrors:
+                recentMathsErrors
+        };
+    }
+
+
+    // =================================================
+    // 📖 LECTURE : ERREURS RÉCENTES
+    // =================================================
+
+    if (
+        recentReadingErrors >= 3 ||
+        readingIncorrectStreak >= 3
+    ) {
+
+        return {
+
+            status: "attention",
+
             subject: "Lecture",
+
+            difficulty: "tres_simple",
+
+            recommendation: {
+
+                subject: "Lecture",
+
+                action: "entrainer",
+
+                level: "tres_simple",
+
+                message:
+                    "Ralentir et proposer des exercices de lecture simples."
+            },
+
+            message:
+                "🔎 L'analyste observe plusieurs erreurs récentes " +
+                "en lecture. " +
+                "Il recommande de revenir temporairement " +
+                "à des exercices très simples.",
+
+            recentReadingCorrect:
+                recentReadingCorrect,
+
+            recentReadingErrors:
+                recentReadingErrors
+        };
+    }
+
+
+    // =================================================
+    // 📖 LECTURE : PROGRESSION
+    // =================================================
+
+    if (
+        readingCorrectStreak >= 5 ||
+        (
+            recentReading.length >= 4 &&
+            recentReadingCorrect >= 4
+        )
+    ) {
+
+        return {
+
+            status: "progression",
+
+            subject: "Lecture",
+
             difficulty: "difficile",
 
             recommendation: {
+
                 subject: "Lecture",
+
                 action: "progresser",
+
                 level: "difficile",
+
                 message:
-                    "Mama Binta réussit bien la lecture. " +
+                    "Mama Binta réussit plusieurs exercices de lecture. " +
                     "Augmenter progressivement la difficulté."
             },
 
             message:
-                "🌟 L'analyste remarque que Mama Binta " +
-                "réussit actuellement bien la lecture. " +
+                "🌟 L'analyste observe une bonne série " +
+                "de réussites en lecture. " +
                 "Il recommande d'augmenter progressivement " +
-                "la difficulté des exercices.",
+                "la difficulté.",
 
-            readingCorrect: readingCorrect,
-            readingErrors: readingErrors,
-            mathsCorrect: mathsCorrect,
-            mathsErrors: mathsErrors
+            recentReadingCorrect:
+                recentReadingCorrect,
+
+            recentReadingErrors:
+                recentReadingErrors
         };
     }
 
 
     // =================================================
-    // ⚖️ SITUATION ÉQUILIBRÉE
+    // 📖 LECTURE : QUELQUES ERREURS
+    // =================================================
+
+    if (
+        recentReadingErrors > 0 ||
+        memory.readingIncorrect >
+        memory.readingCorrect
+    ) {
+
+        return {
+
+            status: "attention",
+
+            subject: "Lecture",
+
+            difficulty: "simple",
+
+            recommendation: {
+
+                subject: "Lecture",
+
+                action: "entrainer",
+
+                level: "simple",
+
+                message:
+                    "Continuer avec des exercices simples de lecture."
+            },
+
+            message:
+                "🧠 L'analyste recommande de continuer " +
+                "avec des exercices simples de lecture " +
+                "afin de consolider les bases.",
+
+            recentReadingCorrect:
+                recentReadingCorrect,
+
+            recentReadingErrors:
+                recentReadingErrors
+        };
+    }
+
+
+    // =================================================
+    // ⚖️ ÉQUILIBRE
     // =================================================
 
     return {
+
         status: "équilibre",
+
         subject: null,
+
         difficulty: "normal",
 
         recommendation: {
+
             subject: "Général",
+
             action: "continuer",
+
             level: "normal",
+
             message:
                 "Continuer les exercices normalement."
         },
 
         message:
             "🧠 L'analyste ne détecte pas de difficulté " +
-            "particulière entre la lecture et les maths.",
-
-        readingCorrect: readingCorrect,
-        readingErrors: readingErrors,
-        mathsCorrect: mathsCorrect,
-        mathsErrors: mathsErrors
+            "particulière actuellement. " +
+            "Mama Binta peut continuer normalement."
     };
 }
