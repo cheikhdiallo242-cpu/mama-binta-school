@@ -1,20 +1,16 @@
 /* =========================================================
    MAMA BINTA — GÉNÉRATEUR D'EXERCICES
-   Version 5
+   Version 6 — générateur sécurisé
    =========================================================
    Rôle :
-   - Générer des exercices de Lecture
-   - Générer des exercices de Maths
-   - Générer des exercices de Compréhension
+   - Générer Lecture
+   - Générer Addition
+   - Générer Soustraction
+   - Générer Multiplication
+   - Générer Compréhension
    - Générer les sessions personnalisées de 5 exercices
    - Éviter les répétitions
-   - Garantir des questions cohérentes
-   - Ne jamais modifier directement la mémoire pédagogique
-   ========================================================= */
-
-
-/* =========================================================
-   1. CONSTANTES
+   - Ne jamais utiliser de récursion dangereuse
    ========================================================= */
 
 const GENERATOR_HISTORY_KEY = "mamaBintaQuestionHistory";
@@ -28,9 +24,8 @@ const GENERATOR_SKILLS = [
     "comprehension"
 ];
 
-
 /* =========================================================
-   2. BANQUE DE MOTS — LECTURE
+   1. BANQUE DE MOTS
    ========================================================= */
 
 const READING_WORDS = [
@@ -132,57 +127,26 @@ const READING_WORDS = [
     { word: "valise", emoji: "🧳", letter: "V" },
 
     { word: "wagon", emoji: "🚃", letter: "W" },
-
     { word: "xylophone", emoji: "🎵", letter: "X" },
-
     { word: "yaourt", emoji: "🥛", letter: "Y" },
 
     { word: "zèbre", emoji: "🦓", letter: "Z" },
     { word: "zéro", emoji: "0️⃣", letter: "Z" }
 ];
 
-
-/* =========================================================
-   3. PRÉNOMS
-   ========================================================= */
-
-const MAMA_BINTA_NAMES = [
-    "Mama",
-    "Awa",
-    "Fatou",
-    "Moussa",
-    "Ibrahima",
-    "Sali",
-    "Aminata",
-    "Oumar",
-    "Sidy",
-    "Adama"
+const READING_LETTERS = [
+    "A", "B", "C", "D", "É", "F", "G", "H", "I",
+    "J", "K", "L", "M", "N", "O", "P", "Q", "R",
+    "S", "T", "U", "V", "W", "X", "Y", "Z"
 ];
 
-
 /* =========================================================
-   4. CONTEXTES
-   ========================================================= */
-
-const MAMA_BINTA_CONTEXTS = [
-    "à l'école",
-    "dans la cour",
-    "à la maison",
-    "dans la classe",
-    "au jardin",
-    "à la bibliothèque",
-    "dans le quartier",
-    "avec sa famille"
-];
-
-
-/* =========================================================
-   5. TEXTES DE COMPRÉHENSION
+   2. COMPRÉHENSION
    ========================================================= */
 
 const READING_PASSAGES = [
     {
-        text: "Awa a un petit chat blanc. Chaque matin, elle lui donne de l'eau et un peu de nourriture. Le chat aime dormir près de la fenêtre.",
+        text: "Awa a un petit chat blanc. Chaque matin, elle lui donne de l'eau et un peu de nourriture.",
         question: "De quelle couleur est le chat ?",
         choices: ["Blanc", "Noir", "Vert"],
         answer: "Blanc"
@@ -194,35 +158,30 @@ const READING_PASSAGES = [
         answer: "Bleu"
     },
     {
-        text: "Fatou plante une petite graine dans le jardin. Elle l'arrose chaque jour. Après plusieurs jours, une petite plante apparaît.",
+        text: "Fatou plante une petite graine dans le jardin. Elle l'arrose chaque jour.",
         question: "Que plante Fatou ?",
         choices: ["Une graine", "Une pierre", "Un ballon"],
         answer: "Une graine"
     },
     {
-        text: "Sidy aime lire. Chaque soir, il prend un livre et lit quelques pages avant de dormir.",
+        text: "Sidy aime lire. Chaque soir, il prend un livre avant de dormir.",
         question: "Que fait Sidy avant de dormir ?",
         choices: ["Il lit", "Il court", "Il cuisine"],
         answer: "Il lit"
     },
     {
-        text: "Maman prépare le repas dans la cuisine. Mama l'aide en mettant les assiettes sur la table.",
+        text: "Maman prépare le repas dans la cuisine. Mama l'aide à mettre les assiettes sur la table.",
         question: "Où prépare-t-elle le repas ?",
         choices: ["Dans la cuisine", "Dans la cour", "Dans la voiture"],
         answer: "Dans la cuisine"
     },
     {
-        text: "Un matin, Oumar voit un oiseau dans un arbre. L'oiseau chante puis s'envole vers une autre branche.",
+        text: "Oumar voit un oiseau dans un arbre. L'oiseau chante puis s'envole.",
         question: "Où est l'oiseau au début ?",
         choices: ["Dans un arbre", "Dans une maison", "Dans une voiture"],
         answer: "Dans un arbre"
     }
 ];
-
-
-/* =========================================================
-   6. QUESTIONS DE COMPRÉHENSION
-   ========================================================= */
 
 const COMPREHENSION_QUESTIONS = [
     {
@@ -284,7 +243,7 @@ const COMPREHENSION_QUESTIONS = [
         answer: "Pour les nettoyer"
     },
     {
-        question: "Une plante a besoin d'eau pour grandir. Que faut-il lui donner régulièrement ?",
+        question: "Une plante a besoin d'eau pour grandir. Que faut-il lui donner ?",
         choices: ["De l'eau", "Du sable uniquement", "Des jouets"],
         answer: "De l'eau"
     },
@@ -318,7 +277,7 @@ const COMPREHENSION_QUESTIONS = [
         answer: "Le lire"
     },
     {
-        question: "Pourquoi faut-il écouter une consigne avant de commencer un exercice ?",
+        question: "Pourquoi faut-il écouter une consigne avant de commencer ?",
         choices: [
             "Pour comprendre ce qu'il faut faire",
             "Pour perdre du temps",
@@ -328,11 +287,7 @@ const COMPREHENSION_QUESTIONS = [
     },
     {
         question: "Quel comportement montre du respect envers un camarade ?",
-        choices: [
-            "L'écouter",
-            "L'insulter",
-            "Se moquer de lui"
-        ],
+        choices: ["L'écouter", "L'insulter", "Se moquer de lui"],
         answer: "L'écouter"
     },
     {
@@ -345,7 +300,7 @@ const COMPREHENSION_QUESTIONS = [
         answer: "Demander une explication"
     },
     {
-        question: "Quel objet utilise-t-on pour transporter ses cahiers à l'école ?",
+        question: "Quel objet utilise-t-on pour transporter ses cahiers ?",
         choices: ["Un sac", "Une fourchette", "Une casserole"],
         answer: "Un sac"
     },
@@ -369,654 +324,8 @@ const COMPREHENSION_QUESTIONS = [
     }
 ];
 
-
 /* =========================================================
-   7. LETTRES DISPONIBLES
-   ========================================================= */
-
-const READING_LETTERS = [
-    "A", "B", "C", "D", "É", "F", "G", "H", "I",
-    "J", "K", "L", "M", "N", "O", "P", "Q", "R",
-    "S", "T", "U", "V", "W", "X", "Y", "Z"
-];
-
-
-/* =========================================================
-   8. OUTILS GÉNÉRAUX
-   ========================================================= */
-
-function shuffle(array) {
-    const copy = Array.isArray(array) ? [...array] : [];
-
-    for (let i = copy.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-
-        [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
-
-    return copy;
-}
-
-
-function randomItem(array) {
-    if (!Array.isArray(array) || array.length === 0) {
-        return null;
-    }
-
-    return array[Math.floor(Math.random() * array.length)];
-}
-
-
-function randomInt(min, max) {
-    min = Math.ceil(Number(min) || 0);
-    max = Math.floor(Number(max) || 0);
-
-    if (max < min) {
-        [min, max] = [max, min];
-    }
-
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-
-function normalizeLetter(value) {
-    return String(value || "")
-        .trim()
-        .toUpperCase();
-}
-
-
-function firstLetter(word) {
-    return String(word || "")
-        .trim()
-        .charAt(0)
-        .toUpperCase();
-}
-
-
-function getDifficultyFromLevel(level) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
-
-    if (safeLevel <= 20) return "facile";
-    if (safeLevel <= 40) return "moyen";
-    if (safeLevel <= 70) return "avance";
-    return "expert";
-}
-
-
-/* =========================================================
-   9. HISTORIQUE DES QUESTIONS
-   ========================================================= */
-
-function getGeneratorHistory() {
-    try {
-        const raw = localStorage.getItem(GENERATOR_HISTORY_KEY);
-
-        if (!raw) {
-            return [];
-        }
-
-        const parsed = JSON.parse(raw);
-
-        return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-        console.warn(
-            "Historique générateur illisible :",
-            error
-        );
-
-        return [];
-    }
-}
-
-
-function saveGeneratorHistory(history) {
-    try {
-        localStorage.setItem(
-            GENERATOR_HISTORY_KEY,
-            JSON.stringify(history)
-        );
-    } catch (error) {
-        console.warn(
-            "Impossible de sauvegarder l'historique :",
-            error
-        );
-    }
-}
-
-
-function questionSignature(question) {
-    if (!question || typeof question !== "object") {
-        return "";
-    }
-
-    const choices = Array.isArray(question.choices)
-        ? [...question.choices].sort()
-        : [];
-
-    return JSON.stringify({
-        skill: question.skill || "",
-        type: question.type || "",
-        level: question.level || 0,
-        question: question.question || "",
-        choices,
-        answer: question.answer || ""
-    });
-}
-
-
-function wasRecentlyUsed(question) {
-    const signature = questionSignature(question);
-
-    if (!signature) {
-        return false;
-    }
-
-    const history = getGeneratorHistory();
-
-    return history.includes(signature);
-}
-
-
-function rememberGeneratedQuestion(question) {
-    const signature = questionSignature(question);
-
-    if (!signature) {
-        return;
-    }
-
-    let history = getGeneratorHistory();
-
-    history = history.filter(item => item !== signature);
-
-    history.push(signature);
-
-    if (history.length > 100) {
-        history = history.slice(-100);
-    }
-
-    saveGeneratorHistory(history);
-}
-
-
-function clearGeneratorHistory() {
-    try {
-        localStorage.removeItem(GENERATOR_HISTORY_KEY);
-    } catch (error) {
-        console.warn(
-            "Impossible de supprimer l'historique :",
-            error
-        );
-    }
-}
-
-
-/* =========================================================
-   10. FINALISATION D'UNE QUESTION
-   ========================================================= */
-
-function finalizeGeneratedQuestion(
-    question,
-    skill,
-    level,
-    type = ""
-) {
-    if (!question || typeof question !== "object") {
-        return null;
-    }
-
-    return {
-        ...question,
-
-        skill: skill || question.skill || "",
-        level: Math.max(
-            1,
-            Math.min(100, Number(level) || 1)
-        ),
-
-        type: type || question.type || "",
-
-        choices: Array.isArray(question.choices)
-            ? [...question.choices]
-            : []
-    };
-}
-
-
-/* =========================================================
-   11. VALIDATION INTERNE DU GÉNÉRATEUR
-   =========================================================
-   Cette validation ne remplace PAS verifier.js.
-   Elle sert seulement à empêcher le générateur de fabriquer
-   volontairement une question manifestement incorrecte.
-   ========================================================= */
-
-function generatorQuestionLooksValid(question) {
-    if (!question || typeof question !== "object") {
-        return false;
-    }
-
-    if (
-        typeof question.question !== "string" ||
-        question.question.trim() === ""
-    ) {
-        return false;
-    }
-
-    if (!Array.isArray(question.choices)) {
-        return false;
-    }
-
-    if (question.choices.length < 3) {
-        return false;
-    }
-
-    const normalizedChoices = question.choices.map(
-        choice => String(choice).trim().toLowerCase()
-    );
-
-    if (
-        new Set(normalizedChoices).size !==
-        normalizedChoices.length
-    ) {
-        return false;
-    }
-
-    if (
-        !question.choices.some(
-            choice =>
-                String(choice).trim() ===
-                String(question.answer).trim()
-        )
-    ) {
-        return false;
-    }
-
-    return true;
-}
-
-
-/* =========================================================
-   12. GÉNÉRATION UNIQUE — SANS RÉCURSION
-   =========================================================
-   IMPORTANT :
-   L'ancienne architecture pouvait appeler un générateur
-   depuis lui-même et provoquer :
-   Maximum call stack size exceeded
-
-   Ici on utilise une boucle.
-   ========================================================= */
-
-function getUniqueQuestion(
-    firstQuestion,
-    generatorFunction,
-    maxAttempts = 12
-) {
-    let question = firstQuestion;
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-
-        if (
-            generatorQuestionLooksValid(question) &&
-            !wasRecentlyUsed(question)
-        ) {
-            rememberGeneratedQuestion(question);
-
-            return question;
-        }
-
-        if (typeof generatorFunction !== "function") {
-            break;
-        }
-
-        question = generatorFunction();
-    }
-
-    /*
-       Si toutes les tentatives sont des répétitions,
-       on accepte une question structurellement correcte
-       plutôt que de provoquer une boucle infinie.
-    */
-
-    if (generatorQuestionLooksValid(question)) {
-        rememberGeneratedQuestion(question);
-
-        return question;
-    }
-
-    return null;
-}
-
-
-/* =========================================================
-   13. LECTURE — LETTRE → MOT
-   ========================================================= */
-
-function generateLetterWordQuestionWithLetter(
-    letter,
-    level = 1
-) {
-    const normalizedLetter = normalizeLetter(letter);
-
-    const correctCandidates = READING_WORDS.filter(
-        item =>
-            normalizeLetter(item.letter) ===
-                normalizedLetter &&
-            firstLetter(item.word) ===
-                normalizedLetter
-    );
-
-    if (correctCandidates.length === 0) {
-        return generateLetterWordQuestion(level);
-    }
-
-    const answer = randomItem(correctCandidates);
-
-    /*
-       CORRECTION PRINCIPALE :
-
-       Les mauvaises réponses DOIVENT commencer
-       par une autre lettre.
-
-       Avant :
-       Chat
-       Chaise
-       Crayon
-
-       Maintenant :
-       Chat
-       Livre
-       Pomme
-    */
-
-    const wrongCandidates = READING_WORDS.filter(
-        item =>
-            item.word !== answer.word &&
-            firstLetter(item.word) !== normalizedLetter
-    );
-
-    const groupedByFirstLetter = {};
-
-    wrongCandidates.forEach(item => {
-        const initial = firstLetter(item.word);
-
-        if (!groupedByFirstLetter[initial]) {
-            groupedByFirstLetter[initial] = [];
-        }
-
-        groupedByFirstLetter[initial].push(item);
-    });
-
-    const availableInitials = shuffle(
-        Object.keys(groupedByFirstLetter)
-    );
-
-    const wrongChoices = [];
-
-    /*
-       On privilégie des mauvaises réponses avec
-       des initiales différentes entre elles.
-    */
-
-    for (
-        const initial of availableInitials
-    ) {
-        if (wrongChoices.length >= 2) {
-            break;
-        }
-
-        const candidates =
-            groupedByFirstLetter[initial];
-
-        const selected = randomItem(candidates);
-
-        if (selected) {
-            wrongChoices.push(selected);
-        }
-    }
-
-    /*
-       Sécurité supplémentaire si jamais le nombre
-       d'initiales disponibles était insuffisant.
-    */
-
-    if (wrongChoices.length < 2) {
-        const backup = shuffle(
-            wrongCandidates.filter(
-                item =>
-                    !wrongChoices.some(
-                        wrong =>
-                            wrong.word === item.word
-                    )
-            )
-        );
-
-        for (const item of backup) {
-            if (wrongChoices.length >= 2) {
-                break;
-            }
-
-            wrongChoices.push(item);
-        }
-    }
-
-    if (wrongChoices.length < 2) {
-        return null;
-    }
-
-    const choices = shuffle([
-        answer.word,
-        wrongChoices[0].word,
-        wrongChoices[1].word
-    ]);
-
-    return finalizeGeneratedQuestion(
-        {
-            question:
-                `Quel mot commence par la lettre ${normalizedLetter} ?`,
-
-            choices,
-
-            answer: answer.word,
-
-            skill: "reading",
-
-            type: "letter_word"
-        },
-        "reading",
-        level,
-        "letter_word"
-    );
-}
-
-
-function buildLetterWordQuestion(level = 1) {
-    const availableLetters = READING_LETTERS.filter(
-        letter =>
-            READING_WORDS.some(
-                item =>
-                    normalizeLetter(item.letter) ===
-                    normalizeLetter(letter)
-            )
-    );
-
-    const letter = randomItem(availableLetters);
-
-    if (!letter) {
-        return null;
-    }
-
-    return generateLetterWordQuestionWithLetter(
-        letter,
-        level
-    );
-}
-
-
-function generateLetterWordQuestion(level = 1) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
-
-    const firstQuestion =
-        buildLetterWordQuestion(safeLevel);
-
-    return getUniqueQuestion(
-        firstQuestion,
-        () => buildLetterWordQuestion(safeLevel)
-    );
-}
-
-
-/* =========================================================
-   14. LECTURE — EMOJI → MOT
-   ========================================================= */
-
-function buildEmojiWordQuestion(level = 1) {
-    const item = randomItem(READING_WORDS);
-
-    if (!item) {
-        return null;
-    }
-
-    const wrongCandidates = shuffle(
-        READING_WORDS.filter(
-            candidate =>
-                candidate.word !== item.word
-        )
-    );
-
-    if (wrongCandidates.length < 2) {
-        return null;
-    }
-
-    const choices = shuffle([
-        item.word,
-        wrongCandidates[0].word,
-        wrongCandidates[1].word
-    ]);
-
-    return finalizeGeneratedQuestion(
-        {
-            question:
-                `${item.emoji} Quel mot correspond à cette image ?`,
-
-            choices,
-
-            answer: item.word,
-
-            skill: "reading",
-
-            type: "emoji_word"
-        },
-        "reading",
-        level,
-        "emoji_word"
-    );
-}
-
-
-function generateEmojiWordQuestion(level = 1) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
-
-    return getUniqueQuestion(
-        buildEmojiWordQuestion(safeLevel),
-        () => buildEmojiWordQuestion(safeLevel)
-    );
-}
-
-
-/* =========================================================
-   15. LECTURE — LETTRE MANQUANTE
-   ========================================================= */
-
-function buildMissingLetterQuestion(level = 1) {
-    const item = randomItem(
-        READING_WORDS.filter(
-            candidate =>
-                candidate.word.length >= 4
-        )
-    );
-
-    if (!item) {
-        return null;
-    }
-
-    const word = item.word;
-    const position = randomInt(
-        1,
-        word.length - 2
-    );
-
-    const missingLetter = word.charAt(position);
-
-    const displayedWord =
-        word.substring(0, position) +
-        "_" +
-        word.substring(position + 1);
-
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZÉ".split("");
-
-    const wrongLetters = shuffle(
-        alphabet.filter(
-            letter =>
-                letter.toUpperCase() !==
-                missingLetter.toUpperCase()
-        )
-    ).slice(0, 2);
-
-    if (wrongLetters.length < 2) {
-        return null;
-    }
-
-    return finalizeGeneratedQuestion(
-        {
-            question:
-                `Quelle lettre manque dans le mot « ${displayedWord} » ?`,
-
-            choices: shuffle([
-                missingLetter.toUpperCase(),
-                wrongLetters[0],
-                wrongLetters[1]
-            ]),
-
-            answer: missingLetter.toUpperCase(),
-
-            word,
-
-            skill: "reading",
-
-            type: "missing_letter"
-        },
-        "reading",
-        level,
-        "missing_letter"
-    );
-}
-
-
-function generateMissingLetterQuestion(level = 1) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
-
-    return getUniqueQuestion(
-        buildMissingLetterQuestion(safeLevel),
-        () => buildMissingLetterQuestion(safeLevel)
-    );
-}
-
-
-/* =========================================================
-   16. LECTURE — PHRASE
+   3. PHRASES
    ========================================================= */
 
 const READING_SENTENCES = [
@@ -1079,42 +388,617 @@ const READING_SENTENCES = [
         question: "Où court le chien ?",
         choices: ["Dans le jardin", "Dans la classe", "Sur le toit"],
         answer: "Dans le jardin"
-    },
-    {
-        sentence: "Ibrahima regarde les étoiles.",
-        question: "Que regarde Ibrahima ?",
-        choices: ["Les étoiles", "Les poissons", "Les voitures"],
-        answer: "Les étoiles"
-    },
-    {
-        sentence: "La fille écrit avec un crayon.",
-        question: "Avec quoi écrit-elle ?",
-        choices: ["Un crayon", "Une cuillère", "Une chaussure"],
-        answer: "Un crayon"
-    },
-    {
-        sentence: "Le garçon boit de l'eau.",
-        question: "Que boit le garçon ?",
-        choices: ["De l'eau", "Du lait", "Du jus"],
-        answer: "De l'eau"
-    },
-    {
-        sentence: "Le bébé sourit à sa maman.",
-        question: "À qui sourit le bébé ?",
-        choices: ["À sa maman", "À son professeur", "Au chien"],
-        answer: "À sa maman"
-    },
-    {
-        sentence: "Le train arrive à la gare.",
-        question: "Où arrive le train ?",
-        choices: ["À la gare", "À l'école", "Au jardin"],
-        answer: "À la gare"
     }
 ];
 
+/* =========================================================
+   4. OUTILS
+   ========================================================= */
 
-function buildSentenceQuestion(level = 1) {
-    const item = randomItem(READING_SENTENCES);
+function clampLevel(level) {
+    return Math.max(
+        1,
+        Math.min(100, Number(level) || 1)
+    );
+}
+
+function shuffle(array) {
+    const copy = Array.isArray(array) ? [...array] : [];
+
+    for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+
+    return copy;
+}
+
+function randomItem(array) {
+    if (!Array.isArray(array) || array.length === 0) {
+        return null;
+    }
+
+    return array[
+        Math.floor(Math.random() * array.length)
+    ];
+}
+
+function randomInt(min, max) {
+    min = Math.ceil(Number(min) || 0);
+    max = Math.floor(Number(max) || 0);
+
+    if (max < min) {
+        [min, max] = [max, min];
+    }
+
+    return Math.floor(
+        Math.random() * (max - min + 1)
+    ) + min;
+}
+
+function normalizeLetter(value) {
+    return String(value || "")
+        .trim()
+        .toUpperCase();
+}
+
+function firstLetter(value) {
+    return String(value || "")
+        .trim()
+        .charAt(0)
+        .toUpperCase();
+}
+
+/* =========================================================
+   5. HISTORIQUE
+   ========================================================= */
+
+function getGeneratorHistory() {
+    try {
+        const raw = localStorage.getItem(
+            GENERATOR_HISTORY_KEY
+        );
+
+        if (!raw) {
+            return [];
+        }
+
+        const parsed = JSON.parse(raw);
+
+        return Array.isArray(parsed)
+            ? parsed
+            : [];
+    } catch (error) {
+        console.warn(
+            "Historique générateur illisible :",
+            error
+        );
+
+        return [];
+    }
+}
+
+function saveGeneratorHistory(history) {
+    try {
+        localStorage.setItem(
+            GENERATOR_HISTORY_KEY,
+            JSON.stringify(history)
+        );
+    } catch (error) {
+        console.warn(
+            "Impossible de sauvegarder l'historique :",
+            error
+        );
+    }
+}
+
+function questionSignature(question) {
+    if (!question) {
+        return "";
+    }
+
+    return JSON.stringify({
+        skill: question.skill || "",
+        type: question.type || "",
+        level: question.level || 0,
+        question: question.question || "",
+        choices: Array.isArray(question.choices)
+            ? [...question.choices].sort()
+            : [],
+        answer: question.answer || ""
+    });
+}
+
+function wasRecentlyUsed(question) {
+    const signature = questionSignature(question);
+
+    if (!signature) {
+        return false;
+    }
+
+    return getGeneratorHistory().includes(
+        signature
+    );
+}
+
+function rememberGeneratedQuestion(question) {
+    const signature = questionSignature(question);
+
+    if (!signature) {
+        return;
+    }
+
+    let history = getGeneratorHistory();
+
+    history = history.filter(
+        item => item !== signature
+    );
+
+    history.push(signature);
+
+    if (history.length > 100) {
+        history = history.slice(-100);
+    }
+
+    saveGeneratorHistory(history);
+}
+
+function clearGeneratorHistory() {
+    try {
+        localStorage.removeItem(
+            GENERATOR_HISTORY_KEY
+        );
+    } catch (error) {
+        console.warn(
+            "Impossible de supprimer l'historique :",
+            error
+        );
+    }
+}
+
+/* =========================================================
+   6. FINALISATION + VALIDATION INTERNE
+   ========================================================= */
+
+function finalizeGeneratedQuestion(
+    question,
+    skill,
+    level,
+    type
+) {
+    if (!question) {
+        return null;
+    }
+
+    return {
+        ...question,
+        skill,
+        level: clampLevel(level),
+        type: type || question.type || "",
+        choices: Array.isArray(question.choices)
+            ? [...question.choices]
+            : []
+    };
+}
+
+function generatorQuestionLooksValid(question) {
+    if (!question) {
+        return false;
+    }
+
+    if (
+        typeof question.question !== "string" ||
+        question.question.trim() === ""
+    ) {
+        return false;
+    }
+
+    if (
+        !Array.isArray(question.choices) ||
+        question.choices.length < 3
+    ) {
+        return false;
+    }
+
+    const normalized = question.choices.map(
+        value =>
+            String(value)
+                .trim()
+                .toLowerCase()
+    );
+
+    if (
+        new Set(normalized).size !==
+        normalized.length
+    ) {
+        return false;
+    }
+
+    return question.choices.some(
+        choice =>
+            String(choice).trim() ===
+            String(question.answer).trim()
+    );
+}
+
+/*
+   IMPORTANT :
+   Cette fonction utilise uniquement une boucle.
+   Aucun générateur ne s'appelle lui-même.
+*/
+function getUniqueQuestion(
+    firstQuestion,
+    generatorFunction,
+    maxAttempts = 12
+) {
+    let question = firstQuestion;
+
+    for (
+        let attempt = 0;
+        attempt < maxAttempts;
+        attempt++
+    ) {
+        if (
+            generatorQuestionLooksValid(question) &&
+            !wasRecentlyUsed(question)
+        ) {
+            rememberGeneratedQuestion(question);
+            return question;
+        }
+
+        if (
+            typeof generatorFunction !==
+            "function"
+        ) {
+            break;
+        }
+
+        question = generatorFunction();
+    }
+
+    if (
+        generatorQuestionLooksValid(question)
+    ) {
+        rememberGeneratedQuestion(question);
+        return question;
+    }
+
+    return null;
+}
+
+/* =========================================================
+   7. LECTURE — LETTRE → MOT
+   ========================================================= */
+
+function buildLetterWordQuestion(level = 1) {
+    const availableLetters =
+        READING_LETTERS.filter(letter =>
+            READING_WORDS.some(
+                item =>
+                    normalizeLetter(item.letter) ===
+                    normalizeLetter(letter)
+            )
+        );
+
+    const letter =
+        randomItem(availableLetters);
+
+    if (!letter) {
+        return null;
+    }
+
+    const correctCandidates =
+        READING_WORDS.filter(
+            item =>
+                normalizeLetter(item.letter) ===
+                    normalizeLetter(letter) &&
+                firstLetter(item.word) ===
+                    normalizeLetter(letter)
+        );
+
+    /*
+       AUCUNE RÉCURSION.
+       Si une lettre n'est pas disponible,
+       on retourne simplement null.
+    */
+    if (
+        correctCandidates.length === 0
+    ) {
+        return null;
+    }
+
+    const answer =
+        randomItem(correctCandidates);
+
+    /*
+       Les mauvaises réponses ne doivent jamais
+       commencer par la lettre demandée.
+    */
+    const wrongCandidates =
+        READING_WORDS.filter(
+            item =>
+                item.word !== answer.word &&
+                firstLetter(item.word) !==
+                    normalizeLetter(letter)
+        );
+
+    if (
+        wrongCandidates.length < 2
+    ) {
+        return null;
+    }
+
+    /*
+       On prend deux mauvaises réponses
+       avec des initiales différentes lorsque possible.
+    */
+    const groups = {};
+
+    wrongCandidates.forEach(item => {
+        const initial =
+            firstLetter(item.word);
+
+        if (!groups[initial]) {
+            groups[initial] = [];
+        }
+
+        groups[initial].push(item);
+    });
+
+    const initials =
+        shuffle(Object.keys(groups));
+
+    const wrongChoices = [];
+
+    for (const initial of initials) {
+        if (wrongChoices.length >= 2) {
+            break;
+        }
+
+        const item =
+            randomItem(groups[initial]);
+
+        if (item) {
+            wrongChoices.push(item);
+        }
+    }
+
+    if (wrongChoices.length < 2) {
+        const backup =
+            shuffle(wrongCandidates);
+
+        for (const item of backup) {
+            if (
+                wrongChoices.some(
+                    selected =>
+                        selected.word ===
+                        item.word
+                )
+            ) {
+                continue;
+            }
+
+            wrongChoices.push(item);
+
+            if (
+                wrongChoices.length >= 2
+            ) {
+                break;
+            }
+        }
+    }
+
+    if (wrongChoices.length < 2) {
+        return null;
+    }
+
+    return finalizeGeneratedQuestion(
+        {
+            question:
+                `Quel mot commence par la lettre ${letter} ?`,
+
+            choices: shuffle([
+                answer.word,
+                wrongChoices[0].word,
+                wrongChoices[1].word
+            ]),
+
+            answer: answer.word
+        },
+        "reading",
+        level,
+        "letter_word"
+    );
+}
+
+function generateLetterWordQuestion(
+    level = 1
+) {
+    const safeLevel =
+        clampLevel(level);
+
+    return getUniqueQuestion(
+        buildLetterWordQuestion(
+            safeLevel
+        ),
+        () =>
+            buildLetterWordQuestion(
+                safeLevel
+            )
+    );
+}
+
+/* =========================================================
+   8. LECTURE — EMOJI → MOT
+   ========================================================= */
+
+function buildEmojiWordQuestion(
+    level = 1
+) {
+    const item =
+        randomItem(READING_WORDS);
+
+    if (!item) {
+        return null;
+    }
+
+    const wrong =
+        shuffle(
+            READING_WORDS.filter(
+                candidate =>
+                    candidate.word !==
+                    item.word
+            )
+        ).slice(0, 2);
+
+    if (wrong.length < 2) {
+        return null;
+    }
+
+    return finalizeGeneratedQuestion(
+        {
+            question:
+                `${item.emoji} Quel mot correspond à cette image ?`,
+
+            choices: shuffle([
+                item.word,
+                wrong[0].word,
+                wrong[1].word
+            ]),
+
+            answer: item.word
+        },
+        "reading",
+        level,
+        "emoji_word"
+    );
+}
+
+function generateEmojiWordQuestion(
+    level = 1
+) {
+    const safeLevel =
+        clampLevel(level);
+
+    return getUniqueQuestion(
+        buildEmojiWordQuestion(
+            safeLevel
+        ),
+        () =>
+            buildEmojiWordQuestion(
+                safeLevel
+            )
+    );
+}
+
+/* =========================================================
+   9. LECTURE — LETTRE MANQUANTE
+   ========================================================= */
+
+function buildMissingLetterQuestion(
+    level = 1
+) {
+    const candidates =
+        READING_WORDS.filter(
+            item =>
+                item.word.length >= 4
+        );
+
+    const item =
+        randomItem(candidates);
+
+    if (!item) {
+        return null;
+    }
+
+    const position =
+        randomInt(
+            1,
+            item.word.length - 2
+        );
+
+    const missingLetter =
+        item.word.charAt(position);
+
+    const displayed =
+        item.word.substring(
+            0,
+            position
+        ) +
+        "_" +
+        item.word.substring(
+            position + 1
+        );
+
+    const alphabet =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZÉ"
+            .split("");
+
+    const wrongLetters =
+        shuffle(
+            alphabet.filter(
+                letter =>
+                    letter.toUpperCase() !==
+                    missingLetter.toUpperCase()
+            )
+        ).slice(0, 2);
+
+    if (
+        wrongLetters.length < 2
+    ) {
+        return null;
+    }
+
+    return finalizeGeneratedQuestion(
+        {
+            question:
+                `Quelle lettre manque dans le mot « ${displayed} » ?`,
+
+            choices: shuffle([
+                missingLetter.toUpperCase(),
+                wrongLetters[0],
+                wrongLetters[1]
+            ]),
+
+            answer:
+                missingLetter.toUpperCase(),
+
+            word: item.word
+        },
+        "reading",
+        level,
+        "missing_letter"
+    );
+}
+
+function generateMissingLetterQuestion(
+    level = 1
+) {
+    const safeLevel =
+        clampLevel(level);
+
+    return getUniqueQuestion(
+        buildMissingLetterQuestion(
+            safeLevel
+        ),
+        () =>
+            buildMissingLetterQuestion(
+                safeLevel
+            )
+    );
+}
+
+/* =========================================================
+   10. LECTURE — PHRASE
+   ========================================================= */
+
+function buildSentenceQuestion(
+    level = 1
+) {
+    const item =
+        randomItem(
+            READING_SENTENCES
+        );
 
     if (!item) {
         return null;
@@ -1125,13 +1009,11 @@ function buildSentenceQuestion(level = 1) {
             question:
                 `${item.sentence}\n\n${item.question}`,
 
-            choices: shuffle(item.choices),
+            choices: shuffle(
+                item.choices
+            ),
 
-            answer: item.answer,
-
-            skill: "reading",
-
-            type: "sentence"
+            answer: item.answer
         },
         "reading",
         level,
@@ -1139,26 +1021,34 @@ function buildSentenceQuestion(level = 1) {
     );
 }
 
-
-function generateSentenceQuestion(level = 1) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
+function generateSentenceQuestion(
+    level = 1
+) {
+    const safeLevel =
+        clampLevel(level);
 
     return getUniqueQuestion(
-        buildSentenceQuestion(safeLevel),
-        () => buildSentenceQuestion(safeLevel)
+        buildSentenceQuestion(
+            safeLevel
+        ),
+        () =>
+            buildSentenceQuestion(
+                safeLevel
+            )
     );
 }
 
-
 /* =========================================================
-   17. LECTURE — COMPRÉHENSION
+   11. LECTURE — COMPRÉHENSION
    ========================================================= */
 
-function buildReadingComprehensionQuestion(level = 1) {
-    const passage = randomItem(READING_PASSAGES);
+function buildReadingComprehensionQuestion(
+    level = 1
+) {
+    const passage =
+        randomItem(
+            READING_PASSAGES
+        );
 
     if (!passage) {
         return null;
@@ -1169,13 +1059,11 @@ function buildReadingComprehensionQuestion(level = 1) {
             question:
                 `${passage.text}\n\n${passage.question}`,
 
-            choices: shuffle(passage.choices),
+            choices: shuffle(
+                passage.choices
+            ),
 
-            answer: passage.answer,
-
-            skill: "reading",
-
-            type: "reading_comprehension"
+            answer: passage.answer
         },
         "reading",
         level,
@@ -1183,46 +1071,55 @@ function buildReadingComprehensionQuestion(level = 1) {
     );
 }
 
-
-function generateReadingComprehensionQuestion(level = 1) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
+function generateReadingComprehensionQuestion(
+    level = 1
+) {
+    const safeLevel =
+        clampLevel(level);
 
     return getUniqueQuestion(
-        buildReadingComprehensionQuestion(safeLevel),
-        () => buildReadingComprehensionQuestion(safeLevel)
+        buildReadingComprehensionQuestion(
+            safeLevel
+        ),
+        () =>
+            buildReadingComprehensionQuestion(
+                safeLevel
+            )
     );
 }
 
-
 /* =========================================================
-   18. GÉNÉRATEUR PRINCIPAL DE LECTURE
+   12. GÉNÉRATEUR PRINCIPAL DE LECTURE
    ========================================================= */
 
-function buildReadingQuestion(level = 1) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
+function buildReadingQuestion(
+    level = 1
+) {
+    const safeLevel =
+        clampLevel(level);
 
     if (safeLevel <= 20) {
-        return generateLetterWordQuestionRaw(
+        return buildLetterWordQuestion(
             safeLevel
         );
     }
 
     if (safeLevel <= 40) {
-        return buildEmojiWordQuestion(safeLevel);
+        return buildEmojiWordQuestion(
+            safeLevel
+        );
     }
 
     if (safeLevel <= 60) {
-        return buildMissingLetterQuestion(safeLevel);
+        return buildMissingLetterQuestion(
+            safeLevel
+        );
     }
 
     if (safeLevel <= 80) {
-        return buildSentenceQuestion(safeLevel);
+        return buildSentenceQuestion(
+            safeLevel
+        );
     }
 
     return buildReadingComprehensionQuestion(
@@ -1230,57 +1127,25 @@ function buildReadingQuestion(level = 1) {
     );
 }
 
-
-/*
-   Version interne spéciale pour éviter que
-   generateReadingQuestion() appelle à nouveau
-   generateLetterWordQuestion(), ce qui recréerait
-   une boucle.
-*/
-
-function generateLetterWordQuestionRaw(level = 1) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
-
-    const availableLetters = READING_LETTERS.filter(
-        letter =>
-            READING_WORDS.some(
-                item =>
-                    normalizeLetter(item.letter) ===
-                    normalizeLetter(letter)
-            )
-    );
-
-    const letter = randomItem(availableLetters);
-
-    if (!letter) {
-        return null;
-    }
-
-    return generateLetterWordQuestionWithLetter(
-        letter,
-        safeLevel
-    );
-}
-
-
-function generateReadingQuestion(level = 1) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
+function generateReadingQuestion(
+    level = 1
+) {
+    const safeLevel =
+        clampLevel(level);
 
     return getUniqueQuestion(
-        buildReadingQuestion(safeLevel),
-        () => buildReadingQuestion(safeLevel)
+        buildReadingQuestion(
+            safeLevel
+        ),
+        () =>
+            buildReadingQuestion(
+                safeLevel
+            )
     );
 }
 
-
 /* =========================================================
-   19. MÉMOIRE UTILISÉE PAR LE GÉNÉRATEUR
+   13. MÉMOIRE POUR LE GÉNÉRATEUR
    ========================================================= */
 
 function getGeneratorMemory() {
@@ -1293,7 +1158,7 @@ function getGeneratorMemory() {
         }
     } catch (error) {
         console.warn(
-            "Impossible de lire la mémoire :",
+            "Mémoire indisponible :",
             error
         );
     }
@@ -1301,13 +1166,17 @@ function getGeneratorMemory() {
     return null;
 }
 
-
-function getRecentResultsForSkill(skill) {
-    const memory = getGeneratorMemory();
+function getRecentResultsForSkill(
+    skill
+) {
+    const memory =
+        getGeneratorMemory();
 
     if (
         !memory ||
-        !Array.isArray(memory.recentResults)
+        !Array.isArray(
+            memory.recentResults
+        )
     ) {
         return [];
     }
@@ -1319,16 +1188,13 @@ function getRecentResultsForSkill(skill) {
     );
 }
 
-
 /* =========================================================
-   20. MATHS — VALEUR MAXIMALE
+   14. MATHS — NIVEAU
    ========================================================= */
 
 function getAdditionMax(level) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
+    const safeLevel =
+        clampLevel(level);
 
     if (safeLevel <= 5) return 10;
     if (safeLevel <= 10) return 15;
@@ -1344,17 +1210,13 @@ function getAdditionMax(level) {
     return 200;
 }
 
-
 function getSubtractionMax(level) {
     return getAdditionMax(level);
 }
 
-
 function getMultiplicationFactor(level) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
+    const safeLevel =
+        clampLevel(level);
 
     if (safeLevel <= 10) return 3;
     if (safeLevel <= 20) return 5;
@@ -1367,58 +1229,9 @@ function getMultiplicationFactor(level) {
     return 12;
 }
 
-
 /* =========================================================
-   21. MAUVAISES RÉPONSES NUMÉRIQUES
+   15. MAUVAISES RÉPONSES MATHÉMATIQUES
    ========================================================= */
-
-function generateWrongNumber(
-    correct,
-    min = 0,
-    max = 200
-) {
-    const safeCorrect = Number(correct);
-
-    const candidates = [
-        safeCorrect + 1,
-        safeCorrect - 1,
-        safeCorrect + 2,
-        safeCorrect - 2,
-        safeCorrect + 5,
-        safeCorrect - 5,
-        safeCorrect + 10,
-        safeCorrect - 10
-    ].filter(
-        value =>
-            Number.isFinite(value) &&
-            value >= min &&
-            value <= max &&
-            value !== safeCorrect
-    );
-
-    const unique = [
-        ...new Set(candidates)
-    ];
-
-    if (unique.length > 0) {
-        return randomItem(unique);
-    }
-
-    let fallback;
-
-    do {
-        fallback = randomInt(
-            min,
-            Math.max(min, max)
-        );
-    } while (
-        fallback === safeCorrect &&
-        max > min
-    );
-
-    return fallback;
-}
-
 
 function generateWrongNumbers(
     correct,
@@ -1427,97 +1240,122 @@ function generateWrongNumbers(
     max = 200
 ) {
     const result = [];
-    const attemptsLimit = 50;
+    const candidates = [
+        Number(correct) + 1,
+        Number(correct) - 1,
+        Number(correct) + 2,
+        Number(correct) - 2,
+        Number(correct) + 5,
+        Number(correct) - 5,
+        Number(correct) + 10,
+        Number(correct) - 10
+    ];
 
+    for (
+        const value of shuffle(
+            candidates
+        )
+    ) {
+        if (
+            Number.isFinite(value) &&
+            value >= min &&
+            value <= max &&
+            value !== Number(correct) &&
+            !result.includes(value)
+        ) {
+            result.push(value);
+        }
+
+        if (
+            result.length >= count
+        ) {
+            break;
+        }
+    }
+
+    /*
+       Sécurité supplémentaire :
+       si les candidats simples ne suffisent pas.
+    */
     let attempts = 0;
 
     while (
         result.length < count &&
-        attempts < attemptsLimit
+        attempts < 50
     ) {
         attempts++;
 
-        const wrong = generateWrongNumber(
-            correct,
-            min,
-            max
-        );
+        const value =
+            randomInt(
+                min,
+                max
+            );
 
         if (
-            wrong !== correct &&
-            !result.includes(wrong)
+            value !==
+                Number(correct) &&
+            !result.includes(value)
         ) {
-            result.push(wrong);
+            result.push(value);
         }
     }
 
     return result;
 }
 
-
 /* =========================================================
-   22. ADDITION
+   16. ADDITION
    ========================================================= */
 
-const ADDITION_STORIES = [
-    {
-        prefix: "Mama a",
-        suffix: "pommes. Elle en reçoit encore"
-    },
-    {
-        prefix: "Awa a",
-        suffix: "bonbons. Son amie lui en donne encore"
-    },
-    {
-        prefix: "Moussa a",
-        suffix: "livres. Il reçoit encore"
-    },
-    {
-        prefix: "Fatou a",
-        suffix: "fleurs. Elle en ajoute encore"
-    },
-    {
-        prefix: "Sidy a",
-        suffix: "crayons. Son professeur lui en donne encore"
-    }
-];
+function buildAdditionQuestion(
+    level = 1
+) {
+    const max =
+        getAdditionMax(level);
 
+    const a =
+        randomInt(
+            0,
+            Math.max(
+                1,
+                Math.floor(
+                    max * 0.6
+                )
+            )
+        );
 
-function buildAdditionQuestion(level = 1) {
-    const max = getAdditionMax(level);
-
-    let a = randomInt(
-        0,
-        Math.max(1, Math.floor(max * 0.6))
-    );
-
-    let b = randomInt(
-        0,
-        Math.max(1, max - a)
-    );
+    const b =
+        randomInt(
+            0,
+            Math.max(
+                1,
+                max - a
+            )
+        );
 
     const answer = a + b;
 
-    const wrongs = generateWrongNumbers(
-        answer,
-        2,
-        0,
-        Math.max(max + 10, answer + 15)
-    );
+    const wrongs =
+        generateWrongNumbers(
+            answer,
+            2,
+            0,
+            Math.max(
+                max + 10,
+                answer + 15
+            )
+        );
 
-    if (wrongs.length < 2) {
+    if (
+        wrongs.length < 2
+    ) {
         return null;
     }
 
-    const story =
-        randomItem(ADDITION_STORIES);
-
-    const questionText =
-        `${story.prefix} ${a} ${story.suffix} ${b}. Combien en a-t-elle maintenant ?`;
-
     return finalizeGeneratedQuestion(
         {
-            question: questionText,
+            question:
+                `Combien font ${a} + ${b} ?`,
 
             choices: shuffle([
                 String(answer),
@@ -1526,10 +1364,6 @@ function buildAdditionQuestion(level = 1) {
             ]),
 
             answer: String(answer),
-
-            skill: "addition",
-
-            type: "addition",
 
             operation: {
                 a,
@@ -1543,83 +1377,72 @@ function buildAdditionQuestion(level = 1) {
     );
 }
 
-
-function generateAdditionQuestion(level = 1) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
+function generateAdditionQuestion(
+    level = 1
+) {
+    const safeLevel =
+        clampLevel(level);
 
     return getUniqueQuestion(
-        buildAdditionQuestion(safeLevel),
-        () => buildAdditionQuestion(safeLevel)
+        buildAdditionQuestion(
+            safeLevel
+        ),
+        () =>
+            buildAdditionQuestion(
+                safeLevel
+            )
     );
 }
 
-
 /* =========================================================
-   23. SOUSTRACTION
+   17. SOUSTRACTION
    ========================================================= */
 
-const SUBTRACTION_STORIES = [
-    {
-        prefix: "Mama avait",
-        suffix: "pommes. Elle en donne"
-    },
-    {
-        prefix: "Awa avait",
-        suffix: "bonbons. Elle en mange"
-    },
-    {
-        prefix: "Moussa avait",
-        suffix: "livres. Il en prête"
-    },
-    {
-        prefix: "Fatou avait",
-        suffix: "fleurs. Elle en offre"
-    },
-    {
-        prefix: "Sidy avait",
-        suffix: "crayons. Il en donne"
-    }
-];
+function buildSubtractionQuestion(
+    level = 1
+) {
+    const max =
+        getSubtractionMax(level);
 
+    const a =
+        randomInt(
+            1,
+            Math.max(
+                2,
+                max
+            )
+        );
 
-function buildSubtractionQuestion(level = 1) {
-    const max = getSubtractionMax(level);
+    const b =
+        randomInt(
+            0,
+            a
+        );
 
-    const a = randomInt(
-        2,
-        Math.max(2, max)
-    );
+    const answer =
+        a - b;
 
-    const b = randomInt(
-        1,
-        Math.max(1, a)
-    );
+    const wrongs =
+        generateWrongNumbers(
+            answer,
+            2,
+            0,
+            Math.max(
+                max + 10,
+                answer + 15
+            )
+        );
 
-    const answer = a - b;
-
-    const wrongs = generateWrongNumbers(
-        answer,
-        2,
-        0,
-        Math.max(max + 10, answer + 15)
-    );
-
-    if (wrongs.length < 2) {
+    if (
+        wrongs.length < 2
+    ) {
         return null;
     }
 
-    const story =
-        randomItem(SUBTRACTION_STORIES);
-
-    const questionText =
-        `${story.prefix} ${a} ${story.suffix} ${b}. Combien lui en reste-t-il ?`;
-
     return finalizeGeneratedQuestion(
         {
-            question: questionText,
+            question:
+                `Combien font ${a} − ${b} ?`,
 
             choices: shuffle([
                 String(answer),
@@ -1629,14 +1452,10 @@ function buildSubtractionQuestion(level = 1) {
 
             answer: String(answer),
 
-            skill: "subtraction",
-
-            type: "subtraction",
-
             operation: {
                 a,
                 b,
-                operator: "-"
+                operator: "−"
             }
         },
         "subtraction",
@@ -1645,48 +1464,64 @@ function buildSubtractionQuestion(level = 1) {
     );
 }
 
-
-function generateSubtractionQuestion(level = 1) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
+function generateSubtractionQuestion(
+    level = 1
+) {
+    const safeLevel =
+        clampLevel(level);
 
     return getUniqueQuestion(
-        buildSubtractionQuestion(safeLevel),
-        () => buildSubtractionQuestion(safeLevel)
+        buildSubtractionQuestion(
+            safeLevel
+        ),
+        () =>
+            buildSubtractionQuestion(
+                safeLevel
+            )
     );
 }
 
-
 /* =========================================================
-   24. MULTIPLICATION
+   18. MULTIPLICATION
    ========================================================= */
 
-function buildMultiplicationQuestion(level = 1) {
+function buildMultiplicationQuestion(
+    level = 1
+) {
     const factorMax =
-        getMultiplicationFactor(level);
+        getMultiplicationFactor(
+            level
+        );
 
-    const a = randomInt(
-        1,
-        factorMax
-    );
+    const a =
+        randomInt(
+            1,
+            factorMax
+        );
 
-    const b = randomInt(
-        1,
-        factorMax
-    );
+    const b =
+        randomInt(
+            1,
+            factorMax
+        );
 
-    const answer = a * b;
+    const answer =
+        a * b;
 
-    const wrongs = generateWrongNumbers(
-        answer,
-        2,
-        0,
-        Math.max(150, answer + 30)
-    );
+    const wrongs =
+        generateWrongNumbers(
+            answer,
+            2,
+            0,
+            Math.max(
+                150,
+                answer + 30
+            )
+        );
 
-    if (wrongs.length < 2) {
+    if (
+        wrongs.length < 2
+    ) {
         return null;
     }
 
@@ -1703,10 +1538,6 @@ function buildMultiplicationQuestion(level = 1) {
 
             answer: String(answer),
 
-            skill: "multiplication",
-
-            type: "multiplication",
-
             operation: {
                 a,
                 b,
@@ -1719,17 +1550,16 @@ function buildMultiplicationQuestion(level = 1) {
     );
 }
 
-
 function generateMultiplicationQuestion(
     level = 1
 ) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
+    const safeLevel =
+        clampLevel(level);
 
     return getUniqueQuestion(
-        buildMultiplicationQuestion(safeLevel),
+        buildMultiplicationQuestion(
+            safeLevel
+        ),
         () =>
             buildMultiplicationQuestion(
                 safeLevel
@@ -1737,14 +1567,17 @@ function generateMultiplicationQuestion(
     );
 }
 
-
 /* =========================================================
-   25. COMPRÉHENSION
+   19. COMPRÉHENSION
    ========================================================= */
 
-function buildComprehensionQuestion(level = 1) {
+function buildComprehensionQuestion(
+    level = 1
+) {
     const item =
-        randomItem(COMPREHENSION_QUESTIONS);
+        randomItem(
+            COMPREHENSION_QUESTIONS
+        );
 
     if (!item) {
         return null;
@@ -1753,14 +1586,10 @@ function buildComprehensionQuestion(level = 1) {
     return finalizeGeneratedQuestion(
         {
             question: item.question,
-
-            choices: shuffle(item.choices),
-
-            answer: item.answer,
-
-            skill: "comprehension",
-
-            type: "comprehension"
+            choices: shuffle(
+                item.choices
+            ),
+            answer: item.answer
         },
         "comprehension",
         level,
@@ -1768,14 +1597,11 @@ function buildComprehensionQuestion(level = 1) {
     );
 }
 
-
 function generateComprehensionQuestion(
     level = 1
 ) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
+    const safeLevel =
+        clampLevel(level);
 
     return getUniqueQuestion(
         buildComprehensionQuestion(
@@ -1788,22 +1614,100 @@ function generateComprehensionQuestion(
     );
 }
 
+/* =========================================================
+   20. CHOISIR UNE COMPÉTENCE
+   ========================================================= */
+
+function chooseSkillForSession(
+    level = 1,
+    index = 0,
+    usedSkills = []
+) {
+    const defaultSkills = [
+        "reading",
+        "addition",
+        "subtraction",
+        "multiplication",
+        "comprehension"
+    ];
+
+    /*
+       L'analyseur peut proposer une compétence
+       prioritaire. Mais il ne décide jamais du niveau.
+    */
+    try {
+        if (
+            typeof getSkillsToPractice ===
+            "function"
+        ) {
+            const priority =
+                getSkillsToPractice();
+
+            if (
+                Array.isArray(priority)
+            ) {
+                for (
+                    const item of priority
+                ) {
+                    const skill =
+                        typeof item ===
+                        "string"
+                            ? item
+                            : item &&
+                              item.skill;
+
+                    if (
+                        defaultSkills.includes(
+                            skill
+                        ) &&
+                        !usedSkills.includes(
+                            skill
+                        )
+                    ) {
+                        return skill;
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.warn(
+            "Analyseur indisponible :",
+            error
+        );
+    }
+
+    const unused =
+        defaultSkills.filter(
+            skill =>
+                !usedSkills.includes(
+                    skill
+                )
+        );
+
+    if (
+        unused.length > 0
+    ) {
+        return unused[0];
+    }
+
+    return defaultSkills[
+        index %
+            defaultSkills.length
+    ];
+}
 
 /* =========================================================
-   26. CHOIX DU TYPE D'EXERCICE
+   21. GÉNÉRATION PAR COMPÉTENCE
    ========================================================= */
 
 function generateExerciseBySkill(
     skill,
     level = 1
 ) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
+    const safeLevel =
+        clampLevel(level);
 
     switch (skill) {
-
         case "reading":
             return generateReadingQuestion(
                 safeLevel
@@ -1836,128 +1740,24 @@ function generateExerciseBySkill(
     }
 }
 
-
 /* =========================================================
-   27. CHOIX ADAPTATIF DES COMPÉTENCES
-   ========================================================= */
-
-function chooseSkillForSession(
-    level = 1,
-    index = 0,
-    usedSkills = []
-) {
-    const defaultSkills = [
-        "reading",
-        "addition",
-        "subtraction",
-        "multiplication",
-        "comprehension"
-    ];
-
-    /*
-       On essaie d'utiliser l'analyseur si disponible.
-       Il indique les compétences à travailler en priorité.
-    */
-
-    try {
-        if (
-            typeof getSkillsToPractice ===
-            "function"
-        ) {
-            const priority =
-                getSkillsToPractice();
-
-            if (
-                Array.isArray(priority) &&
-                priority.length > 0
-            ) {
-                const priorityNames =
-                    priority
-                        .map(item => {
-                            if (
-                                typeof item ===
-                                "string"
-                            ) {
-                                return item;
-                            }
-
-                            return item.skill;
-                        })
-                        .filter(skill =>
-                            defaultSkills.includes(
-                                skill
-                            )
-                        );
-
-                const availablePriority =
-                    priorityNames.filter(
-                        skill =>
-                            !usedSkills.includes(
-                                skill
-                            )
-                    );
-
-                if (
-                    availablePriority.length > 0
-                ) {
-                    return availablePriority[0];
-                }
-            }
-        }
-    } catch (error) {
-        console.warn(
-            "Analyseur indisponible pour le choix adaptatif :",
-            error
-        );
-    }
-
-    /*
-       Pour une session complète, on conserve les
-       cinq compétences afin que chaque domaine
-       soit observé.
-    */
-
-    const unused = defaultSkills.filter(
-        skill =>
-            !usedSkills.includes(skill)
-    );
-
-    if (unused.length > 0) {
-        return unused[0];
-    }
-
-    return defaultSkills[
-        index % defaultSkills.length
-    ];
-}
-
-
-/* =========================================================
-   28. GÉNÉRATION D'UNE SESSION DE 5 EXERCICES
+   22. SESSION PERSONNALISÉE DE 5 EXERCICES
    ========================================================= */
 
 function generateLearningSession(
     level = 1
 ) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
+    const safeLevel =
+        clampLevel(level);
 
     const session = [];
-
     const usedSkills = [];
-
-    /*
-       Chaque session contient exactement 5 exercices.
-    */
 
     for (
         let i = 0;
         i < SESSION_SIZE_GENERATOR;
         i++
     ) {
-
         const skill =
             chooseSkillForSession(
                 safeLevel,
@@ -1968,10 +1768,9 @@ function generateLearningSession(
         let question = null;
 
         /*
-           Plusieurs tentatives indépendantes.
-           Aucune récursion.
+           Pas de récursion.
+           On fait simplement plusieurs essais.
         */
-
         for (
             let attempt = 0;
             attempt < 10;
@@ -1996,22 +1795,21 @@ function generateLearningSession(
         }
 
         /*
-           Si un domaine particulier ne produit pas
-           de question, on essaie un autre domaine.
+           Sécurité :
+           si une compétence ne fonctionne pas,
+           on essaie les autres compétences.
         */
-
         if (!question) {
-
-            const fallbackSkills =
-                GENERATOR_SKILLS.filter(
-                    candidate =>
-                        candidate !== skill
-                );
-
             for (
                 const fallbackSkill
-                of fallbackSkills
+                of GENERATOR_SKILLS
             ) {
+                if (
+                    fallbackSkill ===
+                    skill
+                ) {
+                    continue;
+                }
 
                 question =
                     generateExerciseBySkill(
@@ -2039,21 +1837,65 @@ function generateLearningSession(
         }
 
         /*
-           On ajoute le skill réellement généré.
+           Vérification spéciale Lecture
+           avant même l'arrivée dans verifier.js.
         */
+        if (
+            question.type ===
+            "letter_word"
+        ) {
+            const match =
+                question.question.match(
+                    /lettre\s+([A-Za-zÀ-ÿ])/i
+                );
+
+            if (match) {
+                const requested =
+                    normalizeLetter(
+                        match[1]
+                    );
+
+                if (
+                    firstLetter(
+                        question.answer
+                    ) !== requested
+                ) {
+                    throw new Error(
+                        `Exercice ${i + 1} invalide : la réponse ne correspond pas à la lettre demandée.`
+                    );
+                }
+
+                const badChoice =
+                    question.choices.find(
+                        choice =>
+                            String(
+                                choice
+                            ) !==
+                                String(
+                                    question.answer
+                                ) &&
+                            firstLetter(
+                                choice
+                            ) ===
+                                requested
+                    );
+
+                if (badChoice) {
+                    throw new Error(
+                        `Exercice ${i + 1} invalide : un mauvais choix commence aussi par la lettre demandée.`
+                    );
+                }
+            }
+        }
 
         usedSkills.push(
-            question.skill || skill
+            question.skill
         );
 
-        session.push(question);
+        session.push(
+            question
+        );
     }
-
-    /*
-       Sécurité finale :
-       une session personnalisée doit toujours
-       contenir exactement 5 exercices.
-    */
 
     if (
         session.length !==
@@ -2064,100 +1906,22 @@ function generateLearningSession(
         );
     }
 
-    /*
-       Dernière validation locale avant retour.
-    */
-
-    session.forEach(
-        (question, index) => {
-
-            if (
-                !generatorQuestionLooksValid(
-                    question
-                )
-            ) {
-                throw new Error(
-                    `Exercice ${index + 1} invalide.`
-                );
-            }
-
-            /*
-               Protection spéciale pour les exercices
-               lettre → mot.
-            */
-
-            if (
-                question.type ===
-                "letter_word"
-            ) {
-                const match =
-                    question.question.match(
-                        /lettre\s+([A-ZÉ])/i
-                    );
-
-                if (match) {
-                    const requestedLetter =
-                        normalizeLetter(
-                            match[1]
-                        );
-
-                    const correct =
-                        firstLetter(
-                            question.answer
-                        );
-
-                    if (
-                        correct !==
-                        requestedLetter
-                    ) {
-                        throw new Error(
-                            `Exercice ${index + 1} invalide : la bonne réponse ne commence pas par la lettre demandée.`
-                        );
-                    }
-
-                    const badChoice =
-                        question.choices.find(
-                            choice =>
-                                String(
-                                    choice
-                                ) !==
-                                String(
-                                    question.answer
-                                ) &&
-                                firstLetter(
-                                    choice
-                                ) ===
-                                requestedLetter
-                        );
-
-                    if (badChoice) {
-                        throw new Error(
-                            `Exercice ${index + 1} invalide : un mauvais choix commence aussi par la lettre demandée.`
-                        );
-                    }
-                }
-            }
-        }
-    );
-
     return session;
 }
 
-
 /* =========================================================
-   29. QUESTION ADAPTATIVE SIMPLE
+   23. QUESTION ADAPTATIVE
    ========================================================= */
 
 function generateAdaptiveQuestion(
     level = 1,
     skill = null
 ) {
-    const safeLevel = Math.max(
-        1,
-        Math.min(100, Number(level) || 1)
-    );
+    const safeLevel =
+        clampLevel(level);
 
-    let selectedSkill = skill;
+    let selectedSkill =
+        skill;
 
     if (
         !GENERATOR_SKILLS.includes(
@@ -2192,56 +1956,45 @@ function generateAdaptiveQuestion(
     return question;
 }
 
-
 /* =========================================================
-   30. COMPATIBILITÉ — MATHS
+   24. COMPATIBILITÉ ANCIENNES FONCTIONS
    ========================================================= */
 
 function generateMathQuestion(
     level = 1
 ) {
-    return generateAdditionQuestion(level);
+    return generateAdditionQuestion(
+        level
+    );
 }
-
 
 function generatePlannedMathQuestion(
     level = 1
 ) {
-    return generateAdditionQuestion(level);
+    return generateAdditionQuestion(
+        level
+    );
 }
-
-
-/* =========================================================
-   31. RESET
-   ========================================================= */
 
 function resetGeneratorHistory() {
     clearGeneratorHistory();
 }
 
-
-/* =========================================================
-   32. INFORMATIONS POUR DEBUG
-   ========================================================= */
-
 function getGeneratorInfo() {
     return {
-        version: "5.0",
-        sessionSize: SESSION_SIZE_GENERATOR,
-        skills: [...GENERATOR_SKILLS],
+        version: "6.0",
+        sessionSize:
+            SESSION_SIZE_GENERATOR,
+        skills: [
+            ...GENERATOR_SKILLS
+        ],
         historySize:
             getGeneratorHistory().length
     };
 }
 
-
 /* =========================================================
-   33. EXPORTS GLOBAUX
-   =========================================================
-   Les fonctions sont volontairement exposées
-   directement dans window afin que index.html,
-   teacher.js et les autres fichiers puissent
-   continuer à les utiliser.
+   25. EXPORTS
    ========================================================= */
 
 window.generateReadingQuestion =
@@ -2304,12 +2057,11 @@ window.resetGeneratorHistory =
 window.getGeneratorInfo =
     getGeneratorInfo;
 
-
 /* =========================================================
-   34. DEBUG
+   DEBUG
    ========================================================= */
 
 console.log(
-    "✅ Mama Binta Generator v5 chargé.",
+    "✅ Mama Binta Generator v6 chargé.",
     getGeneratorInfo()
 );
