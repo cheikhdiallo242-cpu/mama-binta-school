@@ -1,542 +1,532 @@
-// =====================================================
-// 🔎 AGENT ANALYSTE DE MAMA BINTA
-// =====================================================
-// L'analyste observe :
-// - les résultats récents
-// - les séries
-// - les résultats par matière
-// - le niveau maximum réussi en maths
-// - le niveau où une difficulté apparaît
-//
-// Son objectif : conseiller les autres agents.
-// =====================================================
+/*
+==========================================================
+🧠 MAMA BINTA — ANALYSTE
+==========================================================
 
-function analyzeStudent() {
+Rôle :
+- Lire les données de la mémoire
+- Analyser les 5 compétences
+- Identifier forces et difficultés
+- Observer les tendances récentes
+- Donner des informations au Planificateur
 
-    const memory =
-        getStudentMemory();
+IMPORTANT :
+L'Analyste NE décide PAS du niveau.
+Le Planificateur prendra cette décision.
+
+Compétences :
+📖 reading
+➕ addition
+➖ subtraction
+✖️ multiplication
+🧠 comprehension
+==========================================================
+*/
+
+const ANALYZER_SKILLS = [
+    "reading",
+    "addition",
+    "subtraction",
+    "multiplication",
+    "comprehension"
+];
+
+const ANALYZER_LABELS = {
+    reading: "📖 Lecture",
+    addition: "➕ Addition",
+    subtraction: "➖ Soustraction",
+    multiplication: "✖️ Multiplication",
+    comprehension: "🧠 Compréhension"
+};
 
 
-    // =================================================
-    // 🛑 MÉMOIRE INDISPONIBLE
-    // =================================================
+/* =========================================================
+   OUTILS
+========================================================= */
+
+function analyzerClamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+
+function analyzerGetMemory() {
+    if (typeof loadStudentMemory === "function") {
+        return loadStudentMemory();
+    }
+
+    if (typeof getStudentMemory === "function") {
+        return getStudentMemory();
+    }
+
+    return null;
+}
+
+
+/* =========================================================
+   ANALYSE D'UNE COMPÉTENCE
+========================================================= */
+
+function analyzeSkill(skill) {
+
+    const memory = analyzerGetMemory();
 
     if (!memory) {
-
         return {
-
-            status: "inconnu",
-
-            subject: null,
-
-            difficulty: "normal",
-
-            recommendation: null,
-
-            message:
-                "Je n'ai pas encore assez de données pour analyser la progression."
+            skill,
+            label: ANALYZER_LABELS[skill] || skill,
+            accuracy: 0,
+            total: 0,
+            correct: 0,
+            incorrect: 0,
+            status: "unknown",
+            trend: "unknown",
+            recentAccuracy: 0,
+            difficulty: "unknown"
         };
     }
 
+    const data =
+        memory.skills &&
+        memory.skills[skill]
+            ? memory.skills[skill]
+            : null;
 
-    // =================================================
-    // 📊 DONNÉES GÉNÉRALES
-    // =================================================
-
-    const total =
-        memory.correct +
-        memory.incorrect;
-
-
-    const recentResults =
-        Array.isArray(
-            memory.recentResults
-        )
-            ? memory.recentResults
-            : [];
-
-
-    const recentMaths =
-        recentResults.filter(
-            result =>
-                result.subject === "Maths"
-        );
-
-
-    const recentReading =
-        recentResults.filter(
-            result =>
-                result.subject === "Lecture"
-        );
-
-
-    // =================================================
-    // 🟢 DÉBUT
-    // =================================================
-
-    if (total === 0) {
-
+    if (!data) {
         return {
-
-            status: "début",
-
-            subject: null,
-
-            difficulty: "normal",
-
-            recommendation: null,
-
-            message:
-                "Mama Binta vient de commencer. " +
-                "Continuons les exercices pour mieux connaître ses progrès."
+            skill,
+            label: ANALYZER_LABELS[skill] || skill,
+            accuracy: 0,
+            total: 0,
+            correct: 0,
+            incorrect: 0,
+            status: "unknown",
+            trend: "unknown",
+            recentAccuracy: 0,
+            difficulty: "unknown"
         };
     }
 
+    const total = Number(data.total) || 0;
+    const correct = Number(data.correct) || 0;
+    const incorrect = Number(data.incorrect) || 0;
 
-    // =================================================
-    // 🔎 OUTILS D'ANALYSE
-    // =================================================
+    const accuracy =
+        total > 0
+            ? Math.round((correct / total) * 100)
+            : 0;
 
-    function countRecentErrors(results) {
 
-        return results.filter(
-            result =>
-                result.correct === false
-        ).length;
+    /* -----------------------------------------------------
+       Résultats récents
+    ----------------------------------------------------- */
+
+    let recentResults = [];
+
+    if (Array.isArray(memory.recentResults)) {
+
+        recentResults = memory.recentResults
+            .filter(result => result.skill === skill)
+            .slice(-5);
+    }
+
+    const recentTotal = recentResults.length;
+
+    const recentCorrect = recentResults.filter(
+        result => result.correct === true
+    ).length;
+
+    const recentAccuracy =
+        recentTotal > 0
+            ? Math.round((recentCorrect / recentTotal) * 100)
+            : 0;
+
+
+    /* -----------------------------------------------------
+       Statut général
+    ----------------------------------------------------- */
+
+    let status = "insufficient_data";
+
+    if (total >= 3) {
+
+        if (accuracy >= 80) {
+            status = "strong";
+        }
+        else if (accuracy >= 60) {
+            status = "developing";
+        }
+        else {
+            status = "needs_support";
+        }
     }
 
 
-    function countRecentCorrect(results) {
+    /* -----------------------------------------------------
+       Difficulté
+    ----------------------------------------------------- */
 
-        return results.filter(
-            result =>
-                result.correct === true
-        ).length;
+    let difficulty = "unknown";
+
+    if (total >= 3) {
+
+        if (accuracy >= 80) {
+            difficulty = "low";
+        }
+        else if (accuracy >= 60) {
+            difficulty = "medium";
+        }
+        else {
+            difficulty = "high";
+        }
     }
 
 
-    const recentMathsErrors =
-        countRecentErrors(
-            recentMaths
-        );
+    /* -----------------------------------------------------
+       Tendance récente
+    ----------------------------------------------------- */
 
+    let trend = "stable";
 
-    const recentMathsCorrect =
-        countRecentCorrect(
-            recentMaths
-        );
+    if (recentTotal >= 3) {
 
-
-    const recentReadingErrors =
-        countRecentErrors(
-            recentReading
-        );
-
-
-    const recentReadingCorrect =
-        countRecentCorrect(
-            recentReading
-        );
-
-
-    // =================================================
-    // 🔥 SÉRIES
-    // =================================================
-
-    const mathsCorrectStreak =
-        memory.mathsCorrectStreak || 0;
-
-
-    const mathsIncorrectStreak =
-        memory.mathsIncorrectStreak || 0;
-
-
-    const readingCorrectStreak =
-        memory.readingCorrectStreak || 0;
-
-
-    const readingIncorrectStreak =
-        memory.readingIncorrectStreak || 0;
-
-
-    // =================================================
-    // 🧮 NOUVELLE ANALYSE DU NIVEAU MATHS
-    // =================================================
-
-    const highestCorrectSum =
-        Number(
-            memory.mathsHighestCorrectSum || 0
-        );
-
-
-    const lowestIncorrectSum =
-        memory.mathsLowestIncorrectSum === null ||
-        memory.mathsLowestIncorrectSum === undefined
-            ? null
-            : Number(
-                memory.mathsLowestIncorrectSum
-            );
-
-
-    // -------------------------------------------------
-    // Zone de difficulté détectée
-    // -------------------------------------------------
-
-    if (
-        lowestIncorrectSum !== null &&
-        highestCorrectSum > 0 &&
-        lowestIncorrectSum > highestCorrectSum
-    ) {
-
-        return {
-
-            status: "frontière",
-
-            subject: "Maths",
-
-            difficulty: "intermediaire",
-
-            recommendation: {
-
-                subject: "Maths",
-
-                action: "consolider",
-
-                level: "intermediaire",
-
-                targetSum:
-                    lowestIncorrectSum,
-
-                masteredSum:
-                    highestCorrectSum,
-
-                message:
-                    "Continuer progressivement autour de la limite actuelle."
-            },
-
-            message:
-                "🎯 L'analyste observe que Mama Binta réussit " +
-                "des additions jusqu'à " +
-                highestCorrectSum +
-                ", mais une difficulté apparaît autour de " +
-                lowestIncorrectSum +
-                ". " +
-                "Il recommande de travailler progressivement " +
-                "autour de cette limite.",
-
-            highestCorrectSum:
-                highestCorrectSum,
-
-            lowestIncorrectSum:
-                lowestIncorrectSum
-        };
+        if (recentAccuracy >= 80) {
+            trend = "improving";
+        }
+        else if (recentAccuracy <= 40) {
+            trend = "declining";
+        }
     }
 
 
-    // =================================================
-    // 🧮 MATHS : ERREURS RÉCENTES
-    // =================================================
+    /* -----------------------------------------------------
+       Streak
+    ----------------------------------------------------- */
 
-    if (
-        recentMathsErrors >= 3 ||
-        mathsIncorrectStreak >= 3
-    ) {
+    const currentCorrectStreak =
+        Number(data.currentCorrectStreak) || 0;
 
-        return {
+    const currentIncorrectStreak =
+        Number(data.currentIncorrectStreak) || 0;
 
-            status: "attention",
-
-            subject: "Maths",
-
-            difficulty: "tres_simple",
-
-            recommendation: {
-
-                subject: "Maths",
-
-                action: "entrainer",
-
-                level: "tres_simple",
-
-                message:
-                    "Ralentir et proposer des additions très simples."
-            },
-
-            message:
-                "🔎 L'analyste observe plusieurs erreurs récentes " +
-                "en maths. " +
-                "Il recommande de revenir temporairement " +
-                "à des additions très simples.",
-
-            recentMathsCorrect:
-                recentMathsCorrect,
-
-            recentMathsErrors:
-                recentMathsErrors
-        };
-    }
-
-
-    // =================================================
-    // 🧮 MATHS : PROGRESSION
-    // =================================================
-
-    if (
-        mathsCorrectStreak >= 5 ||
-        (
-            recentMaths.length >= 4 &&
-            recentMathsCorrect >= 4
-        )
-    ) {
-
-        return {
-
-            status: "progression",
-
-            subject: "Maths",
-
-            difficulty: "difficile",
-
-            recommendation: {
-
-                subject: "Maths",
-
-                action: "progresser",
-
-                level: "difficile",
-
-                message:
-                    "Mama Binta réussit plusieurs exercices de maths. " +
-                    "Augmenter progressivement la difficulté."
-            },
-
-            message:
-                "🌟 L'analyste observe une bonne série " +
-                "de réussites en maths. " +
-                "Il recommande d'augmenter progressivement " +
-                "la difficulté.",
-
-            recentMathsCorrect:
-                recentMathsCorrect,
-
-            recentMathsErrors:
-                recentMathsErrors,
-
-            highestCorrectSum:
-                highestCorrectSum
-        };
-    }
-
-
-    // =================================================
-    // 🧮 MATHS : QUELQUES ERREURS
-    // =================================================
-
-    if (
-        recentMathsErrors > 0 ||
-        memory.mathsIncorrect > memory.mathsCorrect
-    ) {
-
-        return {
-
-            status: "attention",
-
-            subject: "Maths",
-
-            difficulty: "simple",
-
-            recommendation: {
-
-                subject: "Maths",
-
-                action: "entrainer",
-
-                level: "simple",
-
-                message:
-                    "Continuer avec des exercices simples de maths."
-            },
-
-            message:
-                "🧠 L'analyste recommande de continuer " +
-                "avec des exercices simples de maths " +
-                "afin de consolider les bases.",
-
-            recentMathsCorrect:
-                recentMathsCorrect,
-
-            recentMathsErrors:
-                recentMathsErrors,
-
-            highestCorrectSum:
-                highestCorrectSum
-        };
-    }
-
-
-    // =================================================
-    // 📖 LECTURE : ERREURS RÉCENTES
-    // =================================================
-
-    if (
-        recentReadingErrors >= 3 ||
-        readingIncorrectStreak >= 3
-    ) {
-
-        return {
-
-            status: "attention",
-
-            subject: "Lecture",
-
-            difficulty: "tres_simple",
-
-            recommendation: {
-
-                subject: "Lecture",
-
-                action: "entrainer",
-
-                level: "tres_simple",
-
-                message:
-                    "Ralentir et proposer des exercices de lecture simples."
-            },
-
-            message:
-                "🔎 L'analyste observe plusieurs erreurs récentes " +
-                "en lecture. " +
-                "Il recommande de revenir temporairement " +
-                "à des exercices très simples.",
-
-            recentReadingCorrect:
-                recentReadingCorrect,
-
-            recentReadingErrors:
-                recentReadingErrors
-        };
-    }
-
-
-    // =================================================
-    // 📖 LECTURE : PROGRESSION
-    // =================================================
-
-    if (
-        readingCorrectStreak >= 5 ||
-        (
-            recentReading.length >= 4 &&
-            recentReadingCorrect >= 4
-        )
-    ) {
-
-        return {
-
-            status: "progression",
-
-            subject: "Lecture",
-
-            difficulty: "difficile",
-
-            recommendation: {
-
-                subject: "Lecture",
-
-                action: "progresser",
-
-                level: "difficile",
-
-                message:
-                    "Mama Binta réussit plusieurs exercices de lecture. " +
-                    "Augmenter progressivement la difficulté."
-            },
-
-            message:
-                "🌟 L'analyste observe une bonne série " +
-                "de réussites en lecture. " +
-                "Il recommande d'augmenter progressivement " +
-                "la difficulté.",
-
-            recentReadingCorrect:
-                recentReadingCorrect,
-
-            recentReadingErrors:
-                recentReadingErrors
-        };
-    }
-
-
-    // =================================================
-    // 📖 LECTURE : QUELQUES ERREURS
-    // =================================================
-
-    if (
-        recentReadingErrors > 0 ||
-        memory.readingIncorrect >
-        memory.readingCorrect
-    ) {
-
-        return {
-
-            status: "attention",
-
-            subject: "Lecture",
-
-            difficulty: "simple",
-
-            recommendation: {
-
-                subject: "Lecture",
-
-                action: "entrainer",
-
-                level: "simple",
-
-                message:
-                    "Continuer avec des exercices simples de lecture."
-            },
-
-            message:
-                "🧠 L'analyste recommande de continuer " +
-                "avec des exercices simples de lecture " +
-                "afin de consolider les bases.",
-
-            recentReadingCorrect:
-                recentReadingCorrect,
-
-            recentReadingErrors:
-                recentReadingErrors
-        };
-    }
-
-
-    // =================================================
-    // ⚖️ ÉQUILIBRE
-    // =================================================
 
     return {
 
-        status: "équilibre",
+        skill,
 
-        subject: null,
+        label:
+            ANALYZER_LABELS[skill] ||
+            skill,
 
-        difficulty: "normal",
+        total,
 
-        recommendation: {
+        correct,
 
-            subject: "Général",
+        incorrect,
 
-            action: "continuer",
+        accuracy,
 
-            level: "normal",
+        recentTotal,
 
-            message:
-                "Continuer les exercices normalement."
-        },
+        recentCorrect,
 
-        message:
-            "🧠 L'analyste ne détecte pas de difficulté " +
-            "particulière actuellement. " +
-            "Mama Binta peut continuer normalement."
+        recentAccuracy,
+
+        status,
+
+        difficulty,
+
+        trend,
+
+        currentCorrectStreak,
+
+        currentIncorrectStreak
     };
 }
+
+
+/* =========================================================
+   ANALYSE DE TOUTES LES COMPÉTENCES
+========================================================= */
+
+function analyzeAllSkills() {
+
+    const analysis = {};
+
+    ANALYZER_SKILLS.forEach(skill => {
+        analysis[skill] = analyzeSkill(skill);
+    });
+
+    return analysis;
+}
+
+
+/* =========================================================
+   IDENTIFIER LES FORCES
+========================================================= */
+
+function getStrongSkills() {
+
+    const analysis = analyzeAllSkills();
+
+    return ANALYZER_SKILLS.filter(skill => {
+
+        return (
+            analysis[skill].status === "strong"
+        );
+
+    });
+}
+
+
+/* =========================================================
+   IDENTIFIER LES DIFFICULTÉS
+========================================================= */
+
+function getWeakSkills() {
+
+    const analysis = analyzeAllSkills();
+
+    return ANALYZER_SKILLS.filter(skill => {
+
+        return (
+            analysis[skill].status === "needs_support"
+        );
+
+    });
+}
+
+
+/* =========================================================
+   IDENTIFIER LES COMPÉTENCES À RENFORCER
+========================================================= */
+
+function getSkillsToPractice() {
+
+    const analysis = analyzeAllSkills();
+
+    return ANALYZER_SKILLS
+        .filter(skill => {
+
+            const data = analysis[skill];
+
+            return (
+                data.status === "needs_support" ||
+                data.trend === "declining"
+            );
+
+        })
+        .sort((a, b) => {
+
+            const accuracyA =
+                analysis[a].accuracy;
+
+            const accuracyB =
+                analysis[b].accuracy;
+
+            return accuracyA - accuracyB;
+        });
+}
+
+
+/* =========================================================
+   ANALYSE DE LA SESSION RÉCENTE
+========================================================= */
+
+function analyzeRecentSession() {
+
+    const memory = analyzerGetMemory();
+
+    if (!memory || !Array.isArray(memory.recentResults)) {
+
+        return {
+            total: 0,
+            correct: 0,
+            incorrect: 0,
+            accuracy: 0
+        };
+    }
+
+    const results =
+        memory.recentResults.slice(-5);
+
+    const total = results.length;
+
+    const correct =
+        results.filter(
+            result => result.correct === true
+        ).length;
+
+    const incorrect =
+        total - correct;
+
+    const accuracy =
+        total > 0
+            ? Math.round((correct / total) * 100)
+            : 0;
+
+    return {
+        total,
+        correct,
+        incorrect,
+        accuracy
+    };
+}
+
+
+/* =========================================================
+   ANALYSE GÉNÉRALE
+========================================================= */
+
+function analyzeStudent() {
+
+    const memory = analyzerGetMemory();
+
+    const skills = analyzeAllSkills();
+
+    const strongSkills = getStrongSkills();
+
+    const weakSkills = getWeakSkills();
+
+    const skillsToPractice =
+        getSkillsToPractice();
+
+    const recentSession =
+        analyzeRecentSession();
+
+
+    let overallAccuracy = 0;
+
+    if (memory) {
+
+        const total =
+            Number(memory.total) || 0;
+
+        const correct =
+            Number(memory.correct) || 0;
+
+        if (total > 0) {
+
+            overallAccuracy =
+                Math.round(
+                    (correct / total) * 100
+                );
+        }
+    }
+
+
+    return {
+
+        overallAccuracy,
+
+        skills,
+
+        strongSkills,
+
+        weakSkills,
+
+        skillsToPractice,
+
+        recentSession,
+
+        currentLevel:
+            memory &&
+            Number(memory.currentLevel)
+                ? Number(memory.currentLevel)
+                : 1,
+
+        highestLevelReached:
+            memory &&
+            Number(memory.highestLevelReached)
+                ? Number(memory.highestLevelReached)
+                : 1
+    };
+}
+
+
+/* =========================================================
+   MESSAGE HUMAIN
+========================================================= */
+
+function getAnalyzerMessage() {
+
+    const analysis =
+        analyzeStudent();
+
+    const weak =
+        analysis.skillsToPractice;
+
+    if (weak.length === 0) {
+
+        return "Mama Binta montre une progression équilibrée. 🌟";
+    }
+
+    const firstSkill = weak[0];
+
+    const label =
+        ANALYZER_LABELS[firstSkill] ||
+        firstSkill;
+
+    return (
+        label +
+        " est actuellement la compétence " +
+        "qui mérite le plus d'attention."
+    );
+}
+
+
+/* =========================================================
+   RAPPORT POUR L'INTERFACE
+========================================================= */
+
+function getAnalysisReport() {
+
+    const analysis =
+        analyzeStudent();
+
+    return {
+
+        niveau:
+            analysis.currentLevel,
+
+        meilleurNiveau:
+            analysis.highestLevelReached,
+
+        precision:
+            analysis.overallAccuracy,
+
+        pointsForts:
+            analysis.strongSkills.map(
+                skill =>
+                    ANALYZER_LABELS[skill]
+            ),
+
+        difficultes:
+            analysis.weakSkills.map(
+                skill =>
+                    ANALYZER_LABELS[skill]
+            ),
+
+        aRenforcer:
+            analysis.skillsToPractice.map(
+                skill =>
+                    ANALYZER_LABELS[skill]
+            ),
+
+        sessionRecente:
+            analysis.recentSession
+    };
+}
+
+
+/* =========================================================
+   DEBUG
+========================================================= */
+
+console.log(
+    "🧠 Analyste Mama Binta chargé."
+);
+
+console.log(
+    "Compétences analysées :",
+    ANALYZER_SKILLS
+);
