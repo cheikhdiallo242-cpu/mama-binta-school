@@ -1,12 +1,13 @@
 /*
 ==========================================================
-✏️ MAMA BINTA — AGENT GÉNÉRATEUR
+✏️ MAMA BINTA — AGENT GÉNÉRATEUR v2
 ==========================================================
 
 Rôle :
 - créer les exercices
 - respecter le niveau 1 → 100
 - varier les exercices
+- éviter les répétitions
 - tenir compte des compétences faibles
 - créer les sessions de 5 exercices
 
@@ -38,6 +39,8 @@ const READING_WORDS = [
     { word: "Fenêtre", emoji: "🪟", category: "maison" },
     { word: "Lit", emoji: "🛏️", category: "maison" },
     { word: "Lampe", emoji: "💡", category: "maison" },
+    { word: "Maison", emoji: "🏡", category: "maison" },
+    { word: "Clé", emoji: "🔑", category: "maison" },
 
     // 🐾 Animaux
     { word: "Chat", emoji: "🐈", category: "animaux" },
@@ -51,6 +54,11 @@ const READING_WORDS = [
     { word: "Lion", emoji: "🦁", category: "animaux" },
     { word: "Koala", emoji: "🐨", category: "animaux" },
     { word: "Kangourou", emoji: "🦘", category: "animaux" },
+    { word: "Poule", emoji: "🐔", category: "animaux" },
+    { word: "Mouton", emoji: "🐑", category: "animaux" },
+    { word: "Cheval", emoji: "🐎", category: "animaux" },
+    { word: "Papillon", emoji: "🦋", category: "animaux" },
+    { word: "Abeille", emoji: "🐝", category: "animaux" },
 
     // 🌿 Nature
     { word: "Arbre", emoji: "🌳", category: "nature" },
@@ -62,6 +70,8 @@ const READING_WORDS = [
     { word: "Pluie", emoji: "🌧️", category: "nature" },
     { word: "Étoile", emoji: "⭐", category: "nature" },
     { word: "Montagne", emoji: "⛰️", category: "nature" },
+    { word: "Mer", emoji: "🌊", category: "nature" },
+    { word: "Feuille", emoji: "🍃", category: "nature" },
 
     // 🍎 Nourriture
     { word: "Pomme", emoji: "🍎", category: "nourriture" },
@@ -72,6 +82,9 @@ const READING_WORDS = [
     { word: "Lait", emoji: "🥛", category: "nourriture" },
     { word: "Riz", emoji: "🍚", category: "nourriture" },
     { word: "Fromage", emoji: "🧀", category: "nourriture" },
+    { word: "Mangue", emoji: "🥭", category: "nourriture" },
+    { word: "Fraise", emoji: "🍓", category: "nourriture" },
+    { word: "Pastèque", emoji: "🍉", category: "nourriture" },
 
     // 🏫 École
     { word: "École", emoji: "🏫", category: "école" },
@@ -81,21 +94,74 @@ const READING_WORDS = [
     { word: "Cahier", emoji: "📓", category: "école" },
     { word: "Règle", emoji: "📏", category: "école" },
     { word: "Sac", emoji: "🎒", category: "école" },
+    { word: "Gomme", emoji: "🧽", category: "école" },
 
-    // 🚗 Objets / transport
+    // 🚗 Transport
     { word: "Voiture", emoji: "🚗", category: "transport" },
     { word: "Moto", emoji: "🏍️", category: "transport" },
     { word: "Avion", emoji: "✈️", category: "transport" },
     { word: "Train", emoji: "🚆", category: "transport" },
     { word: "Vélo", emoji: "🚲", category: "transport" },
     { word: "Bateau", emoji: "🚢", category: "transport" },
-    { word: "Wagon", emoji: "🚃", category: "transport" },
+    { word: "Bus", emoji: "🚌", category: "transport" },
 
-    // 🤖 Divers
+    // ⚽ Jeux / objets
+    { word: "Ballon", emoji: "⚽", category: "jeu" },
+    { word: "Balle", emoji: "🥎", category: "jeu" },
+    { word: "Jouet", emoji: "🧸", category: "jeu" },
+    { word: "Poupée", emoji: "🪆", category: "jeu" },
     { word: "Robot", emoji: "🤖", category: "divers" },
-    { word: "Ballon", emoji: "⚽", category: "divers" },
-    { word: "Jouet", emoji: "🧸", category: "divers" },
-    { word: "Drapeau", emoji: "🏳️", category: "divers" }
+    { word: "Drapeau", emoji: "🏳️", category: "divers" },
+    { word: "Téléphone", emoji: "📱", category: "divers" },
+    { word: "Horloge", emoji: "🕐", category: "divers" }
+];
+
+
+// ========================================================
+// 👧🏾 PRÉNOMS
+// ========================================================
+
+const MAMA_BINTA_NAMES = [
+
+    "Olga",
+    "Diatta",
+    "Daba",
+    "Papa Baba",
+    "Sandrine",
+    "Mamadou",
+    "Maty",
+    "Ndické",
+    "Awa",
+    "Moussa",
+    "Fatou",
+    "Ibrahima",
+    "Sali",
+    "Oumar",
+    "Astou",
+    "Binta",
+    "Ali",
+    "Mariama",
+    "Cheikh",
+    "Aminata"
+];
+
+
+// ========================================================
+// 🏪 CONTEXTES
+// ========================================================
+
+const MAMA_BINTA_CONTEXTS = [
+
+    "à l'école",
+    "à la maison",
+    "au marché",
+    "dans le jardin",
+    "dans la cour",
+    "au terrain",
+    "dans la classe",
+    "près de la maison",
+    "au village",
+    "dans le quartier"
 ];
 
 
@@ -114,7 +180,7 @@ const READING_LETTERS = [
 
 
 // ========================================================
-// 🔀 MÉLANGER
+// 🔀 OUTILS
 // ========================================================
 
 function shuffle(arr) {
@@ -125,9 +191,15 @@ function shuffle(arr) {
 }
 
 
-// ========================================================
-// 🔤 PREMIÈRE LETTRE
-// ========================================================
+function randomItem(arr) {
+
+    return arr[
+        Math.floor(
+            Math.random() * arr.length
+        )
+    ];
+}
+
 
 function firstLetter(word) {
 
@@ -138,10 +210,6 @@ function firstLetter(word) {
         .toUpperCase();
 }
 
-
-// ========================================================
-// 🧮 NIVEAU → DIFFICULTÉ
-// ========================================================
 
 function getDifficultyFromLevel(level) {
 
@@ -158,8 +226,159 @@ function getDifficultyFromLevel(level) {
 }
 
 
+function randomInt(min, max) {
+
+    return Math.floor(
+        Math.random() *
+        (max - min + 1)
+    ) + min;
+}
+
+
 // ========================================================
-// 📖 QUESTION DE LECTURE
+// 🧠 MÉMOIRE DES QUESTIONS DU GÉNÉRATEUR
+// ========================================================
+
+const GENERATOR_HISTORY_KEY =
+    "mamaBintaQuestionHistory";
+
+
+function getGeneratorHistory() {
+
+    try {
+
+        const data =
+            localStorage.getItem(
+                GENERATOR_HISTORY_KEY
+            );
+
+        if (!data) {
+            return [];
+        }
+
+        const parsed =
+            JSON.parse(data);
+
+        return Array.isArray(parsed)
+            ? parsed
+            : [];
+
+    } catch (error) {
+
+        console.warn(
+            "⚠️ Impossible de lire l'historique du générateur.",
+            error
+        );
+
+        return [];
+    }
+}
+
+
+function saveGeneratorHistory(history) {
+
+    try {
+
+        localStorage.setItem(
+            GENERATOR_HISTORY_KEY,
+            JSON.stringify(
+                history.slice(-80)
+            )
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "⚠️ Impossible de sauvegarder l'historique du générateur.",
+            error
+        );
+    }
+}
+
+
+function wasRecentlyUsed(signature) {
+
+    return getGeneratorHistory()
+        .includes(signature);
+}
+
+
+function rememberGeneratedQuestion(
+    question
+) {
+
+    if (!question) {
+        return;
+    }
+
+    const signature =
+        question.signature ||
+        question.question;
+
+    if (!signature) {
+        return;
+    }
+
+    const history =
+        getGeneratorHistory();
+
+    const updated =
+        history.filter(
+            item =>
+                item !== signature
+        );
+
+    updated.push(signature);
+
+    saveGeneratorHistory(updated);
+}
+
+
+function clearGeneratorHistory() {
+
+    try {
+
+        localStorage.removeItem(
+            GENERATOR_HISTORY_KEY
+        );
+
+    } catch (error) {
+
+        console.warn(error);
+    }
+}
+
+
+// ========================================================
+// 🧠 FINALISER UNE QUESTION
+// ========================================================
+
+function finalizeGeneratedQuestion(
+    question
+) {
+
+    if (!question) {
+        return question;
+    }
+
+    if (!question.signature) {
+
+        question.signature =
+            question.skill +
+            "|" +
+            question.question;
+    }
+
+    rememberGeneratedQuestion(
+        question
+    );
+
+    return question;
+}
+
+
+// ========================================================
+// 📖 LECTURE
 // ========================================================
 
 function generateReadingQuestion(
@@ -169,57 +388,38 @@ function generateReadingQuestion(
     const safeLevel =
         getDifficultyFromLevel(level);
 
-
-    // ----------------------------------------------------
-    // NIVEAUX 1 → 20
-    // Lettre → mot
-    // ----------------------------------------------------
+    let question;
 
     if (safeLevel <= 20) {
 
-        return generateLetterWordQuestion();
+        question =
+            generateLetterWordQuestion();
+
+    } else if (safeLevel <= 40) {
+
+        question =
+            generateEmojiWordQuestion();
+
+    } else if (safeLevel <= 60) {
+
+        question =
+            generateMissingLetterQuestion();
+
+    } else if (safeLevel <= 80) {
+
+        question =
+            generateSentenceQuestion();
+
+    } else {
+
+        question =
+            generateReadingComprehensionQuestion();
     }
 
-
-    // ----------------------------------------------------
-    // NIVEAUX 21 → 40
-    // Mot → image / emoji
-    // ----------------------------------------------------
-
-    if (safeLevel <= 40) {
-
-        return generateEmojiWordQuestion();
-    }
-
-
-    // ----------------------------------------------------
-    // NIVEAUX 41 → 60
-    // Mot à compléter
-    // ----------------------------------------------------
-
-    if (safeLevel <= 60) {
-
-        return generateMissingLetterQuestion();
-    }
-
-
-    // ----------------------------------------------------
-    // NIVEAUX 61 → 80
-    // Choisir le bon mot dans une phrase
-    // ----------------------------------------------------
-
-    if (safeLevel <= 80) {
-
-        return generateSentenceQuestion();
-    }
-
-
-    // ----------------------------------------------------
-    // NIVEAUX 81 → 100
-    // Compréhension de lecture
-    // ----------------------------------------------------
-
-    return generateReadingComprehensionQuestion();
+    return getUniqueQuestion(
+        question,
+        () => generateReadingQuestion(safeLevel)
+    );
 }
 
 
@@ -230,13 +430,9 @@ function generateReadingQuestion(
 function generateLetterWordQuestion() {
 
     const letter =
-        READING_LETTERS[
-            Math.floor(
-                Math.random() *
-                READING_LETTERS.length
-            )
-        ];
-
+        randomItem(
+            READING_LETTERS
+        );
 
     const correctWords =
         READING_WORDS.filter(
@@ -244,41 +440,25 @@ function generateLetterWordQuestion() {
                 firstLetter(item.word) === letter
         );
 
-
-    const wrongWords =
-        READING_WORDS.filter(
-            item =>
-                firstLetter(item.word) !== letter
-        );
-
-
-    if (
-        correctWords.length === 0
-    ) {
+    if (!correctWords.length) {
 
         return generateLetterWordQuestion();
     }
 
-
     const answer =
-        correctWords[
-            Math.floor(
-                Math.random() *
-                correctWords.length
-            )
-        ];
-
-
-    const wrongChoices =
-        shuffle(
-            wrongWords
-        ).slice(
-            0,
-            2
+        randomItem(
+            correctWords
         );
 
+    const wrongWords =
+        shuffle(
+            READING_WORDS.filter(
+                item =>
+                    item.word !== answer.word
+            )
+        ).slice(0, 2);
 
-    return {
+    return finalizeGeneratedQuestion({
 
         question:
             "Quel mot commence par la lettre " +
@@ -288,13 +468,21 @@ function generateLetterWordQuestion() {
         choices:
             shuffle([
                 answer.word,
-                ...wrongChoices.map(
+                ...wrongWords.map(
                     item => item.word
                 )
             ]),
 
         answer:
             answer.word,
+
+        answerDisplay:
+            answer.word +
+            " " +
+            answer.emoji,
+
+        answerEmoji:
+            answer.emoji,
 
         skill:
             "reading",
@@ -303,8 +491,14 @@ function generateLetterWordQuestion() {
             "Lecture",
 
         levelType:
-            "letter_word"
-    };
+            "letter_word",
+
+        signature:
+            "reading-letter|" +
+            letter +
+            "|" +
+            answer.word
+    });
 }
 
 
@@ -315,13 +509,9 @@ function generateLetterWordQuestion() {
 function generateEmojiWordQuestion() {
 
     const item =
-        READING_WORDS[
-            Math.floor(
-                Math.random() *
-                READING_WORDS.length
-            )
-        ];
-
+        randomItem(
+            READING_WORDS
+        );
 
     const wrongChoices =
         shuffle(
@@ -329,13 +519,9 @@ function generateEmojiWordQuestion() {
                 candidate =>
                     candidate.word !== item.word
             )
-        ).slice(
-            0,
-            2
-        );
+        ).slice(0, 2);
 
-
-    return {
+    return finalizeGeneratedQuestion({
 
         question:
             "Quel mot correspond à " +
@@ -354,6 +540,14 @@ function generateEmojiWordQuestion() {
         answer:
             item.word,
 
+        answerDisplay:
+            item.word +
+            " " +
+            item.emoji,
+
+        answerEmoji:
+            item.emoji,
+
         skill:
             "reading",
 
@@ -361,8 +555,14 @@ function generateEmojiWordQuestion() {
             "Lecture",
 
         levelType:
-            "emoji_word"
-    };
+            "emoji_word",
+
+        signature:
+            "reading-emoji|" +
+            item.word +
+            "|" +
+            item.emoji
+    });
 }
 
 
@@ -373,38 +573,28 @@ function generateEmojiWordQuestion() {
 function generateMissingLetterQuestion() {
 
     const item =
-        READING_WORDS[
-            Math.floor(
-                Math.random() *
-                READING_WORDS.length
-            )
-        ];
-
+        randomItem(
+            READING_WORDS
+        );
 
     const word =
         item.word;
 
-
-    if (
-        word.length < 3
-    ) {
+    if (word.length < 3) {
 
         return generateLetterWordQuestion();
     }
 
-
     const position =
-        Math.floor(
-            Math.random() *
-            word.length
+        randomInt(
+            0,
+            word.length - 1
         );
-
 
     const missing =
         word.charAt(
             position
-        );
-
+        ).toUpperCase();
 
     const displayed =
         word.substring(
@@ -416,21 +606,15 @@ function generateMissingLetterQuestion() {
             position + 1
         );
 
-
     const wrongLetters =
         shuffle(
             READING_LETTERS.filter(
                 letter =>
-                    letter !==
-                    firstLetter(missing)
+                    letter !== missing
             )
-        ).slice(
-            0,
-            2
-        );
+        ).slice(0, 2);
 
-
-    return {
+    return finalizeGeneratedQuestion({
 
         question:
             "Quelle lettre manque dans : " +
@@ -439,12 +623,22 @@ function generateMissingLetterQuestion() {
 
         choices:
             shuffle([
-                missing.toUpperCase(),
+                missing,
                 ...wrongLetters
             ]),
 
         answer:
-            missing.toUpperCase(),
+            missing,
+
+        answerDisplay:
+            missing +
+            " → " +
+            word +
+            " " +
+            item.emoji,
+
+        answerEmoji:
+            item.emoji,
 
         skill:
             "reading",
@@ -453,67 +647,99 @@ function generateMissingLetterQuestion() {
             "Lecture",
 
         levelType:
-            "missing_letter"
-    };
+            "missing_letter",
+
+        signature:
+            "reading-missing|" +
+            word +
+            "|" +
+            position
+    });
 }
 
 
 // ========================================================
-// 📝 PHRASE SIMPLE
+// 📝 PHRASES DE LECTURE
 // ========================================================
+
+const READING_SENTENCES = [
+
+    {
+        sentence: "Le chat dort sur le tapis.",
+        answer: "chat",
+        choices: ["chat", "train", "soleil"]
+    },
+
+    {
+        sentence: "Olga porte son sac pour aller à l'école.",
+        answer: "sac",
+        choices: ["sac", "poisson", "voiture"]
+    },
+
+    {
+        sentence: "Mamadou mange une mangue bien mûre.",
+        answer: "mangue",
+        choices: ["mangue", "chaise", "avion"]
+    },
+
+    {
+        sentence: "Daba joue avec une balle dans la cour.",
+        answer: "balle",
+        choices: ["balle", "livre", "lune"]
+    },
+
+    {
+        sentence: "Sandrine lit un livre dans sa chambre.",
+        answer: "livre",
+        choices: ["livre", "chien", "vélo"]
+    },
+
+    {
+        sentence: "Papa Baba regarde les poules dans le jardin.",
+        answer: "poules",
+        choices: ["poules", "bateau", "crayon"]
+    },
+
+    {
+        sentence: "Maty écrit avec un crayon.",
+        answer: "crayon",
+        choices: ["crayon", "chat", "maison"]
+    },
+
+    {
+        sentence: "Ndické regarde les étoiles dans le ciel.",
+        answer: "étoiles",
+        choices: ["étoiles", "chaise", "pomme"]
+    },
+
+    {
+        sentence: "Diatta prend le bus pour aller à l'école.",
+        answer: "bus",
+        choices: ["bus", "mouton", "gâteau"]
+    },
+
+    {
+        sentence: "Awa arrose une fleur dans le jardin.",
+        answer: "fleur",
+        choices: ["fleur", "train", "stylo"]
+    },
+
+    {
+        sentence: "Moussa fait du vélo dans la cour.",
+        answer: "vélo",
+        choices: ["vélo", "livre", "orange"]
+    }
+];
+
 
 function generateSentenceQuestion() {
 
-    const sentences = [
-
-        {
-            sentence:
-                "Le chat dort sur le tapis.",
-            choices:
-                ["chat", "soleil", "voiture"],
-            answer:
-                "chat"
-        },
-
-        {
-            sentence:
-                "La fille mange une pomme.",
-            choices:
-                ["pomme", "maison", "train"],
-            answer:
-                "pomme"
-        },
-
-        {
-            sentence:
-                "Le garçon va à l'école.",
-            choices:
-                ["école", "forêt", "bateau"],
-            answer:
-                "école"
-        },
-
-        {
-            sentence:
-                "Le chien court dans le jardin.",
-            choices:
-                ["chien", "livre", "lune"],
-            answer:
-                "chien"
-        }
-    ];
-
-
     const item =
-        sentences[
-            Math.floor(
-                Math.random() *
-                sentences.length
-            )
-        ];
+        randomItem(
+            READING_SENTENCES
+        );
 
-
-    return {
+    return finalizeGeneratedQuestion({
 
         question:
             "Quel mot est important dans cette phrase ?\n\n" +
@@ -527,6 +753,9 @@ function generateSentenceQuestion() {
         answer:
             item.answer,
 
+        answerDisplay:
+            item.answer,
+
         skill:
             "reading",
 
@@ -534,8 +763,12 @@ function generateSentenceQuestion() {
             "Lecture",
 
         levelType:
-            "sentence"
-    };
+            "sentence",
+
+        signature:
+            "reading-sentence|" +
+            item.sentence
+    });
 }
 
 
@@ -543,60 +776,135 @@ function generateSentenceQuestion() {
 // 📖 COMPRÉHENSION DE LECTURE
 // ========================================================
 
+const READING_PASSAGES = [
+
+    {
+        text:
+            "Olga a un petit chat. " +
+            "Chaque matin, elle lui donne à manger. " +
+            "Le chat aime ensuite dormir près de la fenêtre.",
+
+        question:
+            "Où le chat aime-t-il dormir ?",
+
+        choices:
+            [
+                "Près de la fenêtre",
+                "Dans le bus",
+                "Au marché"
+            ],
+
+        answer:
+            "Près de la fenêtre"
+    },
+
+    {
+        text:
+            "Mamadou va au marché avec Daba. " +
+            "Ils achètent des mangues, des oranges et du pain.",
+
+        question:
+            "Qu'achètent Mamadou et Daba ?",
+
+        choices:
+            [
+                "Des mangues, des oranges et du pain",
+                "Des cahiers et des crayons",
+                "Des chaussures"
+            ],
+
+        answer:
+            "Des mangues, des oranges et du pain"
+    },
+
+    {
+        text:
+            "Sandrine prépare son sac avant de partir à l'école. " +
+            "Elle met un cahier, un livre et deux crayons.",
+
+        question:
+            "Que met Sandrine dans son sac ?",
+
+        choices:
+            [
+                "Un cahier, un livre et deux crayons",
+                "Une balle et un ballon",
+                "Une pomme et une orange"
+            ],
+
+        answer:
+            "Un cahier, un livre et deux crayons"
+    },
+
+    {
+        text:
+            "Papa Baba possède quelques poules. " +
+            "Chaque soir, il vérifie qu'elles sont bien rentrées " +
+            "dans leur abri.",
+
+        question:
+            "Que fait Papa Baba chaque soir ?",
+
+        choices:
+            [
+                "Il vérifie ses poules",
+                "Il prend le train",
+                "Il va nager"
+            ],
+
+        answer:
+            "Il vérifie ses poules"
+    },
+
+    {
+        text:
+            "Maty trouve un livre dans la classe. " +
+            "Elle le donne à la maîtresse afin qu'il soit rendu " +
+            "à son propriétaire.",
+
+        question:
+            "Que fait Maty avec le livre ?",
+
+        choices:
+            [
+                "Elle le donne à la maîtresse",
+                "Elle le jette",
+                "Elle le mange"
+            ],
+
+        answer:
+            "Elle le donne à la maîtresse"
+    },
+
+    {
+        text:
+            "Ndické regarde le ciel après la pluie. " +
+            "Elle voit des nuages et un grand arc-en-ciel.",
+
+        question:
+            "Que voit Ndické dans le ciel ?",
+
+        choices:
+            [
+                "Des nuages et un arc-en-ciel",
+                "Des poissons",
+                "Des voitures"
+            ],
+
+        answer:
+            "Des nuages et un arc-en-ciel"
+    }
+];
+
+
 function generateReadingComprehensionQuestion() {
 
-    const passages = [
-
-        {
-            text:
-                "Awa a un petit chat. " +
-                "Le chat aime dormir sous la table.",
-
-            question:
-                "Où le chat aime-t-il dormir ?",
-
-            choices:
-                [
-                    "Sous la table",
-                    "Dans la voiture",
-                    "À l'école"
-                ],
-
-            answer:
-                "Sous la table"
-        },
-
-        {
-            text:
-                "Moussa va au marché avec sa maman. " +
-                "Ils achètent des pommes et des bananes.",
-
-            question:
-                "Qu'est-ce que Moussa achète ?",
-
-            choices:
-                [
-                    "Des pommes et des bananes",
-                    "Des chaussures",
-                    "Des livres"
-                ],
-
-            answer:
-                "Des pommes et des bananes"
-        }
-    ];
-
-
     const item =
-        passages[
-            Math.floor(
-                Math.random() *
-                passages.length
-            )
-        ];
+        randomItem(
+            READING_PASSAGES
+        );
 
-
-    return {
+    return finalizeGeneratedQuestion({
 
         question:
             item.text +
@@ -611,6 +919,9 @@ function generateReadingComprehensionQuestion() {
         answer:
             item.answer,
 
+        answerDisplay:
+            item.answer,
+
         skill:
             "reading",
 
@@ -618,13 +929,19 @@ function generateReadingComprehensionQuestion() {
             "Lecture",
 
         levelType:
-            "reading_comprehension"
-    };
+            "reading_comprehension",
+
+        signature:
+            "reading-passage|" +
+            item.text +
+            "|" +
+            item.question
+    });
 }
 
 
 // ========================================================
-// 🧮 MÉMOIRE DES QUESTIONS RÉCENTES
+// 🧠 MÉMOIRE DES RÉSULTATS
 // ========================================================
 
 function getGeneratorMemory() {
@@ -636,14 +953,12 @@ function getGeneratorMemory() {
         return loadStudentMemory();
     }
 
-
     if (
         typeof getStudentMemory === "function"
     ) {
 
         return getStudentMemory();
     }
-
 
     return null;
 }
@@ -656,7 +971,6 @@ function getRecentResultsForSkill(
     const memory =
         getGeneratorMemory();
 
-
     if (
         !memory ||
         !Array.isArray(
@@ -666,7 +980,6 @@ function getRecentResultsForSkill(
 
         return [];
     }
-
 
     return memory.recentResults.filter(
         result =>
@@ -696,65 +1009,116 @@ function getMathSignature(
 
 
 // ========================================================
-// 🔢 RÉPONSE FAUSSE
+// 🔢 RÉPONSES FAUSSES
 // ========================================================
 
 function createWrongNumbers(
     result
 ) {
 
-    const wrong = new Set();
+    const wrong =
+        new Set();
 
     const offsets = [
-        -2, -1, 1, 2, 3
+        -3,
+        -2,
+        -1,
+        1,
+        2,
+        3
     ];
 
+    shuffle(
+        offsets
+    ).forEach(
+        offset => {
 
-    for (
-        const offset
-        of offsets
+            const value =
+                result + offset;
+
+            if (
+                value >= 0 &&
+                value !== result
+            ) {
+
+                wrong.add(value);
+            }
+        }
+    );
+
+    let attempts = 0;
+
+    while (
+        wrong.size < 2 &&
+        attempts < 20
     ) {
 
         const value =
-            result + offset;
-
+            result +
+            randomInt(
+                1,
+                6
+            );
 
         if (
-            value >= 0 &&
             value !== result
         ) {
 
             wrong.add(value);
         }
+
+        attempts++;
     }
-
-
-    while (
-        wrong.size < 2
-    ) {
-
-        wrong.add(
-            result +
-            Math.floor(
-                Math.random() * 5
-            ) +
-            1
-        );
-    }
-
 
     return [
         ...wrong
-    ].slice(
-        0,
-        2
-    );
+    ].slice(0, 2);
 }
 
 
 // ========================================================
 // ➕ ADDITION
 // ========================================================
+
+const ADDITION_TEMPLATES = [
+
+    (name, a, b, item) =>
+        `${name} a ${a} ${item.word}. ` +
+        `Il/Elle en reçoit ${b}. Combien en a-t-il/elle maintenant ?`,
+
+    (name, a, b, item) =>
+        `${name} possède ${a} ${item.word}. ` +
+        `Il/Elle achète encore ${b}. Combien en possède-t-il/elle ?`,
+
+    (name, a, b, item) =>
+        `${name} trouve ${a} ${item.word} ` +
+        `et en trouve encore ${b}. Combien en a-t-il/elle en tout ?`,
+
+    (name, a, b, item) =>
+        `Dans ${name}'s panier, il y a ${a} ${item.word}. ` +
+        `On ajoute ${b}. Combien y en a-t-il maintenant ?`,
+
+    (name, a, b, item) =>
+        `${name} a ${a} ${item.word} ${item.emoji}. ` +
+        `${b} autres arrivent. Combien y en a-t-il en tout ?`
+];
+
+
+function getAdditionMax(level) {
+
+    if (level <= 10) return 5;
+    if (level <= 20) return 10;
+    if (level <= 30) return 15;
+    if (level <= 40) return 20;
+    if (level <= 50) return 30;
+    if (level <= 60) return 40;
+    if (level <= 70) return 50;
+    if (level <= 80) return 70;
+    if (level <= 90) return 90;
+
+    return 100;
+}
+
 
 function generateAdditionQuestion(
     level = 1
@@ -763,107 +1127,215 @@ function generateAdditionQuestion(
     const safeLevel =
         getDifficultyFromLevel(level);
 
+    const max =
+        getAdditionMax(
+            safeLevel
+        );
 
-    const maxNumber =
-        Math.max(
-            5,
-            Math.min(
-                100,
-                safeLevel
+    const useStory =
+        Math.random() < 0.55;
+
+    let a =
+        randomInt(
+            1,
+            Math.max(
+                2,
+                Math.floor(max * 0.7)
             )
         );
 
-
-    let a =
-        Math.floor(
-            Math.random() *
-            (maxNumber + 1)
-        );
-
-
     let b =
-        Math.floor(
-            Math.random() *
-            (maxNumber + 1)
+        randomInt(
+            1,
+            Math.max(
+                2,
+                Math.min(
+                    max - a,
+                    Math.ceil(max * 0.4)
+                )
+            )
         );
-
-
-    let result =
-        a + b;
-
-
-    // Éviter des nombres inutilement grands.
 
     if (
-        result > 100
+        a + b > max
     ) {
 
         b =
             Math.max(
-                0,
-                100 - a
+                1,
+                max - a
             );
-
-        result =
-            a + b;
     }
 
-
-    if (
-        a === 0 &&
-        b === 0
-    ) {
-
-        b = 1;
-        result = 1;
-    }
-
+    const result =
+        a + b;
 
     const wrong =
         createWrongNumbers(
             result
         );
 
+    let questionText;
 
-    return {
+    let answerDisplay =
+        String(result);
 
-        question:
-            "Combien font " +
+    let signature;
+
+    if (useStory) {
+
+        const name =
+            randomItem(
+                MAMA_BINTA_NAMES
+            );
+
+        const item =
+            randomItem(
+                READING_WORDS
+            );
+
+        const template =
+            randomItem(
+                ADDITION_TEMPLATES
+            );
+
+        questionText =
+            template(
+                name,
+                a,
+                b,
+                item
+            );
+
+        answerDisplay =
+            String(result) +
+            " " +
+            item.emoji;
+
+        signature =
+            "addition-story|" +
+            name +
+            "|" +
             a +
-            " + " +
+            "|" +
             b +
-            " ?",
+            "|" +
+            item.word +
+            "|" +
+            template.toString();
 
-        choices:
-            shuffle([
+    } else {
+
+        const forms = [
+
+            `Combien font ${a} + ${b} ?`,
+
+            `Calcule : ${a} + ${b} = ?`,
+
+            `Quel est le résultat de ${a} + ${b} ?`,
+
+            `Ajoute ${a} et ${b}. Combien obtiens-tu ?`
+        ];
+
+        questionText =
+            randomItem(
+                forms
+            );
+
+        signature =
+            "addition-number|" +
+            a +
+            "|" +
+            b +
+            "|" +
+            questionText;
+    }
+
+    return getUniqueQuestion(
+
+        finalizeGeneratedQuestion({
+
+            question:
+                questionText,
+
+            choices:
+                shuffle([
+                    String(result),
+                    ...wrong.map(
+                        value =>
+                            String(value)
+                    )
+                ]),
+
+            answer:
                 String(result),
-                ...wrong.map(
-                    value =>
-                        String(value)
-                )
-            ]),
 
-        answer:
-            String(result),
+            answerDisplay:
+                answerDisplay,
 
-        skill:
-            "addition",
+            skill:
+                "addition",
 
-        subject:
-            "Maths",
+            subject:
+                "Maths",
 
-        operator:
-            "+",
+            operator:
+                "+",
 
-        level:
-            safeLevel
-    };
+            level:
+                safeLevel,
+
+            signature:
+                signature
+        }),
+
+        () =>
+            generateAdditionQuestion(
+                safeLevel
+            )
+    );
 }
 
 
 // ========================================================
 // ➖ SOUSTRACTION
 // ========================================================
+
+const SUBTRACTION_TEMPLATES = [
+
+    (name, a, b, item) =>
+        `${name} a ${a} ${item.word}. ` +
+        `Il/Elle en donne ${b}. Combien lui en reste-t-il ?`,
+
+    (name, a, b, item) =>
+        `${name} possède ${a} ${item.word}. ` +
+        `Il/Elle perd ${b}. Combien en reste-t-il ?`,
+
+    (name, a, b, item) =>
+        `Il y a ${a} ${item.word} ${item.emoji}. ` +
+        `On en retire ${b}. Combien en reste-t-il ?`,
+
+    (name, a, b, item) =>
+        `${name} avait ${a} ${item.word}. ` +
+        `Il/Elle en utilise ${b}. Combien en reste-t-il ?`
+];
+
+
+function getSubtractionMax(level) {
+
+    if (level <= 10) return 5;
+    if (level <= 20) return 10;
+    if (level <= 30) return 15;
+    if (level <= 40) return 20;
+    if (level <= 50) return 30;
+    if (level <= 60) return 40;
+    if (level <= 70) return 50;
+    if (level <= 80) return 70;
+    if (level <= 90) return 90;
+
+    return 100;
+}
+
 
 function generateSubtractionQuestion(
     level = 1
@@ -872,83 +1344,154 @@ function generateSubtractionQuestion(
     const safeLevel =
         getDifficultyFromLevel(level);
 
+    const max =
+        getSubtractionMax(
+            safeLevel
+        );
 
-    const maxNumber =
-        Math.max(
-            5,
-            Math.min(
-                100,
-                safeLevel
+    let a =
+        randomInt(
+            2,
+            max
+        );
+
+    let b =
+        randomInt(
+            1,
+            Math.max(
+                1,
+                a - 1
             )
         );
 
-
-    let a =
-        Math.floor(
-            Math.random() *
-            (maxNumber + 1)
-        );
-
-
-    let b =
-        Math.floor(
-            Math.random() *
-            (a + 1)
-        );
-
-
-    if (
-        a === 0
-    ) {
-
-        a = 1;
-        b = 0;
-    }
-
-
     const result =
         a - b;
-
 
     const wrong =
         createWrongNumbers(
             result
         );
 
+    const useStory =
+        Math.random() < 0.55;
 
-    return {
+    let questionText;
+    let answerDisplay =
+        String(result);
+    let signature;
 
-        question:
-            "Combien font " +
+    if (useStory) {
+
+        const name =
+            randomItem(
+                MAMA_BINTA_NAMES
+            );
+
+        const item =
+            randomItem(
+                READING_WORDS
+            );
+
+        const template =
+            randomItem(
+                SUBTRACTION_TEMPLATES
+            );
+
+        questionText =
+            template(
+                name,
+                a,
+                b,
+                item
+            );
+
+        answerDisplay =
+            String(result) +
+            " " +
+            item.emoji;
+
+        signature =
+            "subtraction-story|" +
+            name +
+            "|" +
             a +
-            " − " +
+            "|" +
             b +
-            " ?",
+            "|" +
+            item.word +
+            "|" +
+            template.toString();
 
-        choices:
-            shuffle([
+    } else {
+
+        const forms = [
+
+            `Combien font ${a} − ${b} ?`,
+
+            `Calcule : ${a} − ${b} = ?`,
+
+            `Quel est le résultat de ${a} − ${b} ?`,
+
+            `Retire ${b} de ${a}. Combien reste-t-il ?`
+        ];
+
+        questionText =
+            randomItem(
+                forms
+            );
+
+        signature =
+            "subtraction-number|" +
+            a +
+            "|" +
+            b +
+            "|" +
+            questionText;
+    }
+
+    return getUniqueQuestion(
+
+        finalizeGeneratedQuestion({
+
+            question:
+                questionText,
+
+            choices:
+                shuffle([
+                    String(result),
+                    ...wrong.map(
+                        value =>
+                            String(value)
+                    )
+                ]),
+
+            answer:
                 String(result),
-                ...wrong.map(
-                    value =>
-                        String(value)
-                )
-            ]),
 
-        answer:
-            String(result),
+            answerDisplay:
+                answerDisplay,
 
-        skill:
-            "subtraction",
+            skill:
+                "subtraction",
 
-        subject:
-            "Maths",
+            subject:
+                "Maths",
 
-        operator:
-            "-",
+            operator:
+                "-",
 
-        level:
-            safeLevel
-    };
+            level:
+                safeLevel,
+
+            signature:
+                signature
+        }),
+
+        () =>
+            generateSubtractionQuestion(
+                safeLevel
+            )
+    );
 }
 
 
@@ -963,106 +1506,349 @@ function generateMultiplicationQuestion(
     const safeLevel =
         getDifficultyFromLevel(level);
 
-
-    /*
-    Progression douce :
-
-    niveaux 1-20  → tables 1-2
-    niveaux 21-40 → tables 1-5
-    niveaux 41-60 → tables 1-7
-    niveaux 61-80 → tables 1-9
-    niveaux 81-100 → nombres plus variés
-    */
-
     let maxFactor;
 
-    if (
-        safeLevel <= 20
-    ) {
+    if (safeLevel <= 20) {
 
         maxFactor = 2;
 
-    } else if (
-        safeLevel <= 40
-    ) {
+    } else if (safeLevel <= 40) {
 
         maxFactor = 5;
 
-    } else if (
-        safeLevel <= 60
-    ) {
+    } else if (safeLevel <= 60) {
 
         maxFactor = 7;
 
+    } else if (safeLevel <= 80) {
+
+        maxFactor = 9;
+
     } else {
 
-        maxFactor = 10;
+        maxFactor = 12;
     }
 
-
     const a =
-        Math.floor(
-            Math.random() *
+        randomInt(
+            1,
             maxFactor
-        ) + 1;
-
+        );
 
     const b =
-        Math.floor(
-            Math.random() *
+        randomInt(
+            1,
             maxFactor
-        ) + 1;
-
+        );
 
     const result =
         a * b;
-
 
     const wrong =
         createWrongNumbers(
             result
         );
 
+    const forms = [
 
-    return {
+        `Combien font ${a} × ${b} ?`,
 
-        question:
-            "Combien font " +
-            a +
-            " × " +
-            b +
-            " ?",
+        `Calcule : ${a} × ${b} = ?`,
 
-        choices:
-            shuffle([
+        `Quel est le résultat de ${a} × ${b} ?`,
+
+        `Combien obtient-on en multipliant ${a} par ${b} ?`
+    ];
+
+    const questionText =
+        randomItem(
+            forms
+        );
+
+    return getUniqueQuestion(
+
+        finalizeGeneratedQuestion({
+
+            question:
+                questionText,
+
+            choices:
+                shuffle([
+                    String(result),
+                    ...wrong.map(
+                        value =>
+                            String(value)
+                    )
+                ]),
+
+            answer:
                 String(result),
-                ...wrong.map(
-                    value =>
-                        String(value)
-                )
-            ]),
 
-        answer:
-            String(result),
+            answerDisplay:
+                String(result),
 
-        skill:
-            "multiplication",
+            skill:
+                "multiplication",
 
-        subject:
-            "Maths",
+            subject:
+                "Maths",
 
-        operator:
-            "×",
+            operator:
+                "×",
 
-        level:
-            safeLevel
-    };
+            level:
+                safeLevel,
+
+            signature:
+                "multiplication|" +
+                a +
+                "|" +
+                b +
+                "|" +
+                questionText
+        }),
+
+        () =>
+            generateMultiplicationQuestion(
+                safeLevel
+            )
+    );
 }
 
 
 // ========================================================
-// 🧠 COMPRÉHENSION
+// 🧠 COMPRÉHENSION — RÉSERVOIR LARGE
 // ========================================================
+
+const COMPREHENSION_QUESTIONS = [
+
+    {
+        question:
+            "Olga a 3 pommes 🍎 et reçoit 2 pommes. " +
+            "Combien a-t-elle de pommes maintenant ?",
+
+        choices:
+            ["4", "5", "6"],
+
+        answer:
+            "5"
+    },
+
+    {
+        question:
+            "Mamadou possède 7 mangues 🥭. " +
+            "Il donne 2 mangues à Daba. " +
+            "Combien lui en reste-t-il ?",
+
+        choices:
+            ["4", "5", "6"],
+
+        answer:
+            "5"
+    },
+
+    {
+        question:
+            "Sandrine a 5 crayons ✏️. " +
+            "Maty lui donne 4 crayons. " +
+            "Combien en a-t-elle maintenant ?",
+
+        choices:
+            ["8", "9", "10"],
+
+        answer:
+            "9"
+    },
+
+    {
+        question:
+            "Papa Baba a 6 poules 🐔. " +
+            "2 autres arrivent. " +
+            "Combien y a-t-il de poules en tout ?",
+
+        choices:
+            ["7", "8", "9"],
+
+        answer:
+            "8"
+    },
+
+    {
+        question:
+            "Olga a 1 chat 🐈 et une balle 🥎. " +
+            "Combien d'objets possède-t-elle ?",
+
+        choices:
+            ["1", "2", "3"],
+
+        answer:
+            "2"
+    },
+
+    {
+        question:
+            "Diatta a 4 livres 📚. " +
+            "Elle en prête 1 à Sandrine. " +
+            "Combien de livres lui reste-t-il ?",
+
+        choices:
+            ["2", "3", "4"],
+
+        answer:
+            "3"
+    },
+
+    {
+        question:
+            "Maty voit un chien 🐕 près de la maison. " +
+            "Quel animal voit-elle ?",
+
+        choices:
+            [
+                "Un chien",
+                "Un poisson",
+                "Une poule"
+            ],
+
+        answer:
+            "Un chien"
+    },
+
+    {
+        question:
+            "Le ciel est couvert de nuages ☁️ " +
+            "et la pluie commence à tomber. " +
+            "Quel temps fait-il ?",
+
+        choices:
+            [
+                "Il pleut",
+                "Il neige",
+                "Il fait très chaud"
+            ],
+
+        answer:
+            "Il pleut"
+    },
+
+    {
+        question:
+            "Moussa prend son sac 🎒 et se dirige vers l'école 🏫. " +
+            "Où va Moussa ?",
+
+        choices:
+            [
+                "À l'école",
+                "À la plage",
+                "Au marché"
+            ],
+
+        answer:
+            "À l'école"
+    },
+
+    {
+        question:
+            "Ndické a 8 fleurs 🌸. " +
+            "Elle en offre 3 à sa maman. " +
+            "Combien lui en reste-t-il ?",
+
+        choices:
+            ["4", "5", "6"],
+
+        answer:
+            "5"
+    },
+
+    {
+        question:
+            "Awa a 2 livres 📖 et trouve 3 autres livres. " +
+            "Combien a-t-elle de livres ?",
+
+        choices:
+            ["4", "5", "6"],
+
+        answer:
+            "5"
+    },
+
+    {
+        question:
+            "Cheikh a 4 ballons ⚽ et en donne 2 à Mamadou. " +
+            "Combien de ballons garde-t-il ?",
+
+        choices:
+            ["1", "2", "3"],
+
+        answer:
+            "2"
+    },
+
+    {
+        question:
+            "Un poisson 🐟 vit dans l'eau. " +
+            "Où vit le poisson ?",
+
+        choices:
+            [
+                "Dans l'eau",
+                "Dans un arbre",
+                "Dans une voiture"
+            ],
+
+        answer:
+            "Dans l'eau"
+    },
+
+    {
+        question:
+            "Une abeille 🐝 visite une fleur 🌸. " +
+            "Qu'est-ce qu'elle visite ?",
+
+        choices:
+            [
+                "Une fleur",
+                "Une maison",
+                "Une école"
+            ],
+
+        answer:
+            "Une fleur"
+    },
+
+    {
+        question:
+            "Il fait nuit et la lune 🌙 est visible. " +
+            "Quel moment de la journée est-ce ?",
+
+        choices:
+            [
+                "La nuit",
+                "Le matin",
+                "L'après-midi"
+            ],
+
+        answer:
+            "La nuit"
+    },
+
+    {
+        question:
+            "Mamadou prend un vélo 🚲 pour se déplacer. " +
+            "Quel moyen de transport utilise-t-il ?",
+
+        choices:
+            [
+                "Un vélo",
+                "Un bateau",
+                "Un avion"
+            ],
+
+        answer:
+            "Un vélo"
+    }
+];
+
 
 function generateComprehensionQuestion(
     level = 1
@@ -1071,57 +1857,14 @@ function generateComprehensionQuestion(
     const safeLevel =
         getDifficultyFromLevel(level);
 
+    let item =
+        randomItem(
+            COMPREHENSION_QUESTIONS
+        );
 
-    // -----------------------------------------------
-    // Niveau débutant
-    // -----------------------------------------------
+    return getUniqueQuestion(
 
-    if (
-        safeLevel <= 30
-    ) {
-
-        const questions = [
-
-            {
-                question:
-                    "Si Awa a 2 pommes et reçoit 1 pomme, " +
-                    "combien a-t-elle de pommes ?",
-
-                choices:
-                    ["2", "3", "4"],
-
-                answer:
-                    "3"
-            },
-
-            {
-                question:
-                    "Il fait très chaud et le soleil brille. " +
-                    "Que peut-on voir dans le ciel ?",
-
-                choices:
-                    [
-                    "Le soleil",
-                    "Un poisson",
-                    "Une chaussure"
-                    ],
-
-                answer:
-                    "Le soleil"
-            }
-        ];
-
-
-        const item =
-            questions[
-                Math.floor(
-                    Math.random() *
-                    questions.length
-                )
-            ];
-
-
-        return {
+        finalizeGeneratedQuestion({
 
             question:
                 item.question,
@@ -1134,6 +1877,9 @@ function generateComprehensionQuestion(
             answer:
                 item.answer,
 
+            answerDisplay:
+                item.answer,
+
             skill:
                 "comprehension",
 
@@ -1141,92 +1887,76 @@ function generateComprehensionQuestion(
                 "Compréhension",
 
             level:
+                safeLevel,
+
+            signature:
+                "comprehension|" +
+                item.question
+        }),
+
+        () =>
+            generateComprehensionQuestion(
                 safeLevel
-        };
+            )
+    );
+}
+
+
+// ========================================================
+// 🚫 ÉVITER UNE QUESTION RÉCENTE
+// ========================================================
+
+function getUniqueQuestion(
+    question,
+    generatorFunction
+) {
+
+    if (!question) {
+        return question;
     }
 
+    if (
+        !wasRecentlyUsed(
+            question.signature
+        )
+    ) {
 
-    // -----------------------------------------------
-    // Niveau intermédiaire / avancé
-    // -----------------------------------------------
+        return question;
+    }
 
-    const questions = [
+    /*
+    On essaie plusieurs fois de trouver
+    une autre question.
+    */
 
-        {
-            question:
-                "Moussa avait 5 billes. " +
-                "Il en donne 2 à son ami. " +
-                "Combien lui en reste-t-il ?",
+    for (
+        let attempt = 0;
+        attempt < 8;
+        attempt++
+    ) {
 
-            choices:
-                ["2", "3", "4"],
+        const alternative =
+            generatorFunction();
 
-            answer:
-                "3"
-        },
-
-        {
-            question:
-                "Awa se lève tôt pour aller à l'école. " +
-                "Pourquoi se lève-t-elle tôt ?",
-
-            choices:
-                [
-                    "Pour aller à l'école",
-                    "Pour dormir toute la journée",
-                    "Pour jouer dans la mer"
-                ],
-
-            answer:
-                "Pour aller à l'école"
-        },
-
-        {
-            question:
-                "Un panier contient 4 oranges. " +
-                "On ajoute 3 oranges. " +
-                "Combien y en a-t-il maintenant ?",
-
-            choices:
-                ["6", "7", "8"],
-
-            answer:
-                "7"
-        }
-    ];
-
-
-    const item =
-        questions[
-            Math.floor(
-                Math.random() *
-                questions.length
+        if (
+            alternative &&
+            !wasRecentlyUsed(
+                alternative.signature
             )
-        ];
+        ) {
 
+            return alternative;
+        }
+    }
 
-    return {
+    /*
+    Si tout le petit réservoir disponible
+    a récemment été utilisé, on accepte
+    finalement une question plutôt que
+    de bloquer l'application.
+    */
 
-        question:
-            item.question,
-
-        choices:
-            shuffle(
-                item.choices
-            ),
-
-        answer:
-            item.answer,
-
-        skill:
-            "comprehension",
-
-        subject:
-            "Compréhension",
-
-        level:
-            safeLevel
-    };
+    return question;
 }
 
 
@@ -1239,20 +1969,6 @@ function chooseSkillForSession(
     priority = []
 ) {
 
-    /*
-    Une session contient idéalement :
-
-    1 → Lecture
-    2 → Addition
-    3 → Soustraction
-    4 → Multiplication
-    5 → Compréhension
-
-    Mais si l'Analyste détecte une faiblesse,
-    cette compétence peut être priorisée.
-    */
-
-
     const defaultSkills = [
 
         "reading",
@@ -1262,16 +1978,13 @@ function chooseSkillForSession(
         "comprehension"
     ];
 
-
     const preferred =
         priority.filter(
             skill =>
-                defaultSkills.includes(skill)
+                defaultSkills.includes(
+                    skill
+                )
         );
-
-
-    // Pour une session standard, on conserve
-    // une compétence différente par exercice.
 
     if (
         exerciseIndex <
@@ -1283,7 +1996,6 @@ function chooseSkillForSession(
         ];
     }
 
-
     return defaultSkills[
         exerciseIndex %
         defaultSkills.length
@@ -1292,7 +2004,7 @@ function chooseSkillForSession(
 
 
 // ========================================================
-// 🧠 GÉNÉRER UN EXERCICE SELON LA COMPÉTENCE
+// 🧠 GÉNÉRER SELON LA COMPÉTENCE
 // ========================================================
 
 function generateExerciseBySkill(
@@ -1300,9 +2012,7 @@ function generateExerciseBySkill(
     level
 ) {
 
-    switch (
-        skill
-    ) {
+    switch (skill) {
 
         case "reading":
 
@@ -1310,13 +2020,11 @@ function generateExerciseBySkill(
                 level
             );
 
-
         case "addition":
 
             return generateAdditionQuestion(
                 level
             );
-
 
         case "subtraction":
 
@@ -1324,20 +2032,17 @@ function generateExerciseBySkill(
                 level
             );
 
-
         case "multiplication":
 
             return generateMultiplicationQuestion(
                 level
             );
 
-
         case "comprehension":
 
             return generateComprehensionQuestion(
                 level
             );
-
 
         default:
 
@@ -1349,7 +2054,7 @@ function generateExerciseBySkill(
 
 
 // ========================================================
-// 📝 GÉNÉRER UNE SESSION DE 5 EXERCICES
+// 📝 SESSION DE 5 EXERCICES
 // ========================================================
 
 function generateLearningSession(
@@ -1361,21 +2066,18 @@ function generateLearningSession(
             level
         );
 
-
     let priority = [];
 
-
     if (
-        typeof getPlannerPriority === "function"
+        typeof getPlannerPriority ===
+        "function"
     ) {
 
         priority =
             getPlannerPriority();
     }
 
-
     const exercises = [];
-
 
     for (
         let i = 0;
@@ -1389,38 +2091,32 @@ function generateLearningSession(
                 priority
             );
 
-
         const exercise =
             generateExerciseBySkill(
                 skill,
                 safeLevel
             );
 
-
         exercise.sessionIndex =
             i + 1;
-
 
         exercise.sessionSize =
             SESSION_SIZE_GENERATOR;
 
-
         exercise.level =
             safeLevel;
-
 
         exercises.push(
             exercise
         );
     }
 
-
     return exercises;
 }
 
 
 // ========================================================
-// 📦 TAILLE D'UNE SESSION
+// 📦 TAILLE SESSION
 // ========================================================
 
 const SESSION_SIZE_GENERATOR = 5;
@@ -1434,16 +2130,17 @@ function generateAdaptiveQuestion() {
 
     let level = 1;
 
-
     if (
-        typeof getPedagogicalLevel === "function"
+        typeof getPedagogicalLevel ===
+        "function"
     ) {
 
         level =
             getPedagogicalLevel();
 
     } else if (
-        typeof getLearningPlan === "function"
+        typeof getLearningPlan ===
+        "function"
     ) {
 
         const plan =
@@ -1459,29 +2156,17 @@ function generateAdaptiveQuestion() {
         }
     }
 
-
-    /*
-    Pour l'ancien index.html,
-    cette fonction continue de renvoyer
-    un seul exercice.
-
-    Plus tard, le nouvel index.html
-    utilisera generateLearningSession()
-    pour gérer les 5 exercices.
-    */
-
     const exercises =
         generateLearningSession(
             level
         );
-
 
     return exercises[0];
 }
 
 
 // ========================================================
-// 🧮 COMPATIBILITÉ ANCIENNE : MATHS
+// 🧮 COMPATIBILITÉ ANCIENNE
 // ========================================================
 
 function generateMathQuestion(
@@ -1498,7 +2183,6 @@ function generateMathQuestion(
             )
         );
 
-
     return generateAdditionQuestion(
         level
     );
@@ -1513,18 +2197,29 @@ function generatePlannedMathQuestion(
     plan
 ) {
 
-    if (
-        !plan
-    ) {
+    if (!plan) {
 
         return generateAdditionQuestion(
             1
         );
     }
 
-
     return generateAdditionQuestion(
         plan.level || 1
+    );
+}
+
+
+// ========================================================
+// 🧹 RÉINITIALISATION
+// ========================================================
+
+function resetGeneratorHistory() {
+
+    clearGeneratorHistory();
+
+    console.log(
+        "🧹 Historique des questions du générateur réinitialisé."
     );
 }
 
@@ -1534,7 +2229,7 @@ function generatePlannedMathQuestion(
 // ========================================================
 
 console.log(
-    "✏️ Générateur Mama Binta chargé."
+    "✏️ Générateur Mama Binta v2 chargé."
 );
 
 console.log(
@@ -1549,6 +2244,20 @@ console.log(
 );
 
 console.log(
+    "👧🏾 Prénoms disponibles :",
+    MAMA_BINTA_NAMES.length
+);
+
+console.log(
+    "📖 Mots / emojis disponibles :",
+    READING_WORDS.length
+);
+
+console.log(
     "📝 Taille d'une session :",
     SESSION_SIZE_GENERATOR
+);
+
+console.log(
+    "🧠 Anti-répétition activé."
 );
