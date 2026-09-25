@@ -1,573 +1,845 @@
-// =====================================================
-// 🎯 PLANIFICATEUR PÉDAGOGIQUE DE MAMA BINTA
-// =====================================================
-// Son rôle :
-// - gérer le niveau actuel en maths
-// - éviter les sauts de difficulté
-// - faire progresser Mama Binta progressivement
-// - consolider un niveau avant de passer au suivant
-//
-// IMPORTANT :
-// Le planificateur ne se base PAS simplement sur la
-// meilleure addition jamais réussie.
-// Cela évite qu'une réussite isolée fasse monter
-// brutalement le niveau.
-// =====================================================
+/*
+==========================================================
+🎯 MAMA BINTA — PLANIFICATEUR PÉDAGOGIQUE
+==========================================================
+
+Rôle :
+- gérer les niveaux 1 → 100
+- décider : progresser / consolider / renforcer / régresser
+- analyser les sessions de 5 exercices
+- tenir compte des 5 compétences
+- ne jamais sauter de niveau
+
+IMPORTANT :
+Le Planificateur est le seul agent qui décide
+de la progression pédagogique.
+
+Il ne génère pas les questions.
+Il ne corrige pas les réponses.
+Il n'explique pas les erreurs.
+
+Architecture :
+
+🧠 Mémoire
+      ↓
+🔎 Analyste
+      ↓
+🎯 Planificateur
+      ↓
+🤖 Générateur
+
+Compétences :
+
+📖 Lecture
+➕ Addition
+➖ Soustraction
+✖️ Multiplication
+🧠 Compréhension
+==========================================================
+*/
 
 
-// =====================================================
-// 📚 NIVEAUX DE MATHS
-// =====================================================
+// ========================================================
+// 📚 CONFIGURATION GÉNÉRALE
+// ========================================================
 
-const MATH_LEVELS = [
+const MAX_PEDAGOGICAL_LEVEL = 100;
 
-    {
-        level: 1,
-        minSum: 1,
-        maxSum: 10
-    },
+const SESSION_SIZE = 5;
 
-    {
-        level: 2,
-        minSum: 1,
-        maxSum: 20
-    },
+const MIN_LEVEL = 1;
 
-    {
-        level: 3,
-        minSum: 1,
-        maxSum: 30
-    },
 
-    {
-        level: 4,
-        minSum: 1,
-        maxSum: 40
-    },
+// ========================================================
+// 💾 CLÉS DE STOCKAGE
+// ========================================================
 
-    {
-        level: 5,
-        minSum: 1,
-        maxSum: 50
-    },
+const PEDAGOGICAL_LEVEL_KEY =
+    "mamaBintaPedagogicalLevel";
 
-    {
-        level: 6,
-        minSum: 1,
-        maxSum: 60
-    },
+const PEDAGOGICAL_HISTORY_KEY =
+    "mamaBintaPedagogicalHistory";
 
-    {
-        level: 7,
-        minSum: 1,
-        maxSum: 70
-    },
 
-    {
-        level: 8,
-        minSum: 1,
-        maxSum: 80
-    },
+// ========================================================
+// 🎯 COMPÉTENCES
+// ========================================================
 
-    {
-        level: 9,
-        minSum: 1,
-        maxSum: 90
-    },
-
-    {
-        level: 10,
-        minSum: 1,
-        maxSum: 100
-    }
+const PLANNER_SKILLS = [
+    "reading",
+    "addition",
+    "subtraction",
+    "multiplication",
+    "comprehension"
 ];
 
 
-// =====================================================
-// 💾 CLÉ DE MÉMOIRE DU NIVEAU
-// =====================================================
+// ========================================================
+// 🛠️ OUTILS
+// ========================================================
 
-const MATH_LEVEL_STORAGE_KEY =
-    "mamaBintaMathLevel";
+function plannerClampLevel(level) {
+
+    const number =
+        parseInt(level);
+
+    if (isNaN(number)) {
+        return MIN_LEVEL;
+    }
+
+    return Math.max(
+        MIN_LEVEL,
+        Math.min(
+            MAX_PEDAGOGICAL_LEVEL,
+            number
+        )
+    );
+}
 
 
-// =====================================================
-// 🔎 RÉCUPÉRER LE NIVEAU SAUVEGARDÉ
-// =====================================================
+// ========================================================
+// 💾 NIVEAU ACTUEL
+// ========================================================
 
-function getStoredMathLevel() {
+function getPedagogicalLevel() {
 
     try {
 
-        const savedLevel =
+        const saved =
             localStorage.getItem(
-                MATH_LEVEL_STORAGE_KEY
+                PEDAGOGICAL_LEVEL_KEY
             );
 
+        if (saved !== null) {
 
-        if (savedLevel !== null) {
-
-            const level =
-                parseInt(
-                    savedLevel
-                );
-
-
-            if (
-                level >= 1 &&
-                level <= MATH_LEVELS.length
-            ) {
-
-                return level;
-            }
+            return plannerClampLevel(saved);
         }
 
     } catch (error) {
 
         console.log(
-            "⚠️ Impossible de récupérer le niveau de maths.",
+            "⚠️ Impossible de récupérer le niveau pédagogique.",
             error
         );
     }
 
-
-    // Par défaut :
-    // Mama Binta commence au niveau 1.
-
-    return 1;
+    return MIN_LEVEL;
 }
 
 
-// =====================================================
+// ========================================================
 // 💾 SAUVEGARDER LE NIVEAU
-// =====================================================
+// ========================================================
 
-function saveMathLevel(level) {
+function savePedagogicalLevel(level) {
+
+    const safeLevel =
+        plannerClampLevel(level);
 
     try {
 
         localStorage.setItem(
-            MATH_LEVEL_STORAGE_KEY,
-            String(level)
+            PEDAGOGICAL_LEVEL_KEY,
+            String(safeLevel)
         );
 
     } catch (error) {
 
         console.log(
-            "⚠️ Impossible de sauvegarder le niveau de maths.",
+            "⚠️ Impossible de sauvegarder le niveau pédagogique.",
             error
         );
     }
+
+    if (
+        typeof rememberLevel === "function"
+    ) {
+
+        rememberLevel(
+            safeLevel
+        );
+    }
+
+    return safeLevel;
 }
 
 
-// =====================================================
-// 📚 RÉCUPÉRER LES INFORMATIONS DU NIVEAU
-// =====================================================
+// ========================================================
+// 📚 INFORMATIONS D'UN NIVEAU
+// ========================================================
 
-function getMathLevelInfo(level) {
+function getPedagogicalLevelInfo(level) {
 
     const safeLevel =
+        plannerClampLevel(level);
+
+    return {
+
+        level: safeLevel,
+
+        sessionSize:
+            SESSION_SIZE,
+
+        isFirstLevel:
+            safeLevel === MIN_LEVEL,
+
+        isFinalLevel:
+            safeLevel === MAX_PEDAGOGICAL_LEVEL
+    };
+}
+
+
+// ========================================================
+// 📊 RÉCUPÉRER L'ANALYSE
+// ========================================================
+
+function plannerGetAnalysis() {
+
+    if (
+        typeof analyzeStudent === "function"
+    ) {
+
+        return analyzeStudent();
+    }
+
+    return null;
+}
+
+
+// ========================================================
+// 🧠 RÉCUPÉRER LA SESSION COURANTE
+// ========================================================
+
+function plannerGetCurrentSession() {
+
+    if (
+        typeof getCurrentLearningSession === "function"
+    ) {
+
+        return getCurrentLearningSession();
+    }
+
+    return null;
+}
+
+
+// ========================================================
+// 📈 CALCULER LE SCORE
+// ========================================================
+
+function calculateSessionScore(session) {
+
+    if (!session) {
+        return 0;
+    }
+
+    return Number(
+        session.correct
+    ) || 0;
+}
+
+
+// ========================================================
+// ⭐ ÉTOILES
+// ========================================================
+
+function getSessionStars(score) {
+
+    const safeScore =
         Math.max(
-            1,
+            0,
             Math.min(
-                level,
-                MATH_LEVELS.length
+                SESSION_SIZE,
+                Number(score) || 0
             )
         );
 
-
-    return MATH_LEVELS[
-        safeLevel - 1
-    ];
+    return "⭐".repeat(
+        safeScore
+    );
 }
 
 
-// =====================================================
-// 🧮 EXTRAIRE LE RÉSULTAT D'UNE ADDITION
-// =====================================================
+// ========================================================
+// 📊 ÉTAT D'UNE SESSION
+// ========================================================
 
-function getQuestionSum(question) {
+function getSessionDecision(score) {
 
-    if (
-        !question
-    ) {
-        return null;
+    switch (score) {
+
+        case 5:
+
+            return {
+                action: "progresser",
+                status: "excellent",
+                stars: "⭐⭐⭐⭐⭐"
+            };
+
+
+        case 4:
+
+            return {
+                action: "progresser",
+                status: "réussite",
+                stars: "⭐⭐⭐⭐"
+            };
+
+
+        case 3:
+
+            return {
+                action: "consolider",
+                status: "consolidation",
+                stars: "⭐⭐⭐"
+            };
+
+
+        case 2:
+
+            return {
+                action: "renforcer",
+                status: "difficulte",
+                stars: "⭐⭐"
+            };
+
+
+        case 1:
+
+            return {
+                action: "renforcer",
+                status: "grande_difficulte",
+                stars: "⭐"
+            };
+
+
+        default:
+
+            return {
+                action: "renforcer",
+                status: "a_reprendre",
+                stars: ""
+            };
     }
-
-
-    const match =
-        question.match(
-            /Combien font (\d+) \+ (\d+)/
-        );
-
-
-    if (!match) {
-
-        return null;
-    }
-
-
-    const a =
-        parseInt(
-            match[1]
-        );
-
-
-    const b =
-        parseInt(
-            match[2]
-        );
-
-
-    return a + b;
 }
 
 
-// =====================================================
-// 📊 RÉCUPÉRER LES DERNIERS EXERCICES DE MATHS
-// =====================================================
+// ========================================================
+// 🔎 ANALYSER LES FAIBLESSES
+// ========================================================
 
-function getRecentMathResults() {
+function getPlannerWeakSkills() {
 
-    const memory =
-        getStudentMemory();
-
+    const analysis =
+        plannerGetAnalysis();
 
     if (
-        !memory ||
+        !analysis ||
         !Array.isArray(
-            memory.recentResults
+            analysis.skillsToPractice
         )
     ) {
 
         return [];
     }
 
+    return analysis.skillsToPractice;
+}
 
-    return memory.recentResults.filter(
-        result =>
-            result.subject === "Maths"
+
+// ========================================================
+// 🧠 DÉTERMINER LA PRIORITÉ
+// ========================================================
+
+function getPlannerPriority() {
+
+    const weakSkills =
+        getPlannerWeakSkills();
+
+    if (
+        weakSkills.length === 0
+    ) {
+
+        return PLANNER_SKILLS.slice();
+    }
+
+    const ordered =
+        weakSkills.slice();
+
+    PLANNER_SKILLS.forEach(skill => {
+
+        if (
+            !ordered.includes(skill)
+        ) {
+
+            ordered.push(skill);
+        }
+
+    });
+
+    return ordered;
+}
+
+
+// ========================================================
+// 🔴 HISTORIQUE DES SESSIONS
+// ========================================================
+
+function getPlannerHistory() {
+
+    try {
+
+        const raw =
+            localStorage.getItem(
+                PEDAGOGICAL_HISTORY_KEY
+            );
+
+        if (!raw) {
+            return [];
+        }
+
+        const history =
+            JSON.parse(raw);
+
+        return Array.isArray(history)
+            ? history
+            : [];
+
+    } catch (error) {
+
+        console.log(
+            "⚠️ Impossible de lire l'historique pédagogique.",
+            error
+        );
+
+        return [];
+    }
+}
+
+
+// ========================================================
+// 💾 SAUVEGARDER UNE DÉCISION DE SESSION
+// ========================================================
+
+function savePlannerSessionResult(
+    level,
+    score,
+    decision,
+    skillResults = []
+) {
+
+    const history =
+        getPlannerHistory();
+
+    history.push({
+
+        level,
+
+        score,
+
+        stars:
+            getSessionStars(score),
+
+        action:
+            decision.action,
+
+        status:
+            decision.status,
+
+        skillResults,
+
+        date:
+            new Date().toISOString()
+    });
+
+
+    // On conserve uniquement les 20 dernières sessions.
+
+    const limitedHistory =
+        history.slice(-20);
+
+
+    try {
+
+        localStorage.setItem(
+            PEDAGOGICAL_HISTORY_KEY,
+            JSON.stringify(
+                limitedHistory
+            )
+        );
+
+    } catch (error) {
+
+        console.log(
+            "⚠️ Impossible de sauvegarder l'historique pédagogique.",
+            error
+        );
+    }
+}
+
+
+// ========================================================
+// 📊 DERNIÈRES SESSIONS D'UN NIVEAU
+// ========================================================
+
+function getRecentLevelSessions(
+    level,
+    number = 3
+) {
+
+    const history =
+        getPlannerHistory();
+
+    return history
+        .filter(
+            session =>
+                session.level === level
+        )
+        .slice(-number);
+}
+
+
+// ========================================================
+// 📉 DIFFICULTÉ PERSISTANTE
+// ========================================================
+
+function hasPersistentDifficulty(level) {
+
+    const recent =
+        getRecentLevelSessions(
+            level,
+            3
+        );
+
+
+    // Une seule mauvaise session ne suffit PAS.
+
+    if (
+        recent.length < 2
+    ) {
+
+        return false;
+    }
+
+
+    /*
+    Pour régresser, il faut au moins deux
+    sessions récentes difficiles.
+
+    Exemple :
+
+    Session 1 → 2/5
+    Session 2 → 1/5
+
+    → difficulté persistante.
+
+    Une seule session à 1/5
+    ne provoque donc pas immédiatement
+    une régression.
+    */
+
+    const difficultSessions =
+        recent.filter(
+            session =>
+                Number(session.score) <= 2
+        );
+
+
+    return (
+        difficultSessions.length >= 2
     );
 }
 
 
-// =====================================================
-// 🎯 ANALYSER LE NIVEAU ACTUEL
-// =====================================================
+// ========================================================
+// 📈 PROGRESSION POSSIBLE
+// ========================================================
 
-function planMathProgression() {
+function canProgressFromSession(score) {
 
-    const memory =
-        getStudentMemory();
-
-
-    // =================================================
-    // 🌱 AUCUNE DONNÉE
-    // =================================================
-
-    if (!memory) {
-
-        saveMathLevel(1);
-
-        return {
-
-            level: 1,
-
-            minSum: 1,
-
-            maxSum: 10,
-
-            status: "début",
-
-            action: "apprendre",
-
-            message:
-                "Commencer progressivement les additions jusqu'à 10."
-        };
-    }
+    return (
+        score === 5 ||
+        score === 4
+    );
+}
 
 
-    const totalMaths =
-        (memory.mathsCorrect || 0) +
-        (memory.mathsIncorrect || 0);
+// ========================================================
+// 📉 RÉGRESSION POSSIBLE
+// ========================================================
 
-
-    // =================================================
-    // 🔄 SI LA MÉMOIRE EST VIDE
-    // =================================================
-    // Cela permet aussi de repartir proprement au
-    // niveau 1 après une remise à zéro.
+function canRegress(
+    level
+) {
 
     if (
-        totalMaths === 0
+        level <= MIN_LEVEL
     ) {
 
-        saveMathLevel(1);
-
-        return {
-
-            level: 1,
-
-            minSum: 1,
-
-            maxSum: 10,
-
-            status: "début",
-
-            action: "apprendre",
-
-            message:
-                "Mama Binta commence son apprentissage. " +
-                "Nous allons travailler les additions jusqu'à 10."
-        };
+        return false;
     }
 
-
-    // =================================================
-    // 📚 NIVEAU ACTUEL
-    // =================================================
-
-    let currentLevel =
-        getStoredMathLevel();
+    return hasPersistentDifficulty(
+        level
+    );
+}
 
 
-    let levelInfo =
-        getMathLevelInfo(
-            currentLevel
-        );
+// ========================================================
+// 🎯 PLANIFIER LE NIVEAU
+// ========================================================
+
+function planLearningLevel() {
+
+    const currentLevel =
+        getPedagogicalLevel();
 
 
-    // =================================================
-    // 📊 RÉSULTATS RÉCENTS
-    // =================================================
-
-    const recentMaths =
-        getRecentMathResults();
+    const currentSession =
+        plannerGetCurrentSession();
 
 
-    // -------------------------------------------------
-    // On ne regarde que les exercices qui appartiennent
-    // au niveau actuel.
-    //
-    // Ainsi, d'anciens exercices difficiles ne peuvent
-    // pas faire monter artificiellement le niveau.
-    // -------------------------------------------------
-
-    const levelResults =
-        recentMaths.filter(
-            result => {
-
-                const sum =
-                    getQuestionSum(
-                        result.question
-                    );
+    const analysis =
+        plannerGetAnalysis();
 
 
-                return (
-                    sum !== null &&
-                    sum <= levelInfo.maxSum
-                );
-            }
-        );
+    const priority =
+        getPlannerPriority();
 
 
-    // =================================================
-    // 📊 STATISTIQUES DU NIVEAU
-    // =================================================
+    // ====================================================
+    // 🌱 PREMIER NIVEAU
+    // ====================================================
 
-    const correctCount =
-        levelResults.filter(
-            result =>
-                result.correct === true
-        ).length;
-
-
-    const incorrectCount =
-        levelResults.filter(
-            result =>
-                result.correct === false
-        ).length;
-
-
-    // =================================================
-    // 🔥 RÉCUPÉRER LES 5 DERNIERS EXERCICES
-    // =================================================
-
-    const lastFive =
-        levelResults.slice(-5);
-
-
-    const lastFiveCorrect =
-        lastFive.filter(
-            result =>
-                result.correct === true
-        ).length;
-
-
-    const lastFiveIncorrect =
-        lastFive.filter(
-            result =>
-                result.correct === false
-        ).length;
-
-
-    // =================================================
-    // 🎯 RÉUSSITES PRÈS DU SOMMET DU NIVEAU
-    // =================================================
-    // Exemple niveau 1 :
-    // 8 + 9 = 17 serait hors niveau.
-    //
-    // On veut vérifier que l'enfant maîtrise aussi
-    // le haut du niveau :
-    //
-    // niveau 1 → résultats 8 à 10
-    // niveau 2 → résultats 18 à 20
-    // niveau 3 → résultats 28 à 30
-    // etc.
-
-    const nearTopMinimum =
-        Math.max(
-            1,
-            levelInfo.maxSum - 2
-        );
-
-
-    const nearTopCorrect =
-        levelResults.filter(
-            result => {
-
-                if (
-                    result.correct !== true
-                ) {
-                    return false;
-                }
-
-
-                const sum =
-                    getQuestionSum(
-                        result.question
-                    );
-
-
-                return (
-                    sum !== null &&
-                    sum >= nearTopMinimum &&
-                    sum <= levelInfo.maxSum
-                );
-            }
-        ).length;
-
-
-    // =================================================
-    // 🔴 TROP D'ERREURS
-    // =================================================
-
-    if (
-        lastFive.length >= 3 &&
-        lastFiveIncorrect >= 3
-    ) {
+    if (!currentSession) {
 
         return {
 
             level:
                 currentLevel,
 
-            minSum:
-                levelInfo.minSum,
+            action:
+                "apprendre",
 
-            maxSum:
-                levelInfo.maxSum,
+            status:
+                "en_attente",
 
-            status: "consolidation",
+            sessionSize:
+                SESSION_SIZE,
 
-            action: "consolider",
+            priority,
 
             message:
-                "Mama Binta rencontre encore quelques difficultés. " +
-                "Nous allons rester au niveau " +
-                currentLevel +
-                " et consolider les bases."
+                "🎯 Mama Binta est prête pour une nouvelle session de 5 exercices."
         };
     }
 
 
-    // =================================================
-    // 🌟 CONDITIONS POUR PASSER AU NIVEAU SUIVANT
-    // =================================================
-    //
-    // Il faut :
-    //
-    // 1. au moins 5 exercices du niveau
-    // 2. au moins 4 réussites sur les 5 derniers
-    // 3. au moins 2 réussites proches du maximum
-    //
-    // Cela évite les montées trop rapides.
-
-    const canProgress =
-        lastFive.length >= 5 &&
-        lastFiveCorrect >= 4 &&
-        nearTopCorrect >= 2;
-
+    // ====================================================
+    // 📊 SESSION EN COURS
+    // ====================================================
 
     if (
-        canProgress &&
-        currentLevel <
-        MATH_LEVELS.length
+        !currentSession.completed
     ) {
 
-        const nextLevel =
-            currentLevel + 1;
+        const score =
+            calculateSessionScore(
+                currentSession
+            );
+
+        return {
+
+            level:
+                currentLevel,
+
+            action:
+                "continuer_session",
+
+            status:
+                "session_en_cours",
+
+            score,
+
+            remaining:
+                SESSION_SIZE -
+                (
+                    Number(
+                        currentSession.total
+                    ) || 0
+                ),
+
+            priority,
+
+            message:
+                "🧠 La session est en cours. Continuons les exercices."
+        };
+    }
 
 
-        const nextLevelInfo =
-            getMathLevelInfo(
-                nextLevel
+    // ====================================================
+    // ⭐ SESSION TERMINÉE
+    // ====================================================
+
+    const score =
+        calculateSessionScore(
+            currentSession
+        );
+
+
+    const decision =
+        getSessionDecision(
+            score
+        );
+
+
+    // ====================================================
+    // 📉 DIFFICULTÉ PERSISTANTE
+    // ====================================================
+
+    if (
+        canRegress(
+            currentLevel
+        )
+    ) {
+
+        const previousLevel =
+            Math.max(
+                MIN_LEVEL,
+                currentLevel - 1
             );
 
 
-        saveMathLevel(
-            nextLevel
+        savePedagogicalLevel(
+            previousLevel
         );
 
 
         return {
 
             level:
-                nextLevel,
-
-            minSum:
-                nextLevelInfo.minSum,
-
-            maxSum:
-                nextLevelInfo.maxSum,
-
-            status: "progression",
-
-            action: "progresser",
+                previousLevel,
 
             previousLevel:
                 currentLevel,
 
+            action:
+                "regresser",
+
+            status:
+                "regression",
+
+            score,
+
+            stars:
+                getSessionStars(
+                    score
+                ),
+
+            priority,
+
             message:
-                "🌟 Bravo ! Mama Binta maîtrise bien le niveau " +
-                currentLevel +
-                ". " +
-                "Nous pouvons maintenant passer progressivement " +
-                "au niveau " +
-                nextLevel +
-                "."
+                "🧠 Cette difficulté se répète. " +
+                "Nous allons revenir temporairement au niveau " +
+                previousLevel +
+                " pour renforcer les bases."
         };
     }
 
 
-    // =================================================
-    // 🏆 NIVEAU 10
-    // =================================================
+    // ====================================================
+    // 📈 PROGRESSION
+    // ====================================================
 
     if (
-        currentLevel ===
-        MATH_LEVELS.length
+        canProgressFromSession(
+            score
+        )
+    ) {
+
+        if (
+            currentLevel <
+            MAX_PEDAGOGICAL_LEVEL
+        ) {
+
+            const nextLevel =
+                currentLevel + 1;
+
+
+            savePedagogicalLevel(
+                nextLevel
+            );
+
+
+            return {
+
+                level:
+                    nextLevel,
+
+                previousLevel:
+                    currentLevel,
+
+                action:
+                    "progresser",
+
+                status:
+                    "progression",
+
+                score,
+
+                stars:
+                    getSessionStars(
+                        score
+                    ),
+
+                priority,
+
+                message:
+                    "🌟 Bravo ! Mama Binta a réussi " +
+                    score +
+                    "/5. " +
+                    "Nous pouvons passer progressivement au niveau " +
+                    nextLevel +
+                    "."
+            };
+        }
+
+
+        // Niveau 100 atteint.
+
+        return {
+
+            level:
+                MAX_PEDAGOGICAL_LEVEL,
+
+            action:
+                "maitriser",
+
+            status:
+                "niveau_maximum",
+
+            score,
+
+            stars:
+                getSessionStars(
+                    score
+                ),
+
+            priority,
+
+            message:
+                "🏆 Mama Binta est arrivée au niveau 100. " +
+                "Nous allons maintenant renforcer et approfondir ses compétences."
+        };
+    }
+
+
+    // ====================================================
+    // 🧩 CONSOLIDATION
+    // ====================================================
+
+    if (
+        score === 3
     ) {
 
         return {
@@ -575,72 +847,235 @@ function planMathProgression() {
             level:
                 currentLevel,
 
-            minSum:
-                levelInfo.minSum,
+            action:
+                "consolider",
 
-            maxSum:
-                levelInfo.maxSum,
+            status:
+                "consolidation",
 
-            status: "maitrise",
+            score,
 
-            action: "consolider",
+            stars:
+                getSessionStars(
+                    score
+                ),
+
+            priority,
 
             message:
-                "🏆 Mama Binta travaille maintenant " +
-                "sur des additions jusqu'à 100. " +
-                "Continuons à renforcer sa maîtrise."
+                "🧠 Mama Binta a réussi 3/5. " +
+                "Nous allons rester au niveau " +
+                currentLevel +
+                " et renforcer les compétences qui ont posé problème."
         };
     }
 
 
-    // =================================================
-    // ⚖️ CONTINUER LE NIVEAU
-    // =================================================
+    // ====================================================
+    // 🔧 RENFORCEMENT
+    // ====================================================
 
     return {
 
         level:
             currentLevel,
 
-        minSum:
-            levelInfo.minSum,
+        action:
+            "renforcer",
 
-        maxSum:
-            levelInfo.maxSum,
+        status:
+            "renforcement",
 
-        status: "continuer",
+        score,
 
-        action: "continuer",
+        stars:
+            getSessionStars(
+                score
+            ),
+
+        priority,
 
         message:
-            "🧠 Continuons progressivement au niveau " +
+            "💪 Nous allons rester au niveau " +
             currentLevel +
-            ". " +
-            "Nous attendons encore quelques résultats " +
-            "avant de passer au niveau suivant."
+            " et travailler davantage les compétences difficiles."
     };
 }
 
 
-// =====================================================
-// 📤 FONCTION PRINCIPALE
-// =====================================================
+// ========================================================
+// 🚀 DÉMARRER UNE NOUVELLE SESSION
+// ========================================================
+
+function startPlannedLearningSession() {
+
+    const level =
+        getPedagogicalLevel();
+
+
+    if (
+        typeof startLearningSession !== "function"
+    ) {
+
+        console.log(
+            "⚠️ startLearningSession() est indisponible."
+        );
+
+        return null;
+    }
+
+
+    return startLearningSession(
+        level
+    );
+}
+
+
+// ========================================================
+// 📋 PLAN COMPLET
+// ========================================================
+
+function getLearningPlan() {
+
+    const level =
+        getPedagogicalLevel();
+
+    const analysis =
+        plannerGetAnalysis();
+
+    const priority =
+        getPlannerPriority();
+
+    return {
+
+        level,
+
+        maxLevel:
+            MAX_PEDAGOGICAL_LEVEL,
+
+        sessionSize:
+            SESSION_SIZE,
+
+        priority,
+
+        analysis,
+
+        levelInfo:
+            getPedagogicalLevelInfo(
+                level
+            )
+    };
+}
+
+
+// ========================================================
+// 🔄 RÉINITIALISATION
+// ========================================================
+
+function resetLearningPlan() {
+
+    try {
+
+        localStorage.removeItem(
+            PEDAGOGICAL_LEVEL_KEY
+        );
+
+        localStorage.removeItem(
+            PEDAGOGICAL_HISTORY_KEY
+        );
+
+    } catch (error) {
+
+        console.log(
+            "⚠️ Impossible de réinitialiser le planificateur.",
+            error
+        );
+    }
+
+
+    savePedagogicalLevel(
+        MIN_LEVEL
+    );
+
+
+    console.log(
+        "🔄 Planificateur pédagogique remis au niveau 1."
+    );
+}
+
+
+// ========================================================
+// 🔄 COMPATIBILITÉ AVEC L'ANCIENNE INTERFACE
+// ========================================================
+//
+// L'ancien index.html utilisait getMathPlan()
+// et resetMathPlan().
+//
+// On garde ces fonctions temporairement pour
+// éviter de casser l'application avant la refonte
+// de index.html.
+//
+// Elles seront progressivement remplacées par
+// getLearningPlan() et planLearningLevel().
+// ========================================================
 
 function getMathPlan() {
 
-    return planMathProgression();
+    const plan =
+        planLearningLevel();
+
+    return {
+
+        level:
+            plan.level,
+
+        minSum:
+            1,
+
+        maxSum:
+            plan.level * 10,
+
+        status:
+            plan.status,
+
+        action:
+            plan.action,
+
+        previousLevel:
+            plan.previousLevel,
+
+        message:
+            plan.message,
+
+        score:
+            plan.score,
+
+        stars:
+            plan.stars
+    };
 }
 
-
-// =====================================================
-// 🔄 RÉINITIALISER LE PLAN MATHS
-// =====================================================
 
 function resetMathPlan() {
 
-    saveMathLevel(1);
-
-    console.log(
-        "🔄 Planificateur maths remis au niveau 1."
-    );
+    resetLearningPlan();
 }
+
+
+// ========================================================
+// 🧪 DIAGNOSTIC
+// ========================================================
+
+console.log(
+    "🎯 Planificateur pédagogique Mama Binta chargé."
+);
+
+console.log(
+    "📚 Niveaux disponibles : 1 →",
+    MAX_PEDAGOGICAL_LEVEL
+);
+
+console.log(
+    "📝 Exercices par session :",
+    SESSION_SIZE
+);
