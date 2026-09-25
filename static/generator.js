@@ -1,6 +1,6 @@
 /*
 ==========================================================
-✏️ MAMA BINTA — AGENT GÉNÉRATEUR v3
+✏️ MAMA BINTA — AGENT GÉNÉRATEUR v4
 ==========================================================
 
 Rôle :
@@ -13,6 +13,11 @@ Rôle :
 
 Le Générateur NE décide PAS du niveau.
 Le Planificateur lui fournit le niveau.
+
+Correction v4 :
+- anti-répétition sans récursion infinie
+- aucun appel récursif dangereux
+- historique séparé de la mémoire pédagogique
 ==========================================================
 */
 
@@ -173,6 +178,10 @@ const READING_LETTERS = [
 
 function shuffle(arr) {
 
+    if (!Array.isArray(arr)) {
+        return [];
+    }
+
     return [...arr].sort(
         () => Math.random() - 0.5
     );
@@ -181,7 +190,7 @@ function shuffle(arr) {
 
 function randomItem(arr) {
 
-    if (!arr || !arr.length) {
+    if (!Array.isArray(arr) || !arr.length) {
         return null;
     }
 
@@ -195,7 +204,7 @@ function randomItem(arr) {
 
 function firstLetter(word) {
 
-    return word
+    return String(word || "")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .charAt(0)
@@ -235,7 +244,7 @@ function randomInt(min, max) {
 
 
 // ========================================================
-// 🧠 MÉMOIRE DES QUESTIONS DU GÉNÉRATEUR
+// 🧠 HISTORIQUE DU GÉNÉRATEUR
 // ========================================================
 
 const GENERATOR_HISTORY_KEY =
@@ -281,7 +290,9 @@ function saveGeneratorHistory(history) {
         localStorage.setItem(
             GENERATOR_HISTORY_KEY,
             JSON.stringify(
-                history.slice(-100)
+                Array.isArray(history)
+                    ? history.slice(-100)
+                    : []
             )
         );
 
@@ -352,8 +363,6 @@ function clearGeneratorHistory() {
 
 // ========================================================
 // 🧠 FINALISER UNE QUESTION
-// IMPORTANT : cette fonction NE mémorise plus
-// immédiatement la question.
 // ========================================================
 
 function finalizeGeneratedQuestion(question) {
@@ -365,9 +374,9 @@ function finalizeGeneratedQuestion(question) {
     if (!question.signature) {
 
         question.signature =
-            question.skill +
+            String(question.skill || "unknown") +
             "|" +
-            question.question;
+            String(question.question || "");
     }
 
     return question;
@@ -375,8 +384,11 @@ function finalizeGeneratedQuestion(question) {
 
 
 // ========================================================
-// 🚫 ANTI-RÉPÉTITION CORRIGÉ
+// 🚫 ANTI-RÉPÉTITION — SANS RÉCURSION INFINIE
 // ========================================================
+
+let GENERATOR_UNIQUE_RETRY_ACTIVE = false;
+
 
 function getUniqueQuestion(
     question,
@@ -388,8 +400,32 @@ function getUniqueQuestion(
     }
 
     /*
-    La question est nouvelle :
-    on la mémorise seulement maintenant.
+    Si une recherche alternative est déjà en cours,
+    on retourne simplement le candidat.
+
+    Très important :
+    cela empêche la boucle :
+
+    getUniqueQuestion
+        ↓
+    generateQuestion
+        ↓
+    getUniqueQuestion
+        ↓
+    generateQuestion
+        ↓
+    💥 Maximum call stack size exceeded
+    */
+
+    if (GENERATOR_UNIQUE_RETRY_ACTIVE) {
+        return question;
+    }
+
+
+    /*
+    Première question :
+    si elle n'a jamais été utilisée,
+    on l'accepte immédiatement.
     */
 
     if (
@@ -405,62 +441,77 @@ function getUniqueQuestion(
         return question;
     }
 
+
     /*
     La question existe déjà.
-    On essaie plusieurs candidats.
 
-    Important :
-    on mémorise l'état de l'historique
-    AVANT de générer le candidat.
-
-    Ainsi, même si le générateur interne
-    mémorise lui-même le candidat, nous savons
-    s'il était réellement nouveau avant
-    cette génération.
+    On active le verrou.
+    Les générateurs appelés pendant cette phase
+    ne pourront plus relancer une nouvelle recherche.
     */
 
-    for (
-        let attempt = 0;
-        attempt < 10;
-        attempt++
-    ) {
+    GENERATOR_UNIQUE_RETRY_ACTIVE = true;
 
-        const historyBefore =
-            getGeneratorHistory();
+    try {
 
-        const alternative =
-            generatorFunction();
-
-        if (!alternative) {
-            continue;
-        }
-
-        const signature =
-            alternative.signature;
-
-        if (
-            signature &&
-            !historyBefore.includes(
-                signature
-            )
+        for (
+            let attempt = 0;
+            attempt < 10;
+            attempt++
         ) {
 
+            const historyBefore =
+                getGeneratorHistory();
+
+            const alternative =
+                typeof generatorFunction === "function"
+                    ? generatorFunction()
+                    : null;
+
+            if (!alternative) {
+                continue;
+            }
+
+            const signature =
+                alternative.signature ||
+                alternative.question;
+
             /*
-            Le candidat était nouveau.
-            On s'assure qu'il est mémorisé.
+            Le candidat était absent de l'historique
+            avant cette tentative.
             */
 
-            rememberGeneratedQuestion(
-                alternative
-            );
+            if (
+                signature &&
+                !historyBefore.includes(
+                    signature
+                )
+            ) {
 
-            return alternative;
+                rememberGeneratedQuestion(
+                    alternative
+                );
+
+                return alternative;
+            }
         }
+
+    } catch (error) {
+
+        console.warn(
+            "⚠️ Erreur pendant la recherche d'une question différente.",
+            error
+        );
+
+    } finally {
+
+        GENERATOR_UNIQUE_RETRY_ACTIVE = false;
     }
+
 
     /*
     Si le réservoir est temporairement épuisé,
-    on accepte la question plutôt que de bloquer
+    on accepte la question au lieu de bloquer
     l'application.
     */
 
@@ -536,12 +587,6 @@ function generateLetterWordQuestion() {
                 firstLetter(item.word) === letter
         );
 
-    /*
-    Certaines lettres ont très peu de mots
-    dans notre banque.
-    On utilise une lettre disponible.
-    */
-
     if (!correctWords.length) {
 
         const availableLetters =
@@ -584,6 +629,10 @@ function generateLetterWordQuestionWithLetter(
         randomItem(
             correctWords
         );
+
+    if (!answer) {
+        return null;
+    }
 
     const wrongWords =
         shuffle(
@@ -649,6 +698,10 @@ function generateEmojiWordQuestion() {
             READING_WORDS
         );
 
+    if (!item) {
+        return null;
+    }
+
     const wrongChoices =
         shuffle(
             READING_WORDS.filter(
@@ -713,11 +766,14 @@ function generateMissingLetterQuestion() {
             READING_WORDS
         );
 
+    if (!item) {
+        return null;
+    }
+
     const word =
         item.word;
 
     if (word.length < 3) {
-
         return generateLetterWordQuestion();
     }
 
@@ -784,6 +840,12 @@ function generateMissingLetterQuestion() {
 
         levelType:
             "missing_letter",
+
+        word:
+            word,
+
+        missingLetter:
+            missing,
 
         signature:
             "reading-missing|" +
@@ -898,6 +960,10 @@ function generateSentenceQuestion() {
         randomItem(
             READING_SENTENCES
         );
+
+    if (!item) {
+        return null;
+    }
 
     return finalizeGeneratedQuestion({
 
@@ -1065,6 +1131,10 @@ function generateReadingComprehensionQuestion() {
         randomItem(
             READING_PASSAGES
         );
+
+    if (!item) {
+        return null;
+    }
 
     return finalizeGeneratedQuestion({
 
@@ -1291,15 +1361,25 @@ function generateAdditionQuestion(level = 1) {
     let a;
     let b;
 
-    /*
-    On évite les additions trop petites
-    lorsque le niveau augmente.
-    */
-
     if (safeLevel <= 5) {
 
-        a = randomInt(1, Math.max(2, max - 4));
-        b = randomInt(1, Math.max(2, max - a));
+        a =
+            randomInt(
+                1,
+                Math.max(
+                    2,
+                    max - 4
+                )
+            );
+
+        b =
+            randomInt(
+                1,
+                Math.max(
+                    2,
+                    max - a
+                )
+            );
 
     } else {
 
@@ -1308,7 +1388,9 @@ function generateAdditionQuestion(level = 1) {
                 ? 2
                 : Math.max(
                     2,
-                    Math.floor(max * 0.15)
+                    Math.floor(
+                        max * 0.15
+                    )
                 );
 
         a =
@@ -1316,7 +1398,9 @@ function generateAdditionQuestion(level = 1) {
                 minimum,
                 Math.max(
                     minimum,
-                    Math.floor(max * 0.70)
+                    Math.floor(
+                        max * 0.70
+                    )
                 )
             );
 
@@ -1331,6 +1415,7 @@ function generateAdditionQuestion(level = 1) {
     }
 
     if (a + b > max) {
+
         b =
             Math.max(
                 1,
@@ -1399,11 +1484,8 @@ function generateAdditionQuestion(level = 1) {
         const forms = [
 
             `Combien font ${a} + ${b} ?`,
-
             `Calcule : ${a} + ${b} = ?`,
-
             `Quel est le résultat de ${a} + ${b} ?`,
-
             `Ajoute ${a} et ${b}. Combien obtiens-tu ?`
         ];
 
@@ -1518,7 +1600,7 @@ const SUBTRACTION_TEMPLATES = [
     (name, a, b, item) =>
         `${name} avait ${a} ${item.word}. ` +
         `Il/Elle en utilise ${b}. ` +
-        `Combien en reste-t-il ?`
+        `Combien lui en reste-t-il ?`
 ];
 
 
@@ -1532,50 +1614,25 @@ function generateSubtractionQuestion(level = 1) {
             safeLevel
         );
 
-    /*
-    À chaque niveau, le générateur peut utiliser
-    des nombres plus grands.
-
-    Exemple :
-    niveau 1 → jusqu'à 10
-    niveau 10 → jusqu'à 15
-    niveau 20 → jusqu'à 20
-    niveau 50 → jusqu'à 50
-    niveau 100 → jusqu'à 200
-    */
-
     let a =
         randomInt(
             2,
             max
         );
 
-    /*
-    Pour éviter uniquement des calculs du type
-    2-1, 3-1, 4-1, on varie aussi b.
-    */
-
-    let minB = 1;
-
-    if (a >= 6) {
-        minB = 2;
-    }
-
-    if (a >= 12) {
-        minB = 2;
-    }
+    let minB =
+        a >= 6
+            ? 2
+            : 1;
 
     let b =
         randomInt(
             minB,
-            a - 1
+            Math.max(
+                minB,
+                a - 1
+            )
         );
-
-    /*
-    De temps en temps, on permet également
-    un résultat égal à 0 pour travailler
-    cette notion, mais pas systématiquement.
-    */
 
     if (
         Math.random() < 0.15
@@ -1598,6 +1655,7 @@ function generateSubtractionQuestion(level = 1) {
     let questionText;
     let answerDisplay =
         String(result);
+
     let signature;
 
     if (useStory) {
@@ -1647,11 +1705,8 @@ function generateSubtractionQuestion(level = 1) {
         const forms = [
 
             `Combien font ${a} − ${b} ?`,
-
             `Calcule : ${a} − ${b} = ?`,
-
             `Quel est le résultat de ${a} − ${b} ?`,
-
             `Retire ${b} de ${a}. Combien reste-t-il ?`
         ];
 
@@ -1788,11 +1843,8 @@ function generateMultiplicationQuestion(level = 1) {
     const forms = [
 
         `Combien font ${a} × ${b} ?`,
-
         `Calcule : ${a} × ${b} = ?`,
-
         `Quel est le résultat de ${a} × ${b} ?`,
-
         `Combien obtient-on en multipliant ${a} par ${b} ?`
     ];
 
@@ -2096,6 +2148,10 @@ function generateComprehensionQuestion(level = 1) {
             COMPREHENSION_QUESTIONS
         );
 
+    if (!item) {
+        return null;
+    }
+
     const question =
         finalizeGeneratedQuestion({
 
@@ -2165,12 +2221,6 @@ function chooseSkillForSession(
             )
             : [];
 
-    /*
-    On garde les cinq compétences dans une session.
-    Si une faiblesse est détectée, elle peut être
-    placée plus tôt dans la session.
-    */
-
     const ordered = [
         ...preferred,
         ...defaultSkills.filter(
@@ -2223,6 +2273,9 @@ function generateExerciseBySkill(
 // ========================================================
 // 📝 SESSION DE 5 EXERCICES
 // ========================================================
+
+const SESSION_SIZE_GENERATOR = 5;
+
 
 function generateLearningSession(level = 1) {
 
@@ -2311,13 +2364,6 @@ function generateLearningSession(level = 1) {
 
 
 // ========================================================
-// 📦 TAILLE SESSION
-// ========================================================
-
-const SESSION_SIZE_GENERATOR = 5;
-
-
-// ========================================================
 // 🎯 EXERCICE ADAPTATIF
 // ========================================================
 
@@ -2338,16 +2384,26 @@ function generateAdaptiveQuestion() {
         "function"
     ) {
 
-        const plan =
-            getLearningPlan();
+        try {
 
-        if (
-            plan &&
-            plan.level
-        ) {
+            const plan =
+                getLearningPlan();
 
-            level =
-                plan.level;
+            if (
+                plan &&
+                plan.level
+            ) {
+
+                level =
+                    plan.level;
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "⚠️ Impossible de récupérer le niveau pédagogique.",
+                error
+            );
         }
     }
 
@@ -2422,7 +2478,7 @@ function resetGeneratorHistory() {
 // ========================================================
 
 console.log(
-    "✏️ Générateur Mama Binta v3 chargé."
+    "✏️ Générateur Mama Binta v4 chargé."
 );
 
 console.log(
@@ -2452,5 +2508,5 @@ console.log(
 );
 
 console.log(
-    "🧠 Anti-répétition corrigé."
+    "🧠 Anti-répétition v4 — sans récursion infinie."
 );
