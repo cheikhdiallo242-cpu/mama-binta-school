@@ -1,6 +1,6 @@
 /* =========================================================
    MAMA BINTA — GÉNÉRATEUR D'EXERCICES
-   Version 6 — générateur sécurisé
+   Version 7 — générateur adaptatif
    =========================================================
    Rôle :
    - Générer Lecture
@@ -9,6 +9,7 @@
    - Générer Multiplication
    - Générer Compréhension
    - Générer les sessions personnalisées de 5 exercices
+   - Adapter les sessions aux difficultés détectées
    - Éviter les répétitions
    - Ne jamais utiliser de récursion dangereuse
    ========================================================= */
@@ -696,11 +697,6 @@ function buildLetterWordQuestion(level = 1) {
                     normalizeLetter(letter)
         );
 
-    /*
-       AUCUNE RÉCURSION.
-       Si une lettre n'est pas disponible,
-       on retourne simplement null.
-    */
     if (
         correctCandidates.length === 0
     ) {
@@ -710,10 +706,6 @@ function buildLetterWordQuestion(level = 1) {
     const answer =
         randomItem(correctCandidates);
 
-    /*
-       Les mauvaises réponses ne doivent jamais
-       commencer par la lettre demandée.
-    */
     const wrongCandidates =
         READING_WORDS.filter(
             item =>
@@ -728,10 +720,6 @@ function buildLetterWordQuestion(level = 1) {
         return null;
     }
 
-    /*
-       On prend deux mauvaises réponses
-       avec des initiales différentes lorsque possible.
-    */
     const groups = {};
 
     wrongCandidates.forEach(item => {
@@ -1273,10 +1261,6 @@ function generateWrongNumbers(
         }
     }
 
-    /*
-       Sécurité supplémentaire :
-       si les candidats simples ne suffisent pas.
-    */
     let attempts = 0;
 
     while (
@@ -1615,73 +1599,425 @@ function generateComprehensionQuestion(
 }
 
 /* =========================================================
-   20. CHOISIR UNE COMPÉTENCE
+   20. ANALYSE ADAPTATIVE DES COMPÉTENCES
    ========================================================= */
 
+/*
+   Cette fonction lit directement l'analyseur.
+
+   Priorités :
+
+   🔴 needs_support / declining
+      = difficulté importante
+
+   🟠 developing
+      = compétence en développement
+
+   🟢 strong
+      = compétence forte
+
+   ⚪ insufficient_data
+      = pas assez de données
+*/
+
+function getAdaptiveSkillAnalysis() {
+
+    const analysis = [];
+
+    for (
+        const skill of GENERATOR_SKILLS
+    ) {
+
+        let result = null;
+
+        try {
+
+            if (
+                typeof analyzeSkill ===
+                "function"
+            ) {
+                result =
+                    analyzeSkill(skill);
+            }
+
+        } catch (error) {
+
+            console.warn(
+                `Analyse indisponible pour ${skill} :`,
+                error
+            );
+        }
+
+        if (!result) {
+
+            analysis.push({
+                skill,
+                status:
+                    "insufficient_data",
+                difficulty:
+                    "unknown",
+                trend:
+                    "stable",
+                accuracy:
+                    null,
+                priority:
+                    0
+            });
+
+            continue;
+        }
+
+        let priority = 0;
+
+        /*
+           Une difficulté persistante ou une baisse
+           de résultats reçoit la priorité maximale.
+        */
+        if (
+            result.status ===
+            "needs_support"
+        ) {
+            priority = 100;
+        }
+
+        else if (
+            result.trend ===
+            "declining"
+        ) {
+            priority = 90;
+        }
+
+        else if (
+            result.difficulty ===
+            "high"
+        ) {
+            priority = 85;
+        }
+
+        else if (
+            result.status ===
+            "developing"
+        ) {
+            priority = 60;
+        }
+
+        else if (
+            result.difficulty ===
+            "medium"
+        ) {
+            priority = 50;
+        }
+
+        else if (
+            result.status ===
+            "strong"
+        ) {
+            priority = 10;
+        }
+
+        analysis.push({
+
+            skill,
+
+            status:
+                result.status ||
+                "insufficient_data",
+
+            difficulty:
+                result.difficulty ||
+                "unknown",
+
+            trend:
+                result.trend ||
+                "stable",
+
+            accuracy:
+                typeof result.accuracy ===
+                "number"
+                    ? result.accuracy
+                    : null,
+
+            priority
+        });
+    }
+
+    /*
+       Les plus faibles viennent en premier.
+       En cas d'égalité, l'ordre original
+       des compétences est conservé.
+    */
+    analysis.sort(
+        (a, b) =>
+            b.priority -
+            a.priority
+    );
+
+    return analysis;
+}
+
+
+/*
+   Retourne les compétences réellement prioritaires.
+*/
+function getAdaptivePrioritySkills() {
+
+    const analysis =
+        getAdaptiveSkillAnalysis();
+
+    return analysis
+        .filter(
+            item =>
+                item.priority >= 50
+        )
+        .map(
+            item =>
+                item.skill
+        );
+}
+
+
+/*
+   Trouve la compétence la plus faible.
+*/
+function getPrimaryWeakSkill() {
+
+    const analysis =
+        getAdaptiveSkillAnalysis();
+
+    const weak =
+        analysis.filter(
+            item =>
+                item.priority >= 85
+        );
+
+    if (
+        weak.length === 0
+    ) {
+        return null;
+    }
+
+    return weak[0].skill;
+}
+
+
+/*
+   Calcule combien de fois une compétence
+   peut apparaître dans une session.
+
+   Maximum volontaire :
+   3 exercices pour la faiblesse principale.
+
+   Cela évite de transformer une session
+   de 5 exercices en session monotone.
+*/
+function getSkillSessionQuota(
+    skill,
+    analysis
+) {
+
+    const item =
+        analysis.find(
+            entry =>
+                entry.skill === skill
+        );
+
+    if (!item) {
+        return 1;
+    }
+
+    if (
+        item.priority >= 85
+    ) {
+        return 3;
+    }
+
+    if (
+        item.priority >= 50
+    ) {
+        return 2;
+    }
+
+    return 1;
+}
+
+
+/*
+   Sélection intelligente d'une compétence.
+
+   Contrairement à l'ancienne version :
+   une compétence prioritaire peut maintenant
+   revenir plusieurs fois dans la même session.
+
+   usedSkills devient volontairement un historique
+   des compétences déjà utilisées.
+*/
 function chooseSkillForSession(
     level = 1,
     index = 0,
     usedSkills = []
 ) {
-    const defaultSkills = [
-        "reading",
-        "addition",
-        "subtraction",
-        "multiplication",
-        "comprehension"
-    ];
+
+    const defaultSkills =
+        [...GENERATOR_SKILLS];
+
+    const analysis =
+        getAdaptiveSkillAnalysis();
 
     /*
-       L'analyseur peut proposer une compétence
-       prioritaire. Mais il ne décide jamais du niveau.
+       Compter les utilisations actuelles.
     */
-    try {
-        if (
-            typeof getSkillsToPractice ===
-            "function"
-        ) {
-            const priority =
-                getSkillsToPractice();
+    const usage = {};
+
+    defaultSkills.forEach(
+        skill => {
+            usage[skill] = 0;
+        }
+    );
+
+    usedSkills.forEach(
+        skill => {
 
             if (
-                Array.isArray(priority)
+                Object.prototype.hasOwnProperty.call(
+                    usage,
+                    skill
+                )
             ) {
-                for (
-                    const item of priority
-                ) {
-                    const skill =
-                        typeof item ===
-                        "string"
-                            ? item
-                            : item &&
-                              item.skill;
-
-                    if (
-                        defaultSkills.includes(
-                            skill
-                        ) &&
-                        !usedSkills.includes(
-                            skill
-                        )
-                    ) {
-                        return skill;
-                    }
-                }
+                usage[skill]++;
             }
         }
-    } catch (error) {
-        console.warn(
-            "Analyseur indisponible :",
-            error
-        );
+    );
+
+
+    /*
+       =====================================================
+       CAS 1
+       Une faiblesse importante existe.
+       =====================================================
+    */
+
+    const primaryWeak =
+        getPrimaryWeakSkill();
+
+    if (
+        primaryWeak &&
+        usage[primaryWeak] < 3
+    ) {
+
+        /*
+           On réserve les positions 1, 3 et 5
+           à la faiblesse principale lorsque possible.
+        */
+        const preferredIndexes = [
+            0,
+            2,
+            4
+        ];
+
+        if (
+            preferredIndexes.includes(
+                index
+            )
+        ) {
+            return primaryWeak;
+        }
     }
+
+
+    /*
+       =====================================================
+       CAS 2
+       Une deuxième compétence est en difficulté
+       ou en développement.
+       =====================================================
+    */
+
+    const candidates =
+        analysis.filter(
+            item =>
+                item.skill !==
+                    primaryWeak &&
+                usage[item.skill] <
+                    getSkillSessionQuota(
+                        item.skill,
+                        analysis
+                    )
+        );
+
+
+    /*
+       Parmi les compétences restantes,
+       choisir celle qui possède la plus grande priorité.
+    */
+    if (
+        candidates.length > 0
+    ) {
+
+        /*
+           On favorise d'abord les compétences
+           les plus faibles.
+        */
+        candidates.sort(
+            (a, b) => {
+
+                if (
+                    b.priority !==
+                    a.priority
+                ) {
+                    return (
+                        b.priority -
+                        a.priority
+                    );
+                }
+
+                /*
+                   À priorité égale, favoriser
+                   celle qui a été la moins utilisée.
+                */
+                return (
+                    usage[a.skill] -
+                    usage[b.skill]
+                );
+            }
+        );
+
+        /*
+           Pour éviter que deux compétences faibles
+           soient toujours dans le même ordre,
+           une petite variation est possible
+           lorsque leurs priorités sont proches.
+        */
+        const top =
+            candidates.filter(
+                candidate =>
+                    candidate.priority ===
+                    candidates[0].priority
+            );
+
+        if (
+            top.length > 1
+        ) {
+            return randomItem(
+                top
+            ).skill;
+        }
+
+        return candidates[0].skill;
+    }
+
+
+    /*
+       =====================================================
+       CAS 3
+       Plus aucune priorité disponible.
+       Répartition normale.
+       =====================================================
+    */
 
     const unused =
         defaultSkills.filter(
             skill =>
-                !usedSkills.includes(
-                    skill
-                )
+                usage[skill] === 0
         );
 
     if (
@@ -1690,10 +2026,29 @@ function chooseSkillForSession(
         return unused[0];
     }
 
-    return defaultSkills[
-        index %
-            defaultSkills.length
-    ];
+
+    /*
+       Toutes les compétences ont déjà été utilisées.
+       On choisit celle qui a été la moins utilisée.
+    */
+    const minimumUsage =
+        Math.min(
+            ...defaultSkills.map(
+                skill =>
+                    usage[skill]
+            )
+        );
+
+    const leastUsed =
+        defaultSkills.filter(
+            skill =>
+                usage[skill] ===
+                minimumUsage
+        );
+
+    return randomItem(
+        leastUsed
+    );
 }
 
 /* =========================================================
@@ -1753,11 +2108,28 @@ function generateLearningSession(
     const session = [];
     const usedSkills = [];
 
+    /*
+       Analyse effectuée une fois au début
+       de la session.
+
+       Ainsi la composition des 5 exercices
+       reste cohérente pendant toute la session.
+    */
+    const adaptiveAnalysis =
+        getAdaptiveSkillAnalysis();
+
+    console.log(
+        "🧠 Analyse adaptative de la session :",
+        adaptiveAnalysis
+    );
+
+
     for (
         let i = 0;
         i < SESSION_SIZE_GENERATOR;
         i++
     ) {
+
         const skill =
             chooseSkillForSession(
                 safeLevel,
@@ -1776,6 +2148,7 @@ function generateLearningSession(
             attempt < 10;
             attempt++
         ) {
+
             question =
                 generateExerciseBySkill(
                     skill,
@@ -1794,16 +2167,19 @@ function generateLearningSession(
             question = null;
         }
 
+
         /*
            Sécurité :
            si une compétence ne fonctionne pas,
            on essaie les autres compétences.
         */
         if (!question) {
+
             for (
                 const fallbackSkill
                 of GENERATOR_SKILLS
             ) {
+
                 if (
                     fallbackSkill ===
                     skill
@@ -1830,11 +2206,14 @@ function generateLearningSession(
             }
         }
 
+
         if (!question) {
+
             throw new Error(
                 `Impossible de générer l'exercice ${i + 1}.`
             );
         }
+
 
         /*
            Vérification spéciale Lecture
@@ -1844,12 +2223,14 @@ function generateLearningSession(
             question.type ===
             "letter_word"
         ) {
+
             const match =
                 question.question.match(
                     /lettre\s+([A-Za-zÀ-ÿ])/i
                 );
 
             if (match) {
+
                 const requested =
                     normalizeLetter(
                         match[1]
@@ -1860,10 +2241,12 @@ function generateLearningSession(
                         question.answer
                     ) !== requested
                 ) {
+
                     throw new Error(
                         `Exercice ${i + 1} invalide : la réponse ne correspond pas à la lettre demandée.`
                     );
                 }
+
 
                 const badChoice =
                     question.choices.find(
@@ -1881,6 +2264,7 @@ function generateLearningSession(
                     );
 
                 if (badChoice) {
+
                     throw new Error(
                         `Exercice ${i + 1} invalide : un mauvais choix commence aussi par la lettre demandée.`
                     );
@@ -1888,6 +2272,15 @@ function generateLearningSession(
             }
         }
 
+
+        /*
+           On ajoute la compétence à l'historique
+           même lorsqu'elle revient plusieurs fois.
+
+           C'est volontaire :
+           le nouveau système doit pouvoir
+           renforcer une faiblesse.
+        */
         usedSkills.push(
             question.skill
         );
@@ -1897,14 +2290,29 @@ function generateLearningSession(
         );
     }
 
+
     if (
         session.length !==
         SESSION_SIZE_GENERATOR
     ) {
+
         throw new Error(
             "La session doit contenir exactement 5 exercices."
         );
     }
+
+
+    /*
+       Petit diagnostic utile dans la console.
+    */
+    console.log(
+        "🎯 Composition de la session personnalisée :",
+        session.map(
+            question =>
+                question.skill
+        )
+    );
+
 
     return session;
 }
@@ -1928,6 +2336,7 @@ function generateAdaptiveQuestion(
             selectedSkill
         )
     ) {
+
         selectedSkill =
             chooseSkillForSession(
                 safeLevel,
@@ -1948,6 +2357,7 @@ function generateAdaptiveQuestion(
             question
         )
     ) {
+
         throw new Error(
             "La maîtresse n'a pas réussi à préparer cette question."
         );
@@ -1982,7 +2392,7 @@ function resetGeneratorHistory() {
 
 function getGeneratorInfo() {
     return {
-        version: "6.0",
+        version: "7.0",
         sessionSize:
             SESSION_SIZE_GENERATOR,
         skills: [
@@ -2057,11 +2467,42 @@ window.resetGeneratorHistory =
 window.getGeneratorInfo =
     getGeneratorInfo;
 
+window.getAdaptiveSkillAnalysis =
+    getAdaptiveSkillAnalysis;
+
+window.getAdaptivePrioritySkills =
+    getAdaptivePrioritySkills;
+
+window.getPrimaryWeakSkill =
+    getPrimaryWeakSkill;
+
 /* =========================================================
    DEBUG
    ========================================================= */
 
 console.log(
-    "✅ Mama Binta Generator v6 chargé.",
-    getGeneratorInfo()
+    "✅ Mama Binta Generator v7 chargé."
+);
+
+console.log(
+    "🧠 Adaptation aux compétences : active"
+);
+
+console.log(
+    "🎯 Maximum par compétence prioritaire : 3"
+);
+
+console.log(
+    "📝 Exercices par session :",
+    SESSION_SIZE_GENERATOR
+);
+
+console.log(
+    "📚 Compétences :",
+    GENERATOR_SKILLS
+);
+
+console.log(
+    "📊 Analyse adaptative :",
+    getAdaptiveSkillAnalysis()
 );
