@@ -9,6 +9,7 @@ Rôle :
 - analyser les sessions de 5 exercices
 - tenir compte des 5 compétences
 - ne jamais sauter de niveau
+- fonctionner avec la structure actuelle de memory.js
 
 IMPORTANT :
 Le Planificateur est le seul agent qui décide
@@ -18,18 +19,7 @@ Il ne génère pas les questions.
 Il ne corrige pas les réponses.
 Il n'explique pas les erreurs.
 
-Architecture :
-
-🧠 Mémoire
-      ↓
-🔎 Analyste
-      ↓
-🎯 Planificateur
-      ↓
-🤖 Générateur
-
 Compétences :
-
 📖 Lecture
 ➕ Addition
 ➖ Soustraction
@@ -40,13 +30,11 @@ Compétences :
 
 
 // ========================================================
-// 📚 CONFIGURATION GÉNÉRALE
+// 📚 CONFIGURATION
 // ========================================================
 
 const MAX_PEDAGOGICAL_LEVEL = 100;
-
 const SESSION_SIZE = 5;
-
 const MIN_LEVEL = 1;
 
 
@@ -80,8 +68,7 @@ const PLANNER_SKILLS = [
 
 function plannerClampLevel(level) {
 
-    const number =
-        parseInt(level);
+    const number = parseInt(level);
 
     if (isNaN(number)) {
         return MIN_LEVEL;
@@ -111,7 +98,6 @@ function getPedagogicalLevel() {
             );
 
         if (saved !== null) {
-
             return plannerClampLevel(saved);
         }
 
@@ -151,6 +137,7 @@ function savePedagogicalLevel(level) {
         );
     }
 
+    // La mémoire conserve également le niveau observé.
     if (
         typeof rememberLevel === "function"
     ) {
@@ -175,7 +162,8 @@ function getPedagogicalLevelInfo(level) {
 
     return {
 
-        level: safeLevel,
+        level:
+            safeLevel,
 
         sessionSize:
             SESSION_SIZE,
@@ -224,18 +212,134 @@ function plannerGetCurrentSession() {
 
 
 // ========================================================
+// 🔄 NORMALISER UNE SESSION
+// ========================================================
+//
+// memory.js utilise actuellement :
+// - totalExercises
+// - completedExercises
+// - correctAnswers
+// - incorrectAnswers
+// - score
+// - completedAt
+//
+// L'ancien planner utilisait :
+// - total
+// - correct
+// - completed
+//
+// Cette fonction permet aux deux architectures
+// de communiquer correctement.
+// ========================================================
+
+function normalizePlannerSession(session) {
+
+    if (!session) {
+        return null;
+    }
+
+    const completedExercises =
+        Number(
+            session.completedExercises ??
+            session.total ??
+            0
+        );
+
+    const totalExercises =
+        Number(
+            session.totalExercises ??
+            SESSION_SIZE
+        );
+
+    const correctAnswers =
+        Number(
+            session.correctAnswers ??
+            session.correct ??
+            session.score ??
+            0
+        );
+
+    const incorrectAnswers =
+        Number(
+            session.incorrectAnswers ??
+            Math.max(
+                0,
+                completedExercises - correctAnswers
+            )
+        );
+
+    const score =
+        Number(
+            session.score ??
+            correctAnswers
+        );
+
+    /*
+    Une session est considérée terminée si :
+    - memory.js possède completedAt
+    OU
+    - les 5 exercices ont été réalisés.
+    */
+    const completed =
+        Boolean(
+            session.completedAt
+        ) ||
+        completedExercises >= totalExercises;
+
+    return {
+
+        ...session,
+
+        total:
+            totalExercises,
+
+        correct:
+            correctAnswers,
+
+        incorrect:
+            incorrectAnswers,
+
+        completedExercises:
+            completedExercises,
+
+        totalExercises:
+            totalExercises,
+
+        correctAnswers:
+            correctAnswers,
+
+        incorrectAnswers:
+            incorrectAnswers,
+
+        score:
+            score,
+
+        completed:
+            completed
+    };
+}
+
+
+// ========================================================
 // 📈 CALCULER LE SCORE
 // ========================================================
 
 function calculateSessionScore(session) {
 
-    if (!session) {
+    const normalized =
+        normalizePlannerSession(session);
+
+    if (!normalized) {
         return 0;
     }
 
-    return Number(
-        session.correct
-    ) || 0;
+    return Math.max(
+        0,
+        Math.min(
+            SESSION_SIZE,
+            Number(normalized.score) || 0
+        )
+    );
 }
 
 
@@ -261,64 +365,109 @@ function getSessionStars(score) {
 
 
 // ========================================================
-// 📊 ÉTAT D'UNE SESSION
+// 📊 DÉCISION SELON LE SCORE
 // ========================================================
 
 function getSessionDecision(score) {
 
-    switch (score) {
+    const safeScore =
+        Math.max(
+            0,
+            Math.min(
+                SESSION_SIZE,
+                Number(score) || 0
+            )
+        );
+
+    switch (safeScore) {
 
         case 5:
 
             return {
-                action: "progresser",
-                status: "excellent",
-                stars: "⭐⭐⭐⭐⭐"
+
+                action:
+                    "progresser",
+
+                status:
+                    "excellent",
+
+                stars:
+                    "⭐⭐⭐⭐⭐"
             };
 
 
         case 4:
 
             return {
-                action: "progresser",
-                status: "réussite",
-                stars: "⭐⭐⭐⭐"
+
+                action:
+                    "progresser",
+
+                status:
+                    "réussite",
+
+                stars:
+                    "⭐⭐⭐⭐"
             };
 
 
         case 3:
 
             return {
-                action: "consolider",
-                status: "consolidation",
-                stars: "⭐⭐⭐"
+
+                action:
+                    "consolider",
+
+                status:
+                    "consolidation",
+
+                stars:
+                    "⭐⭐⭐"
             };
 
 
         case 2:
 
             return {
-                action: "renforcer",
-                status: "difficulte",
-                stars: "⭐⭐"
+
+                action:
+                    "renforcer",
+
+                status:
+                    "difficulte",
+
+                stars:
+                    "⭐⭐"
             };
 
 
         case 1:
 
             return {
-                action: "renforcer",
-                status: "grande_difficulte",
-                stars: "⭐"
+
+                action:
+                    "renforcer",
+
+                status:
+                    "grande_difficulte",
+
+                stars:
+                    "⭐"
             };
 
 
         default:
 
             return {
-                action: "renforcer",
-                status: "a_reprendre",
-                stars: ""
+
+                action:
+                    "renforcer",
+
+                status:
+                    "a_reprendre",
+
+                stars:
+                    ""
             };
     }
 }
@@ -366,16 +515,17 @@ function getPlannerPriority() {
     const ordered =
         weakSkills.slice();
 
-    PLANNER_SKILLS.forEach(skill => {
+    PLANNER_SKILLS.forEach(
+        skill => {
 
-        if (
-            !ordered.includes(skill)
-        ) {
+            if (
+                !ordered.includes(skill)
+            ) {
 
-            ordered.push(skill);
+                ordered.push(skill);
+            }
         }
-
-    });
+    );
 
     return ordered;
 }
@@ -425,35 +575,67 @@ function savePlannerSessionResult(
     level,
     score,
     decision,
-    skillResults = []
+    skillResults = [],
+    sessionId = null
 ) {
 
     const history =
         getPlannerHistory();
 
+    /*
+    Évite d'enregistrer deux fois exactement
+    la même session.
+    */
+    if (
+        sessionId &&
+        history.some(
+            item =>
+                item.sessionId === sessionId
+        )
+    ) {
+
+        return history;
+    }
+
     history.push({
 
-        level,
+        sessionId:
 
-        score,
+            sessionId,
+
+        level:
+
+            plannerClampLevel(level),
+
+        score:
+
+            Number(score) || 0,
 
         stars:
+
             getSessionStars(score),
 
         action:
-            decision.action,
+
+            decision?.action ||
+            "renforcer",
 
         status:
-            decision.status,
 
-        skillResults,
+            decision?.status ||
+            "renforcement",
+
+        skillResults:
+
+            Array.isArray(skillResults)
+                ? skillResults
+                : [],
 
         date:
+
             new Date().toISOString()
     });
 
-
-    // On conserve uniquement les 20 dernières sessions.
 
     const limitedHistory =
         history.slice(-20);
@@ -462,7 +644,9 @@ function savePlannerSessionResult(
     try {
 
         localStorage.setItem(
+
             PEDAGOGICAL_HISTORY_KEY,
+
             JSON.stringify(
                 limitedHistory
             )
@@ -475,6 +659,9 @@ function savePlannerSessionResult(
             error
         );
     }
+
+
+    return limitedHistory;
 }
 
 
@@ -487,14 +674,21 @@ function getRecentLevelSessions(
     number = 3
 ) {
 
+    const safeLevel =
+        plannerClampLevel(level);
+
     const history =
         getPlannerHistory();
 
     return history
+
         .filter(
             session =>
-                session.level === level
+                plannerClampLevel(
+                    session.level
+                ) === safeLevel
         )
+
         .slice(-number);
 }
 
@@ -511,9 +705,10 @@ function hasPersistentDifficulty(level) {
             3
         );
 
-
-    // Une seule mauvaise session ne suffit PAS.
-
+    /*
+    Une seule mauvaise session
+    ne provoque jamais une régression.
+    */
     if (
         recent.length < 2
     ) {
@@ -521,29 +716,11 @@ function hasPersistentDifficulty(level) {
         return false;
     }
 
-
-    /*
-    Pour régresser, il faut au moins deux
-    sessions récentes difficiles.
-
-    Exemple :
-
-    Session 1 → 2/5
-    Session 2 → 1/5
-
-    → difficulté persistante.
-
-    Une seule session à 1/5
-    ne provoque donc pas immédiatement
-    une régression.
-    */
-
     const difficultSessions =
         recent.filter(
             session =>
                 Number(session.score) <= 2
         );
-
 
     return (
         difficultSessions.length >= 2
@@ -557,9 +734,12 @@ function hasPersistentDifficulty(level) {
 
 function canProgressFromSession(score) {
 
+    const safeScore =
+        Number(score) || 0;
+
     return (
-        score === 5 ||
-        score === 4
+        safeScore === 5 ||
+        safeScore === 4
     );
 }
 
@@ -568,20 +748,160 @@ function canProgressFromSession(score) {
 // 📉 RÉGRESSION POSSIBLE
 // ========================================================
 
-function canRegress(
-    level
-) {
+function canRegress(level) {
+
+    const safeLevel =
+        plannerClampLevel(level);
 
     if (
-        level <= MIN_LEVEL
+        safeLevel <= MIN_LEVEL
     ) {
 
         return false;
     }
 
     return hasPersistentDifficulty(
-        level
+        safeLevel
     );
+}
+
+
+// ========================================================
+// 🧠 MARQUER UNE DÉCISION COMME APPLIQUÉE
+// ========================================================
+//
+// Très important.
+//
+// Après une session terminée, plusieurs parties de
+// l'application peuvent demander le plan pédagogique.
+//
+// Sans cette protection :
+//
+// session 4/5
+// → niveau 2
+// → un autre appel
+// → niveau 3
+// → un autre appel
+// → niveau 4
+//
+// Ce serait faux.
+//
+// Une session ne doit faire progresser Mama Binta
+// qu'une seule fois.
+// ========================================================
+
+function markPlannerDecisionApplied(
+    session,
+    plan
+) {
+
+    if (!session) {
+        return;
+    }
+
+    session.plannerDecisionApplied =
+        true;
+
+    session.plannerDecision = {
+
+        action:
+            plan.action,
+
+        status:
+            plan.status,
+
+        level:
+            plan.level,
+
+        previousLevel:
+            plan.previousLevel,
+
+        score:
+            plan.score,
+
+        stars:
+            plan.stars,
+
+        appliedAt:
+            new Date().toISOString()
+    };
+
+
+    /*
+    La session est stockée dans memory.js.
+    On sauvegarde si la fonction existe.
+    */
+    if (
+        typeof saveStudentMemory === "function"
+    ) {
+
+        saveStudentMemory();
+    }
+}
+
+
+// ========================================================
+// 🔁 RÉCUPÉRER UNE DÉCISION DÉJÀ APPLIQUÉE
+// ========================================================
+
+function getAlreadyAppliedPlan(
+    session,
+    currentLevel,
+    priority
+) {
+
+    if (
+        !session ||
+        !session.plannerDecisionApplied ||
+        !session.plannerDecision
+    ) {
+
+        return null;
+    }
+
+    const saved =
+        session.plannerDecision;
+
+    return {
+
+        level:
+            plannerClampLevel(
+                saved.level ??
+                currentLevel
+            ),
+
+        previousLevel:
+            saved.previousLevel,
+
+        action:
+            saved.action ||
+            "renforcer",
+
+        status:
+            saved.status ||
+            "renforcement",
+
+        score:
+            Number(
+                saved.score
+            ) || 0,
+
+        stars:
+            saved.stars ||
+            getSessionStars(
+                saved.score
+            ),
+
+        priority:
+
+            priority,
+
+        alreadyApplied:
+            true,
+
+        message:
+            "✅ La décision de cette session a déjà été appliquée."
+    };
 }
 
 
@@ -594,21 +914,23 @@ function planLearningLevel() {
     const currentLevel =
         getPedagogicalLevel();
 
-
-    const currentSession =
+    const rawSession =
         plannerGetCurrentSession();
 
+    const currentSession =
+        normalizePlannerSession(
+            rawSession
+        );
 
     const analysis =
         plannerGetAnalysis();
-
 
     const priority =
         getPlannerPriority();
 
 
     // ====================================================
-    // 🌱 PREMIER NIVEAU
+    // 🌱 AUCUNE SESSION
     // ====================================================
 
     if (!currentSession) {
@@ -629,9 +951,28 @@ function planLearningLevel() {
 
             priority,
 
+            analysis,
+
             message:
                 "🎯 Mama Binta est prête pour une nouvelle session de 5 exercices."
         };
+    }
+
+
+    // ====================================================
+    // 🔒 SESSION DÉJÀ TRAITÉE
+    // ====================================================
+
+    const alreadyApplied =
+        getAlreadyAppliedPlan(
+            currentSession,
+            currentLevel,
+            priority
+        );
+
+    if (alreadyApplied) {
+
+        return alreadyApplied;
     }
 
 
@@ -648,6 +989,11 @@ function planLearningLevel() {
                 currentSession
             );
 
+        const completedExercises =
+            Number(
+                currentSession.completedExercises
+            ) || 0;
+
         return {
 
             level:
@@ -661,15 +1007,18 @@ function planLearningLevel() {
 
             score,
 
+            completedExercises,
+
             remaining:
-                SESSION_SIZE -
-                (
-                    Number(
-                        currentSession.total
-                    ) || 0
+                Math.max(
+                    0,
+                    SESSION_SIZE -
+                    completedExercises
                 ),
 
             priority,
+
+            analysis,
 
             message:
                 "🧠 La session est en cours. Continuons les exercices."
@@ -685,7 +1034,6 @@ function planLearningLevel() {
         calculateSessionScore(
             currentSession
         );
-
 
     const decision =
         getSessionDecision(
@@ -709,16 +1057,15 @@ function planLearningLevel() {
                 currentLevel - 1
             );
 
+        const safePreviousLevel =
+            savePedagogicalLevel(
+                previousLevel
+            );
 
-        savePedagogicalLevel(
-            previousLevel
-        );
-
-
-        return {
+        const plan = {
 
             level:
-                previousLevel,
+                safePreviousLevel,
 
             previousLevel:
                 currentLevel,
@@ -738,12 +1085,23 @@ function planLearningLevel() {
 
             priority,
 
+            analysis,
+
             message:
                 "🧠 Cette difficulté se répète. " +
                 "Nous allons revenir temporairement au niveau " +
-                previousLevel +
+                safePreviousLevel +
                 " pour renforcer les bases."
         };
+
+
+        markPlannerDecisionApplied(
+            currentSession,
+            plan
+        );
+
+
+        return plan;
     }
 
 
@@ -765,16 +1123,15 @@ function planLearningLevel() {
             const nextLevel =
                 currentLevel + 1;
 
+            const safeNextLevel =
+                savePedagogicalLevel(
+                    nextLevel
+                );
 
-            savePedagogicalLevel(
-                nextLevel
-            );
-
-
-            return {
+            const plan = {
 
                 level:
-                    nextLevel,
+                    safeNextLevel,
 
                 previousLevel:
                     currentLevel,
@@ -794,20 +1151,31 @@ function planLearningLevel() {
 
                 priority,
 
+                analysis,
+
                 message:
                     "🌟 Bravo ! Mama Binta a réussi " +
                     score +
                     "/5. " +
-                    "Nous pouvons passer progressivement au niveau " +
-                    nextLevel +
+                    "Nous passons maintenant progressivement au niveau " +
+                    safeNextLevel +
                     "."
             };
+
+
+            markPlannerDecisionApplied(
+                currentSession,
+                plan
+            );
+
+
+            return plan;
         }
 
 
         // Niveau 100 atteint.
 
-        return {
+        const plan = {
 
             level:
                 MAX_PEDAGOGICAL_LEVEL,
@@ -827,10 +1195,21 @@ function planLearningLevel() {
 
             priority,
 
+            analysis,
+
             message:
                 "🏆 Mama Binta est arrivée au niveau 100. " +
                 "Nous allons maintenant renforcer et approfondir ses compétences."
         };
+
+
+        markPlannerDecisionApplied(
+            currentSession,
+            plan
+        );
+
+
+        return plan;
     }
 
 
@@ -842,7 +1221,7 @@ function planLearningLevel() {
         score === 3
     ) {
 
-        return {
+        const plan = {
 
             level:
                 currentLevel,
@@ -862,12 +1241,23 @@ function planLearningLevel() {
 
             priority,
 
+            analysis,
+
             message:
                 "🧠 Mama Binta a réussi 3/5. " +
                 "Nous allons rester au niveau " +
                 currentLevel +
                 " et renforcer les compétences qui ont posé problème."
         };
+
+
+        markPlannerDecisionApplied(
+            currentSession,
+            plan
+        );
+
+
+        return plan;
     }
 
 
@@ -875,7 +1265,7 @@ function planLearningLevel() {
     // 🔧 RENFORCEMENT
     // ====================================================
 
-    return {
+    const plan = {
 
         level:
             currentLevel,
@@ -895,11 +1285,22 @@ function planLearningLevel() {
 
         priority,
 
+        analysis,
+
         message:
             "💪 Nous allons rester au niveau " +
             currentLevel +
             " et travailler davantage les compétences difficiles."
     };
+
+
+    markPlannerDecisionApplied(
+        currentSession,
+        plan
+    );
+
+
+    return plan;
 }
 
 
@@ -912,7 +1313,6 @@ function startPlannedLearningSession() {
     const level =
         getPedagogicalLevel();
 
-
     if (
         typeof startLearningSession !== "function"
     ) {
@@ -924,7 +1324,6 @@ function startPlannedLearningSession() {
         return null;
     }
 
-
     return startLearningSession(
         level
     );
@@ -932,7 +1331,7 @@ function startPlannedLearningSession() {
 
 
 // ========================================================
-// 📋 PLAN COMPLET
+// 📋 PLAN COMPLET — LECTURE SEULE
 // ========================================================
 
 function getLearningPlan() {
@@ -1007,17 +1406,6 @@ function resetLearningPlan() {
 // ========================================================
 // 🔄 COMPATIBILITÉ AVEC L'ANCIENNE INTERFACE
 // ========================================================
-//
-// L'ancien index.html utilisait getMathPlan()
-// et resetMathPlan().
-//
-// On garde ces fonctions temporairement pour
-// éviter de casser l'application avant la refonte
-// de index.html.
-//
-// Elles seront progressivement remplacées par
-// getLearningPlan() et planLearningLevel().
-// ========================================================
 
 function getMathPlan() {
 
@@ -1078,4 +1466,14 @@ console.log(
 console.log(
     "📝 Exercices par session :",
     SESSION_SIZE
+);
+
+console.log(
+    "🔗 Compatible avec la mémoire actuelle :",
+    "oui"
+);
+
+console.log(
+    "🔒 Protection contre les doubles progressions :",
+    "active"
 );
