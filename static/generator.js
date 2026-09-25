@@ -1,6 +1,6 @@
 /*
 ==========================================================
-✏️ MAMA BINTA — AGENT GÉNÉRATEUR v2
+✏️ MAMA BINTA — AGENT GÉNÉRATEUR v3
 ==========================================================
 
 Rôle :
@@ -10,14 +10,6 @@ Rôle :
 - éviter les répétitions
 - tenir compte des compétences faibles
 - créer les sessions de 5 exercices
-
-Compétences :
-
-📖 reading
-➕ addition
-➖ subtraction
-✖️ multiplication
-🧠 comprehension
 
 Le Générateur NE décide PAS du niveau.
 Le Planificateur lui fournit le niveau.
@@ -39,7 +31,6 @@ const READING_WORDS = [
     { word: "Fenêtre", emoji: "🪟", category: "maison" },
     { word: "Lit", emoji: "🛏️", category: "maison" },
     { word: "Lampe", emoji: "💡", category: "maison" },
-    { word: "Maison", emoji: "🏡", category: "maison" },
     { word: "Clé", emoji: "🔑", category: "maison" },
 
     // 🐾 Animaux
@@ -122,7 +113,6 @@ const READING_WORDS = [
 // ========================================================
 
 const MAMA_BINTA_NAMES = [
-
     "Olga",
     "Diatta",
     "Daba",
@@ -151,7 +141,6 @@ const MAMA_BINTA_NAMES = [
 // ========================================================
 
 const MAMA_BINTA_CONTEXTS = [
-
     "à l'école",
     "à la maison",
     "au marché",
@@ -170,7 +159,6 @@ const MAMA_BINTA_CONTEXTS = [
 // ========================================================
 
 const READING_LETTERS = [
-
     "A", "B", "C", "D", "E", "F",
     "G", "H", "I", "J", "K", "L",
     "M", "N", "O", "P", "Q", "R",
@@ -192,6 +180,10 @@ function shuffle(arr) {
 
 
 function randomItem(arr) {
+
+    if (!arr || !arr.length) {
+        return null;
+    }
 
     return arr[
         Math.floor(
@@ -227,6 +219,13 @@ function getDifficultyFromLevel(level) {
 
 
 function randomInt(min, max) {
+
+    min = Math.ceil(Number(min));
+    max = Math.floor(Number(max));
+
+    if (max < min) {
+        max = min;
+    }
 
     return Math.floor(
         Math.random() *
@@ -282,7 +281,7 @@ function saveGeneratorHistory(history) {
         localStorage.setItem(
             GENERATOR_HISTORY_KEY,
             JSON.stringify(
-                history.slice(-80)
+                history.slice(-100)
             )
         );
 
@@ -298,14 +297,16 @@ function saveGeneratorHistory(history) {
 
 function wasRecentlyUsed(signature) {
 
+    if (!signature) {
+        return false;
+    }
+
     return getGeneratorHistory()
         .includes(signature);
 }
 
 
-function rememberGeneratedQuestion(
-    question
-) {
+function rememberGeneratedQuestion(question) {
 
     if (!question) {
         return;
@@ -351,11 +352,11 @@ function clearGeneratorHistory() {
 
 // ========================================================
 // 🧠 FINALISER UNE QUESTION
+// IMPORTANT : cette fonction NE mémorise plus
+// immédiatement la question.
 // ========================================================
 
-function finalizeGeneratedQuestion(
-    question
-) {
+function finalizeGeneratedQuestion(question) {
 
     if (!question) {
         return question;
@@ -369,6 +370,100 @@ function finalizeGeneratedQuestion(
             question.question;
     }
 
+    return question;
+}
+
+
+// ========================================================
+// 🚫 ANTI-RÉPÉTITION CORRIGÉ
+// ========================================================
+
+function getUniqueQuestion(
+    question,
+    generatorFunction
+) {
+
+    if (!question) {
+        return question;
+    }
+
+    /*
+    La question est nouvelle :
+    on la mémorise seulement maintenant.
+    */
+
+    if (
+        !wasRecentlyUsed(
+            question.signature
+        )
+    ) {
+
+        rememberGeneratedQuestion(
+            question
+        );
+
+        return question;
+    }
+
+    /*
+    La question existe déjà.
+    On essaie plusieurs candidats.
+
+    Important :
+    on mémorise l'état de l'historique
+    AVANT de générer le candidat.
+
+    Ainsi, même si le générateur interne
+    mémorise lui-même le candidat, nous savons
+    s'il était réellement nouveau avant
+    cette génération.
+    */
+
+    for (
+        let attempt = 0;
+        attempt < 10;
+        attempt++
+    ) {
+
+        const historyBefore =
+            getGeneratorHistory();
+
+        const alternative =
+            generatorFunction();
+
+        if (!alternative) {
+            continue;
+        }
+
+        const signature =
+            alternative.signature;
+
+        if (
+            signature &&
+            !historyBefore.includes(
+                signature
+            )
+        ) {
+
+            /*
+            Le candidat était nouveau.
+            On s'assure qu'il est mémorisé.
+            */
+
+            rememberGeneratedQuestion(
+                alternative
+            );
+
+            return alternative;
+        }
+    }
+
+    /*
+    Si le réservoir est temporairement épuisé,
+    on accepte la question plutôt que de bloquer
+    l'application.
+    */
+
     rememberGeneratedQuestion(
         question
     );
@@ -381,9 +476,7 @@ function finalizeGeneratedQuestion(
 // 📖 LECTURE
 // ========================================================
 
-function generateReadingQuestion(
-    level = 1
-) {
+function generateReadingQuestion(level = 1) {
 
     const safeLevel =
         getDifficultyFromLevel(level);
@@ -418,7 +511,10 @@ function generateReadingQuestion(
 
     return getUniqueQuestion(
         question,
-        () => generateReadingQuestion(safeLevel)
+        () =>
+            generateReadingQuestion(
+                safeLevel
+            )
     );
 }
 
@@ -440,10 +536,49 @@ function generateLetterWordQuestion() {
                 firstLetter(item.word) === letter
         );
 
+    /*
+    Certaines lettres ont très peu de mots
+    dans notre banque.
+    On utilise une lettre disponible.
+    */
+
     if (!correctWords.length) {
 
-        return generateLetterWordQuestion();
+        const availableLetters =
+            [
+                ...new Set(
+                    READING_WORDS.map(
+                        item =>
+                            firstLetter(item.word)
+                    )
+                )
+            ];
+
+        const newLetter =
+            randomItem(
+                availableLetters
+            );
+
+        return generateLetterWordQuestionWithLetter(
+            newLetter
+        );
     }
+
+    return generateLetterWordQuestionWithLetter(
+        letter
+    );
+}
+
+
+function generateLetterWordQuestionWithLetter(
+    letter
+) {
+
+    const correctWords =
+        READING_WORDS.filter(
+            item =>
+                firstLetter(item.word) === letter
+        );
 
     const answer =
         randomItem(
@@ -469,7 +604,8 @@ function generateLetterWordQuestion() {
             shuffle([
                 answer.word,
                 ...wrongWords.map(
-                    item => item.word
+                    item =>
+                        item.word
                 )
             ]),
 
@@ -728,6 +864,30 @@ const READING_SENTENCES = [
         sentence: "Moussa fait du vélo dans la cour.",
         answer: "vélo",
         choices: ["vélo", "livre", "orange"]
+    },
+
+    {
+        sentence: "Fatou ouvre la porte de la maison.",
+        answer: "porte",
+        choices: ["porte", "banane", "avion"]
+    },
+
+    {
+        sentence: "Ibrahima regarde un poisson dans l'eau.",
+        answer: "poisson",
+        choices: ["poisson", "crayon", "chaise"]
+    },
+
+    {
+        sentence: "Aminata mange une pomme rouge.",
+        answer: "pomme",
+        choices: ["pomme", "bus", "livre"]
+    },
+
+    {
+        sentence: "Cheikh pose son cahier sur la table.",
+        answer: "cahier",
+        choices: ["cahier", "chien", "bateau"]
     }
 ];
 
@@ -742,8 +902,10 @@ function generateSentenceQuestion() {
     return finalizeGeneratedQuestion({
 
         question:
-            "Quel mot est important dans cette phrase ?\n\n" +
-            item.sentence,
+            "Lis attentivement :\n\n" +
+            item.sentence +
+            "\n\nQuel mot décrit quelque chose " +
+            "que l'on trouve dans cette phrase ?",
 
         choices:
             shuffle(
@@ -947,14 +1109,16 @@ function generateReadingComprehensionQuestion() {
 function getGeneratorMemory() {
 
     if (
-        typeof loadStudentMemory === "function"
+        typeof loadStudentMemory ===
+        "function"
     ) {
 
         return loadStudentMemory();
     }
 
     if (
-        typeof getStudentMemory === "function"
+        typeof getStudentMemory ===
+        "function"
     ) {
 
         return getStudentMemory();
@@ -964,9 +1128,7 @@ function getGeneratorMemory() {
 }
 
 
-function getRecentResultsForSkill(
-    skill
-) {
+function getRecentResultsForSkill(skill) {
 
     const memory =
         getGeneratorMemory();
@@ -989,43 +1151,23 @@ function getRecentResultsForSkill(
 
 
 // ========================================================
-// 🔑 SIGNATURE MATHÉMATIQUE
-// ========================================================
-
-function getMathSignature(
-    operator,
-    a,
-    b
-) {
-
-    return (
-        operator +
-        ":" +
-        a +
-        ":" +
-        b
-    );
-}
-
-
-// ========================================================
 // 🔢 RÉPONSES FAUSSES
 // ========================================================
 
-function createWrongNumbers(
-    result
-) {
+function createWrongNumbers(result) {
 
     const wrong =
         new Set();
 
     const offsets = [
+        -4,
         -3,
         -2,
         -1,
         1,
         2,
-        3
+        3,
+        4
     ];
 
     shuffle(
@@ -1050,14 +1192,17 @@ function createWrongNumbers(
 
     while (
         wrong.size < 2 &&
-        attempts < 20
+        attempts < 30
     ) {
 
         const value =
-            result +
-            randomInt(
-                1,
-                6
+            Math.max(
+                0,
+                result +
+                randomInt(
+                    -6,
+                    6
+                )
             );
 
         if (
@@ -1077,6 +1222,27 @@ function createWrongNumbers(
 
 
 // ========================================================
+// 📈 DIFFICULTÉ ADDITION
+// ========================================================
+
+function getAdditionMax(level) {
+
+    if (level <= 5) return 10;
+    if (level <= 10) return 15;
+    if (level <= 20) return 20;
+    if (level <= 30) return 30;
+    if (level <= 40) return 40;
+    if (level <= 50) return 50;
+    if (level <= 60) return 70;
+    if (level <= 70) return 90;
+    if (level <= 80) return 120;
+    if (level <= 90) return 150;
+
+    return 200;
+}
+
+
+// ========================================================
 // ➕ ADDITION
 // ========================================================
 
@@ -1084,45 +1250,32 @@ const ADDITION_TEMPLATES = [
 
     (name, a, b, item) =>
         `${name} a ${a} ${item.word}. ` +
-        `Il/Elle en reçoit ${b}. Combien en a-t-il/elle maintenant ?`,
+        `Il/Elle en reçoit ${b}. ` +
+        `Combien en a-t-il/elle maintenant ?`,
 
     (name, a, b, item) =>
         `${name} possède ${a} ${item.word}. ` +
-        `Il/Elle achète encore ${b}. Combien en possède-t-il/elle ?`,
+        `Il/Elle en achète encore ${b}. ` +
+        `Combien en possède-t-il/elle ?`,
 
     (name, a, b, item) =>
         `${name} trouve ${a} ${item.word} ` +
-        `et en trouve encore ${b}. Combien en a-t-il/elle en tout ?`,
+        `et en trouve encore ${b}. ` +
+        `Combien en a-t-il/elle en tout ?`,
 
     (name, a, b, item) =>
-        `Dans ${name}'s panier, il y a ${a} ${item.word}. ` +
+        `Dans le panier de ${name}, ` +
+        `il y a ${a} ${item.word}. ` +
         `On ajoute ${b}. Combien y en a-t-il maintenant ?`,
 
     (name, a, b, item) =>
         `${name} a ${a} ${item.word} ${item.emoji}. ` +
-        `${b} autres arrivent. Combien y en a-t-il en tout ?`
+        `${b} autres arrivent. ` +
+        `Combien y en a-t-il en tout ?`
 ];
 
 
-function getAdditionMax(level) {
-
-    if (level <= 10) return 5;
-    if (level <= 20) return 10;
-    if (level <= 30) return 15;
-    if (level <= 40) return 20;
-    if (level <= 50) return 30;
-    if (level <= 60) return 40;
-    if (level <= 70) return 50;
-    if (level <= 80) return 70;
-    if (level <= 90) return 90;
-
-    return 100;
-}
-
-
-function generateAdditionQuestion(
-    level = 1
-) {
+function generateAdditionQuestion(level = 1) {
 
     const safeLevel =
         getDifficultyFromLevel(level);
@@ -1133,33 +1286,51 @@ function generateAdditionQuestion(
         );
 
     const useStory =
-        Math.random() < 0.55;
+        Math.random() < 0.60;
 
-    let a =
-        randomInt(
-            1,
-            Math.max(
-                2,
-                Math.floor(max * 0.7)
-            )
-        );
+    let a;
+    let b;
 
-    let b =
-        randomInt(
-            1,
-            Math.max(
-                2,
-                Math.min(
-                    max - a,
-                    Math.ceil(max * 0.4)
+    /*
+    On évite les additions trop petites
+    lorsque le niveau augmente.
+    */
+
+    if (safeLevel <= 5) {
+
+        a = randomInt(1, Math.max(2, max - 4));
+        b = randomInt(1, Math.max(2, max - a));
+
+    } else {
+
+        const minimum =
+            safeLevel <= 20
+                ? 2
+                : Math.max(
+                    2,
+                    Math.floor(max * 0.15)
+                );
+
+        a =
+            randomInt(
+                minimum,
+                Math.max(
+                    minimum,
+                    Math.floor(max * 0.70)
                 )
-            )
-        );
+            );
 
-    if (
-        a + b > max
-    ) {
+        b =
+            randomInt(
+                1,
+                Math.max(
+                    1,
+                    max - a
+                )
+            );
+    }
 
+    if (a + b > max) {
         b =
             Math.max(
                 1,
@@ -1176,7 +1347,6 @@ function generateAdditionQuestion(
         );
 
     let questionText;
-
     let answerDisplay =
         String(result);
 
@@ -1222,7 +1392,7 @@ function generateAdditionQuestion(
             "|" +
             item.word +
             "|" +
-            template.toString();
+            questionText;
 
     } else {
 
@@ -1251,8 +1421,7 @@ function generateAdditionQuestion(
             questionText;
     }
 
-    return getUniqueQuestion(
-
+    const question =
         finalizeGeneratedQuestion({
 
             question:
@@ -1273,6 +1442,11 @@ function generateAdditionQuestion(
             answerDisplay:
                 answerDisplay,
 
+            answerEmoji:
+                useStory
+                    ? answerDisplay.split(" ").pop()
+                    : "",
+
             skill:
                 "addition",
 
@@ -1287,13 +1461,36 @@ function generateAdditionQuestion(
 
             signature:
                 signature
-        }),
+        });
 
+    return getUniqueQuestion(
+        question,
         () =>
             generateAdditionQuestion(
                 safeLevel
             )
     );
+}
+
+
+// ========================================================
+// 📈 DIFFICULTÉ SOUSTRACTION
+// ========================================================
+
+function getSubtractionMax(level) {
+
+    if (level <= 5) return 10;
+    if (level <= 10) return 15;
+    if (level <= 20) return 20;
+    if (level <= 30) return 30;
+    if (level <= 40) return 40;
+    if (level <= 50) return 50;
+    if (level <= 60) return 70;
+    if (level <= 70) return 90;
+    if (level <= 80) return 120;
+    if (level <= 90) return 150;
+
+    return 200;
 }
 
 
@@ -1305,41 +1502,27 @@ const SUBTRACTION_TEMPLATES = [
 
     (name, a, b, item) =>
         `${name} a ${a} ${item.word}. ` +
-        `Il/Elle en donne ${b}. Combien lui en reste-t-il ?`,
+        `Il/Elle en donne ${b}. ` +
+        `Combien lui en reste-t-il ?`,
 
     (name, a, b, item) =>
         `${name} possède ${a} ${item.word}. ` +
-        `Il/Elle perd ${b}. Combien en reste-t-il ?`,
+        `Il/Elle en utilise ${b}. ` +
+        `Combien lui en reste-t-il ?`,
 
     (name, a, b, item) =>
         `Il y a ${a} ${item.word} ${item.emoji}. ` +
-        `On en retire ${b}. Combien en reste-t-il ?`,
+        `On en retire ${b}. ` +
+        `Combien en reste-t-il ?`,
 
     (name, a, b, item) =>
         `${name} avait ${a} ${item.word}. ` +
-        `Il/Elle en utilise ${b}. Combien en reste-t-il ?`
+        `Il/Elle en utilise ${b}. ` +
+        `Combien en reste-t-il ?`
 ];
 
 
-function getSubtractionMax(level) {
-
-    if (level <= 10) return 5;
-    if (level <= 20) return 10;
-    if (level <= 30) return 15;
-    if (level <= 40) return 20;
-    if (level <= 50) return 30;
-    if (level <= 60) return 40;
-    if (level <= 70) return 50;
-    if (level <= 80) return 70;
-    if (level <= 90) return 90;
-
-    return 100;
-}
-
-
-function generateSubtractionQuestion(
-    level = 1
-) {
+function generateSubtractionQuestion(level = 1) {
 
     const safeLevel =
         getDifficultyFromLevel(level);
@@ -1349,20 +1532,57 @@ function generateSubtractionQuestion(
             safeLevel
         );
 
+    /*
+    À chaque niveau, le générateur peut utiliser
+    des nombres plus grands.
+
+    Exemple :
+    niveau 1 → jusqu'à 10
+    niveau 10 → jusqu'à 15
+    niveau 20 → jusqu'à 20
+    niveau 50 → jusqu'à 50
+    niveau 100 → jusqu'à 200
+    */
+
     let a =
         randomInt(
             2,
             max
         );
 
+    /*
+    Pour éviter uniquement des calculs du type
+    2-1, 3-1, 4-1, on varie aussi b.
+    */
+
+    let minB = 1;
+
+    if (a >= 6) {
+        minB = 2;
+    }
+
+    if (a >= 12) {
+        minB = 2;
+    }
+
     let b =
         randomInt(
-            1,
-            Math.max(
-                1,
-                a - 1
-            )
+            minB,
+            a - 1
         );
+
+    /*
+    De temps en temps, on permet également
+    un résultat égal à 0 pour travailler
+    cette notion, mais pas systématiquement.
+    */
+
+    if (
+        Math.random() < 0.15
+    ) {
+
+        b = a;
+    }
 
     const result =
         a - b;
@@ -1373,7 +1593,7 @@ function generateSubtractionQuestion(
         );
 
     const useStory =
-        Math.random() < 0.55;
+        Math.random() < 0.60;
 
     let questionText;
     let answerDisplay =
@@ -1420,7 +1640,7 @@ function generateSubtractionQuestion(
             "|" +
             item.word +
             "|" +
-            template.toString();
+            questionText;
 
     } else {
 
@@ -1449,8 +1669,7 @@ function generateSubtractionQuestion(
             questionText;
     }
 
-    return getUniqueQuestion(
-
+    const question =
         finalizeGeneratedQuestion({
 
             question:
@@ -1471,6 +1690,11 @@ function generateSubtractionQuestion(
             answerDisplay:
                 answerDisplay,
 
+            answerEmoji:
+                useStory
+                    ? answerDisplay.split(" ").pop()
+                    : "",
+
             skill:
                 "subtraction",
 
@@ -1485,8 +1709,10 @@ function generateSubtractionQuestion(
 
             signature:
                 signature
-        }),
+        });
 
+    return getUniqueQuestion(
+        question,
         () =>
             generateSubtractionQuestion(
                 safeLevel
@@ -1499,30 +1725,40 @@ function generateSubtractionQuestion(
 // ✖️ MULTIPLICATION
 // ========================================================
 
-function generateMultiplicationQuestion(
-    level = 1
-) {
+function generateMultiplicationQuestion(level = 1) {
 
     const safeLevel =
         getDifficultyFromLevel(level);
 
     let maxFactor;
 
-    if (safeLevel <= 20) {
+    if (safeLevel <= 10) {
 
-        maxFactor = 2;
+        maxFactor = 3;
 
-    } else if (safeLevel <= 40) {
+    } else if (safeLevel <= 20) {
 
         maxFactor = 5;
 
-    } else if (safeLevel <= 60) {
+    } else if (safeLevel <= 30) {
+
+        maxFactor = 6;
+
+    } else if (safeLevel <= 40) {
 
         maxFactor = 7;
 
-    } else if (safeLevel <= 80) {
+    } else if (safeLevel <= 50) {
+
+        maxFactor = 8;
+
+    } else if (safeLevel <= 60) {
 
         maxFactor = 9;
+
+    } else if (safeLevel <= 80) {
+
+        maxFactor = 10;
 
     } else {
 
@@ -1565,8 +1801,7 @@ function generateMultiplicationQuestion(
             forms
         );
 
-    return getUniqueQuestion(
-
+    const question =
         finalizeGeneratedQuestion({
 
             question:
@@ -1606,8 +1841,10 @@ function generateMultiplicationQuestion(
                 b +
                 "|" +
                 questionText
-        }),
+        });
 
+    return getUniqueQuestion(
+        question,
         () =>
             generateMultiplicationQuestion(
                 safeLevel
@@ -1617,7 +1854,7 @@ function generateMultiplicationQuestion(
 
 
 // ========================================================
-// 🧠 COMPRÉHENSION — RÉSERVOIR LARGE
+// 🧠 COMPRÉHENSION
 // ========================================================
 
 const COMPREHENSION_QUESTIONS = [
@@ -1626,12 +1863,8 @@ const COMPREHENSION_QUESTIONS = [
         question:
             "Olga a 3 pommes 🍎 et reçoit 2 pommes. " +
             "Combien a-t-elle de pommes maintenant ?",
-
-        choices:
-            ["4", "5", "6"],
-
-        answer:
-            "5"
+        choices: ["4", "5", "6"],
+        answer: "5"
     },
 
     {
@@ -1639,12 +1872,8 @@ const COMPREHENSION_QUESTIONS = [
             "Mamadou possède 7 mangues 🥭. " +
             "Il donne 2 mangues à Daba. " +
             "Combien lui en reste-t-il ?",
-
-        choices:
-            ["4", "5", "6"],
-
-        answer:
-            "5"
+        choices: ["4", "5", "6"],
+        answer: "5"
     },
 
     {
@@ -1652,12 +1881,8 @@ const COMPREHENSION_QUESTIONS = [
             "Sandrine a 5 crayons ✏️. " +
             "Maty lui donne 4 crayons. " +
             "Combien en a-t-elle maintenant ?",
-
-        choices:
-            ["8", "9", "10"],
-
-        answer:
-            "9"
+        choices: ["8", "9", "10"],
+        answer: "9"
     },
 
     {
@@ -1665,24 +1890,16 @@ const COMPREHENSION_QUESTIONS = [
             "Papa Baba a 6 poules 🐔. " +
             "2 autres arrivent. " +
             "Combien y a-t-il de poules en tout ?",
-
-        choices:
-            ["7", "8", "9"],
-
-        answer:
-            "8"
+        choices: ["7", "8", "9"],
+        answer: "8"
     },
 
     {
         question:
             "Olga a 1 chat 🐈 et une balle 🥎. " +
             "Combien d'objets possède-t-elle ?",
-
-        choices:
-            ["1", "2", "3"],
-
-        answer:
-            "2"
+        choices: ["1", "2", "3"],
+        answer: "2"
     },
 
     {
@@ -1690,28 +1907,20 @@ const COMPREHENSION_QUESTIONS = [
             "Diatta a 4 livres 📚. " +
             "Elle en prête 1 à Sandrine. " +
             "Combien de livres lui reste-t-il ?",
-
-        choices:
-            ["2", "3", "4"],
-
-        answer:
-            "3"
+        choices: ["2", "3", "4"],
+        answer: "3"
     },
 
     {
         question:
             "Maty voit un chien 🐕 près de la maison. " +
             "Quel animal voit-elle ?",
-
-        choices:
-            [
-                "Un chien",
-                "Un poisson",
-                "Une poule"
-            ],
-
-        answer:
-            "Un chien"
+        choices: [
+            "Un chien",
+            "Un poisson",
+            "Une poule"
+        ],
+        answer: "Un chien"
     },
 
     {
@@ -1719,32 +1928,24 @@ const COMPREHENSION_QUESTIONS = [
             "Le ciel est couvert de nuages ☁️ " +
             "et la pluie commence à tomber. " +
             "Quel temps fait-il ?",
-
-        choices:
-            [
-                "Il pleut",
-                "Il neige",
-                "Il fait très chaud"
-            ],
-
-        answer:
-            "Il pleut"
+        choices: [
+            "Il pleut",
+            "Il neige",
+            "Il fait très chaud"
+        ],
+        answer: "Il pleut"
     },
 
     {
         question:
             "Moussa prend son sac 🎒 et se dirige vers l'école 🏫. " +
             "Où va Moussa ?",
-
-        choices:
-            [
-                "À l'école",
-                "À la plage",
-                "Au marché"
-            ],
-
-        answer:
-            "À l'école"
+        choices: [
+            "À l'école",
+            "À la plage",
+            "Au marché"
+        ],
+        answer: "À l'école"
     },
 
     {
@@ -1752,118 +1953,150 @@ const COMPREHENSION_QUESTIONS = [
             "Ndické a 8 fleurs 🌸. " +
             "Elle en offre 3 à sa maman. " +
             "Combien lui en reste-t-il ?",
-
-        choices:
-            ["4", "5", "6"],
-
-        answer:
-            "5"
+        choices: ["4", "5", "6"],
+        answer: "5"
     },
 
     {
         question:
             "Awa a 2 livres 📖 et trouve 3 autres livres. " +
             "Combien a-t-elle de livres ?",
-
-        choices:
-            ["4", "5", "6"],
-
-        answer:
-            "5"
+        choices: ["4", "5", "6"],
+        answer: "5"
     },
 
     {
         question:
             "Cheikh a 4 ballons ⚽ et en donne 2 à Mamadou. " +
             "Combien de ballons garde-t-il ?",
-
-        choices:
-            ["1", "2", "3"],
-
-        answer:
-            "2"
+        choices: ["1", "2", "3"],
+        answer: "2"
     },
 
     {
         question:
             "Un poisson 🐟 vit dans l'eau. " +
             "Où vit le poisson ?",
-
-        choices:
-            [
-                "Dans l'eau",
-                "Dans un arbre",
-                "Dans une voiture"
-            ],
-
-        answer:
-            "Dans l'eau"
+        choices: [
+            "Dans l'eau",
+            "Dans un arbre",
+            "Dans une voiture"
+        ],
+        answer: "Dans l'eau"
     },
 
     {
         question:
             "Une abeille 🐝 visite une fleur 🌸. " +
             "Qu'est-ce qu'elle visite ?",
-
-        choices:
-            [
-                "Une fleur",
-                "Une maison",
-                "Une école"
-            ],
-
-        answer:
-            "Une fleur"
+        choices: [
+            "Une fleur",
+            "Une maison",
+            "Une école"
+        ],
+        answer: "Une fleur"
     },
 
     {
         question:
             "Il fait nuit et la lune 🌙 est visible. " +
             "Quel moment de la journée est-ce ?",
-
-        choices:
-            [
-                "La nuit",
-                "Le matin",
-                "L'après-midi"
-            ],
-
-        answer:
-            "La nuit"
+        choices: [
+            "La nuit",
+            "Le matin",
+            "L'après-midi"
+        ],
+        answer: "La nuit"
     },
 
     {
         question:
             "Mamadou prend un vélo 🚲 pour se déplacer. " +
             "Quel moyen de transport utilise-t-il ?",
+        choices: [
+            "Un vélo",
+            "Un bateau",
+            "Un avion"
+        ],
+        answer: "Un vélo"
+    },
 
-        choices:
-            [
-                "Un vélo",
-                "Un bateau",
-                "Un avion"
-            ],
+    {
+        question:
+            "Daba a 4 oranges 🍊. " +
+            "Elle en donne 1 à Olga. " +
+            "Combien lui reste-t-il d'oranges ?",
+        choices: ["2", "3", "4"],
+        answer: "3"
+    },
 
-        answer:
-            "Un vélo"
+    {
+        question:
+            "Aminata a 2 cahiers 📓. " +
+            "Elle achète 3 nouveaux cahiers. " +
+            "Combien de cahiers possède-t-elle ?",
+        choices: ["4", "5", "6"],
+        answer: "5"
+    },
+
+    {
+        question:
+            "Ibrahima a 5 ballons ⚽. " +
+            "Il en donne 2 à Cheikh. " +
+            "Combien garde-t-il de ballons ?",
+        choices: ["2", "3", "4"],
+        answer: "3"
+    },
+
+    {
+        question:
+            "Fatou voit une abeille 🐝 sur une fleur 🌸. " +
+            "Quel animal voit-elle ?",
+        choices: [
+            "Une abeille",
+            "Un poisson",
+            "Un cheval"
+        ],
+        answer: "Une abeille"
+    },
+
+    {
+        question:
+            "Le soleil ☀️ brille et le ciel est dégagé. " +
+            "Quel temps fait-il ?",
+        choices: [
+            "Il fait beau",
+            "Il pleut",
+            "Il neige"
+        ],
+        answer: "Il fait beau"
+    },
+
+    {
+        question:
+            "Mariama prépare son sac 🎒 avec un livre 📖 " +
+            "et un crayon ✏️. Où va-t-elle probablement ?",
+        choices: [
+            "À l'école",
+            "À la plage",
+            "À la ferme"
+        ],
+        answer: "À l'école"
     }
 ];
 
 
-function generateComprehensionQuestion(
-    level = 1
-) {
+function generateComprehensionQuestion(level = 1) {
 
     const safeLevel =
         getDifficultyFromLevel(level);
 
-    let item =
+    const item =
         randomItem(
             COMPREHENSION_QUESTIONS
         );
 
-    return getUniqueQuestion(
-
+    const question =
         finalizeGeneratedQuestion({
 
             question:
@@ -1892,71 +2125,15 @@ function generateComprehensionQuestion(
             signature:
                 "comprehension|" +
                 item.question
-        }),
+        });
 
+    return getUniqueQuestion(
+        question,
         () =>
             generateComprehensionQuestion(
                 safeLevel
             )
     );
-}
-
-
-// ========================================================
-// 🚫 ÉVITER UNE QUESTION RÉCENTE
-// ========================================================
-
-function getUniqueQuestion(
-    question,
-    generatorFunction
-) {
-
-    if (!question) {
-        return question;
-    }
-
-    if (
-        !wasRecentlyUsed(
-            question.signature
-        )
-    ) {
-
-        return question;
-    }
-
-    /*
-    On essaie plusieurs fois de trouver
-    une autre question.
-    */
-
-    for (
-        let attempt = 0;
-        attempt < 8;
-        attempt++
-    ) {
-
-        const alternative =
-            generatorFunction();
-
-        if (
-            alternative &&
-            !wasRecentlyUsed(
-                alternative.signature
-            )
-        ) {
-
-            return alternative;
-        }
-    }
-
-    /*
-    Si tout le petit réservoir disponible
-    a récemment été utilisé, on accepte
-    finalement une question plutôt que
-    de bloquer l'application.
-    */
-
-    return question;
 }
 
 
@@ -1979,26 +2156,34 @@ function chooseSkillForSession(
     ];
 
     const preferred =
-        priority.filter(
+        Array.isArray(priority)
+            ? priority.filter(
+                skill =>
+                    defaultSkills.includes(
+                        skill
+                    )
+            )
+            : [];
+
+    /*
+    On garde les cinq compétences dans une session.
+    Si une faiblesse est détectée, elle peut être
+    placée plus tôt dans la session.
+    */
+
+    const ordered = [
+        ...preferred,
+        ...defaultSkills.filter(
             skill =>
-                defaultSkills.includes(
+                !preferred.includes(
                     skill
                 )
-        );
+        )
+    ];
 
-    if (
-        exerciseIndex <
-        preferred.length
-    ) {
-
-        return preferred[
-            exerciseIndex
-        ];
-    }
-
-    return defaultSkills[
+    return ordered[
         exerciseIndex %
-        defaultSkills.length
+        ordered.length
     ];
 }
 
@@ -2015,40 +2200,22 @@ function generateExerciseBySkill(
     switch (skill) {
 
         case "reading":
-
-            return generateReadingQuestion(
-                level
-            );
+            return generateReadingQuestion(level);
 
         case "addition":
-
-            return generateAdditionQuestion(
-                level
-            );
+            return generateAdditionQuestion(level);
 
         case "subtraction":
-
-            return generateSubtractionQuestion(
-                level
-            );
+            return generateSubtractionQuestion(level);
 
         case "multiplication":
-
-            return generateMultiplicationQuestion(
-                level
-            );
+            return generateMultiplicationQuestion(level);
 
         case "comprehension":
-
-            return generateComprehensionQuestion(
-                level
-            );
+            return generateComprehensionQuestion(level);
 
         default:
-
-            return generateReadingQuestion(
-                level
-            );
+            return generateReadingQuestion(level);
     }
 }
 
@@ -2057,9 +2224,7 @@ function generateExerciseBySkill(
 // 📝 SESSION DE 5 EXERCICES
 // ========================================================
 
-function generateLearningSession(
-    level = 1
-) {
+function generateLearningSession(level = 1) {
 
     const safeLevel =
         getDifficultyFromLevel(
@@ -2073,8 +2238,20 @@ function generateLearningSession(
         "function"
     ) {
 
-        priority =
-            getPlannerPriority();
+        try {
+
+            priority =
+                getPlannerPriority();
+
+        } catch (error) {
+
+            console.warn(
+                "⚠️ Impossible de récupérer les priorités du planificateur.",
+                error
+            );
+
+            priority = [];
+        }
     }
 
     const exercises = [];
@@ -2097,6 +2274,16 @@ function generateLearningSession(
                 safeLevel
             );
 
+        if (!exercise) {
+
+            console.warn(
+                "⚠️ Exercice non généré pour :",
+                skill
+            );
+
+            return [];
+        }
+
         exercise.sessionIndex =
             i + 1;
 
@@ -2109,6 +2296,14 @@ function generateLearningSession(
         exercises.push(
             exercise
         );
+    }
+
+    if (
+        exercises.length !==
+        SESSION_SIZE_GENERATOR
+    ) {
+
+        return [];
     }
 
     return exercises;
@@ -2161,7 +2356,7 @@ function generateAdaptiveQuestion() {
             level
         );
 
-    return exercises[0];
+    return exercises[0] || null;
 }
 
 
@@ -2193,9 +2388,7 @@ function generateMathQuestion(
 // 🎯 COMPATIBILITÉ ANCIEN PLANIFICATEUR
 // ========================================================
 
-function generatePlannedMathQuestion(
-    plan
-) {
+function generatePlannedMathQuestion(plan) {
 
     if (!plan) {
 
@@ -2229,7 +2422,7 @@ function resetGeneratorHistory() {
 // ========================================================
 
 console.log(
-    "✏️ Générateur Mama Binta v2 chargé."
+    "✏️ Générateur Mama Binta v3 chargé."
 );
 
 console.log(
@@ -2259,5 +2452,5 @@ console.log(
 );
 
 console.log(
-    "🧠 Anti-répétition activé."
+    "🧠 Anti-répétition corrigé."
 );
