@@ -1,66 +1,204 @@
 // =====================================================
 // 👩🏾‍🏫 AGENT PROFESSEUR DE MAMA BINTA
 // =====================================================
-// Règle principale :
 //
-// Le professeur explique la réponse actuelle.
-// Pour parler de progression en maths, il consulte
-// le PLANIFICATEUR, et non simplement l'ANALYSTE.
+// Rôle du professeur :
+// - expliquer la réponse
+// - encourager l'enfant
+// - donner une petite méthode
+// - expliquer l'erreur
 //
-// Ainsi :
+// Le professeur NE décide PAS du niveau.
+// Le PLANIFICATEUR reste responsable de la progression.
 //
-// Bonne réponse ≠ automatiquement "plus difficile"
+// Chaîne :
 //
-// Seul un vrai changement de niveau permet de dire :
-// "Nous pouvons passer au niveau suivant."
+// 🧠 Mémoire
+//      ↓
+// 🔎 Analyste
+//      ↓
+// 🎯 Planificateur
+//      ↓
+// 🧩 Générateur
+//      ↓
+// 🛡️ Vérificateur
+//      ↓
+// 👩🏾‍🏫 Professeur
+//
 // =====================================================
 
 
 // =====================================================
-// 🎯 RÉCUPÉRER LE PLAN MATHS
+// 🛠️ OUTILS
 // =====================================================
 
-function teacherGetMathPlan() {
+function teacherNormalize(value) {
 
-    if (
-        typeof getMathPlan !== "function"
-    ) {
+    return String(value ?? "")
+        .trim()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+}
 
-        return null;
+
+function teacherNumbersFromQuestion(question) {
+
+    const matches = String(question ?? "").match(
+        /-?\d+(?:[.,]\d+)?/g
+    );
+
+    if (!matches) {
+        return [];
     }
 
+    return matches.map(value =>
+        Number(String(value).replace(",", "."))
+    );
+}
 
-    return getMathPlan();
+
+function teacherGetSkill(questionData) {
+
+    if (questionData && questionData.skill) {
+        return teacherNormalize(questionData.skill);
+    }
+
+    const question =
+        teacherNormalize(
+            questionData?.question
+        );
+
+    if (
+        question.includes("+") ||
+        question.includes("addition")
+    ) {
+        return "addition";
+    }
+
+    if (
+        question.includes("−") ||
+        question.includes("-") ||
+        question.includes("soustraction")
+    ) {
+        return "subtraction";
+    }
+
+    if (
+        question.includes("×") ||
+        question.includes("multiplication") ||
+        question.includes("fois")
+    ) {
+        return "multiplication";
+    }
+
+    if (
+        question.includes("lettre") ||
+        question.includes("mot commence") ||
+        question.includes("complete le mot") ||
+        question.includes("complète le mot") ||
+        question.includes("emoji")
+    ) {
+        return "reading";
+    }
+
+    return "comprehension";
+}
+
+
+function teacherAnswersAreEqual(
+    studentAnswer,
+    correctAnswer
+) {
+
+    const studentNumber =
+        Number(
+            String(studentAnswer)
+                .trim()
+                .replace(",", ".")
+        );
+
+    const correctNumber =
+        Number(
+            String(correctAnswer)
+                .trim()
+                .replace(",", ".")
+        );
+
+    if (
+        Number.isFinite(studentNumber) &&
+        Number.isFinite(correctNumber)
+    ) {
+        return studentNumber === correctNumber;
+    }
+
+    return teacherNormalize(studentAnswer) ===
+        teacherNormalize(correctAnswer);
 }
 
 
 // =====================================================
-// 👩🏾‍🏫 MESSAGE DE PROGRESSION
+// 📈 PLANIFICATEUR
+// =====================================================
+//
+// Le professeur peut consulter le planificateur,
+// mais il ne modifie jamais le niveau lui-même.
 // =====================================================
 
-function teacherMathProgressMessage() {
+function teacherGetLearningPlan() {
+
+    if (
+        typeof getLearningPlan === "function"
+    ) {
+
+        return getLearningPlan();
+    }
+
+    if (
+        typeof planLearningLevel === "function"
+    ) {
+
+        return planLearningLevel();
+    }
+
+    return null;
+}
+
+
+function teacherGetMathPlan() {
+
+    if (
+        typeof getMathPlan === "function"
+    ) {
+
+        return getMathPlan();
+    }
+
+    return null;
+}
+
+
+// =====================================================
+// 🌟 MESSAGE DE PROGRESSION
+// =====================================================
+
+function teacherProgressMessage() {
 
     const plan =
-        teacherGetMathPlan();
-
+        teacherGetLearningPlan();
 
     if (!plan) {
 
         return {
-
             message: "",
-
             speech: ""
         };
     }
 
 
-    // =================================================
-    // 🌟 VRAIE PROGRESSION
-    // =================================================
-    //
-    // Le planificateur vient réellement de faire
-    // passer Mama Binta au niveau supérieur.
+    // Le professeur ne parle de progression
+    // que si le planificateur indique réellement
+    // un changement de niveau.
 
     if (
         plan.status === "progression" &&
@@ -72,33 +210,20 @@ function teacherMathProgressMessage() {
 
             message:
                 "\n\n👩🏾‍🏫 La maîtresse :\n" +
-                "🌟 Bravo ! Tu maîtrises bien le niveau " +
-                plan.previousLevel +
-                ".\n\n" +
+                "🌟 Bravo ! Tu as réussi cette étape.\n\n" +
                 "Nous pouvons maintenant commencer " +
                 "le niveau " +
                 plan.level +
-                ", avec des additions jusqu'à " +
-                plan.maxSum +
-                ". 💪🏾🧮",
+                ". 💪🏾",
 
             speech:
-                "Bravo ! Tu maîtrises bien le niveau " +
-                plan.previousLevel +
-                ". " +
+                "Bravo ! Tu as réussi cette étape. " +
                 "Nous pouvons maintenant commencer " +
                 "le niveau " +
-                plan.level +
-                ", avec des additions jusqu'à " +
-                plan.maxSum +
-                "."
+                plan.level + "."
         };
     }
 
-
-    // =================================================
-    // 🧮 NIVEAU 10
-    // =================================================
 
     if (
         plan.status === "maitrise"
@@ -108,45 +233,28 @@ function teacherMathProgressMessage() {
 
             message:
                 "\n\n👩🏾‍🏫 La maîtresse :\n" +
-                "🏆 Tu travailles maintenant sur les additions " +
-                "jusqu'à 100. Continue à t'entraîner pour renforcer " +
-                "ta maîtrise. 💪🏾🧮",
+                "🏆 Tu as atteint le niveau 100 !\n\n" +
+                "Continue à t'entraîner pour garder " +
+                "tout ce que tu as appris. 💪🏾",
 
             speech:
-                "Tu travailles maintenant sur les additions " +
-                "jusqu'à 100. Continue à t'entraîner " +
-                "pour renforcer ta maîtrise."
+                "Tu as atteint le niveau 100 ! " +
+                "Continue à t'entraîner pour garder " +
+                "tout ce que tu as appris."
         };
     }
 
 
-    // =================================================
-    // ⚖️ PAS DE PROGRESSION
-    // =================================================
-    //
-    // Très important :
-    // On ne dit PAS "plus difficile".
-    //
-    // Le prochain exercice restera dans le niveau actuel.
-
     return {
 
-        message:
-            "\n\n👩🏾‍🏫 La maîtresse :\n" +
-            "Continue comme ça ! 🌟 " +
-            "Nous allons encore nous entraîner " +
-            "dans ce niveau avant de passer au suivant. 💪🏾",
-
-        speech:
-            "Continue comme ça ! " +
-            "Nous allons encore nous entraîner " +
-            "dans ce niveau avant de passer au suivant."
+        message: "",
+        speech: ""
     };
 }
 
 
 // =====================================================
-// 📖 EXPLICATION LECTURE
+// 📖 PROFESSEUR — LECTURE
 // =====================================================
 
 function teacherReadingExplanation(
@@ -155,335 +263,19 @@ function teacherReadingExplanation(
 ) {
 
     const correct =
-        studentAnswer ===
-        questionData.answer;
-
-
-    if (correct) {
-
-        return {
-
-            message:
-                "Bravo Mama Binta 🎉\n\n" +
-                "Tu as trouvé la bonne réponse ! 👏🏾",
-
-            speech:
-                "Bravo Mama Binta ! Tu as trouvé la bonne réponse !"
-        };
-    }
-
-
-    const question =
-        questionData.question;
+        teacherAnswersAreEqual(
+            studentAnswer,
+            questionData.answer
+        );
 
 
     const correctAnswer =
         questionData.answer;
 
 
-    const match =
-        question.match(
-            /lettre ([A-ZÉÈÊËÀÂÎÏÔÙÛÜÇ])/
-        );
-
-
-    if (match) {
-
-        const letter =
-            match[1];
-
-
-        function firstLetter(word) {
-
-            return word
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .charAt(0)
-                .toUpperCase();
-        }
-
-
-        const studentLetter =
-            firstLetter(
-                studentAnswer
-            );
-
-
-        const correctLetter =
-            firstLetter(
-                correctAnswer
-            );
-
-
-        return {
-
-            message:
-                "Ce n'est pas la bonne réponse 😊\n\n" +
-                studentAnswer +
-                " commence par la lettre " +
-                studentLetter +
-                ".\n\n" +
-                "La bonne réponse est " +
-                correctAnswer +
-                ", qui commence par la lettre " +
-                correctLetter +
-                ".\n\n" +
-                "Regarde bien la première lettre et essaie encore ! 📚",
-
-            speech:
-                "Ce n'est pas la bonne réponse. " +
-                studentAnswer +
-                " commence par la lettre " +
-                studentLetter +
-                ". " +
-                "La bonne réponse est " +
-                correctAnswer +
-                ". " +
-                "Elle commence par la lettre " +
-                correctLetter +
-                ". " +
-                "Regarde bien la première lettre et essaie encore."
-        };
-    }
-
-
-    return {
-
-        message:
-            "Ce n'est pas la bonne réponse 😊\n\n" +
-            "La bonne réponse est " +
-            correctAnswer +
-            ".",
-
-        speech:
-            "Ce n'est pas la bonne réponse. " +
-            "La bonne réponse est " +
-            correctAnswer + "."
-    };
-}
-
-
-// =====================================================
-// 🧮 EXPLICATION MATHS
-// =====================================================
-
-function teacherMathExplanation(
-    questionData,
-    studentAnswer
-) {
-
-    const correct =
-        studentAnswer ===
-        questionData.answer;
-
-
-    // =================================================
+    // -------------------------------------------------
     // 🎉 BONNE RÉPONSE
-    // =================================================
-
-    if (correct) {
-
-        // ---------------------------------------------
-        // Le plan est demandé APRÈS l'enregistrement
-        // de la réponse dans memory.js.
-        // ---------------------------------------------
-
-        const progressMessage =
-            teacherMathProgressMessage();
-
-
-        return {
-
-            message:
-                "Bravo Mama Binta 🎉\n\n" +
-                "Tu as trouvé la bonne réponse ! 👏🏾" +
-                progressMessage.message,
-
-            speech:
-                "Bravo Mama Binta ! " +
-                "Tu as trouvé la bonne réponse. " +
-                progressMessage.speech
-        };
-    }
-
-
-    // =================================================
-    // ❌ MAUVAISE RÉPONSE
-    // =================================================
-
-    const question =
-        questionData.question;
-
-
-    const correctAnswer =
-        questionData.answer;
-
-
-    const match =
-        question.match(
-            /Combien font (\d+) \+ (\d+)/
-        );
-
-
-    if (match) {
-
-        const a =
-            parseInt(
-                match[1]
-            );
-
-
-        const b =
-            parseInt(
-                match[2]
-            );
-
-
-        let steps = [];
-
-
-        for (
-            let i = 1;
-            i <= b;
-            i++
-        ) {
-
-            steps.push(
-                a + i
-            );
-        }
-
-
-        return {
-
-            message:
-                "Ce n'est pas la bonne réponse 😊\n\n" +
-                a +
-                " + " +
-                b +
-                " signifie que nous ajoutons " +
-                b +
-                " à " +
-                a +
-                ".\n\n" +
-                "On compte : " +
-                a +
-                ", " +
-                steps.join(", ") +
-                ".\n\n" +
-                "Donc la bonne réponse est " +
-                correctAnswer +
-                ". 🧮\n\n" +
-                "Ce n'est pas grave. " +
-                "Nous allons continuer à nous entraîner. 💪🏾",
-
-            speech:
-                "Ce n'est pas la bonne réponse. " +
-                a +
-                " plus " +
-                b +
-                " signifie que nous ajoutons " +
-                b +
-                " à " +
-                a +
-                ". " +
-                "On compte : " +
-                a +
-                ", " +
-                steps.join(", ") +
-                ". " +
-                "Donc la bonne réponse est " +
-                correctAnswer +
-                ". " +
-                "Ce n'est pas grave. " +
-                "Nous allons continuer à nous entraîner."
-        };
-    }
-
-
-    return {
-
-        message:
-            "Ce n'est pas la bonne réponse 😊\n\n" +
-            "La bonne réponse est " +
-            correctAnswer +
-            ".",
-
-        speech:
-            "Ce n'est pas la bonne réponse. " +
-            "La bonne réponse est " +
-            correctAnswer + "."
-    };
-}
-
-
-// =====================================================
-// 👩🏾‍🏫 FONCTION PRINCIPALE
-// =====================================================
-
-function teacherExplain(
-    questionData,
-    studentAnswer
-) {
-
-    if (
-        !questionData ||
-        !studentAnswer
-    ) {
-
-        return {
-
-            message:
-                "Regardons la question ensemble 😊",
-
-            speech:
-                "Regardons la question ensemble."
-        };
-    }
-
-
-    // =================================================
-    // 🧮 MATHS
-    // =================================================
-
-    if (
-        questionData.question.startsWith(
-            "Combien font"
-        )
-    ) {
-
-        return teacherMathExplanation(
-            questionData,
-            studentAnswer
-        );
-    }
-
-
-    // =================================================
-    // 📖 LECTURE
-    // =================================================
-
-    if (
-        questionData.question.startsWith(
-            "Quel mot commence par la lettre"
-        )
-    ) {
-
-        return teacherReadingExplanation(
-            questionData,
-            studentAnswer
-        );
-    }
-
-
-    // =================================================
-    // 📚 CAS GÉNÉRAL
-    // =================================================
-
-    const correct =
-        studentAnswer ===
-        questionData.answer;
-
+    // -------------------------------------------------
 
     if (correct) {
 
@@ -500,17 +292,632 @@ function teacherExplain(
     }
 
 
+    // -------------------------------------------------
+    // 🔤 LETTRE → MOT
+    // -------------------------------------------------
+
+    const question =
+        String(questionData.question ?? "");
+
+    const letterMatch =
+        question.match(
+            /lettre\s+([A-Za-zÀ-ÿ])/i
+        );
+
+
+    if (letterMatch) {
+
+        const requestedLetter =
+            letterMatch[1].toUpperCase();
+
+
+        const studentFirstLetter =
+            String(studentAnswer)
+                .trim()
+                .charAt(0)
+                .toUpperCase();
+
+
+        const correctFirstLetter =
+            String(correctAnswer)
+                .trim()
+                .charAt(0)
+                .toUpperCase();
+
+
+        return {
+
+            message:
+                "Ce n'est pas la bonne réponse 😊\n\n" +
+                "Tu as choisi « " +
+                studentAnswer +
+                " ».\n\n" +
+                "La question demandait un mot qui commence " +
+                "par la lettre " +
+                requestedLetter +
+                ".\n\n" +
+                "« " +
+                correctAnswer +
+                " » commence bien par " +
+                correctFirstLetter +
+                ".\n\n" +
+                "Regarde attentivement la première lettre. 📚",
+
+            speech:
+                "Ce n'est pas la bonne réponse. " +
+                "Tu as choisi " +
+                studentAnswer +
+                ". " +
+                "La question demandait un mot qui commence " +
+                "par la lettre " +
+                requestedLetter +
+                ". " +
+                "La bonne réponse est " +
+                correctAnswer +
+                ". " +
+                "Regarde attentivement la première lettre."
+        };
+    }
+
+
+    // -------------------------------------------------
+    // 🔤 LETTRE MANQUANTE
+    // -------------------------------------------------
+
+    if (
+        teacherNormalize(
+            questionData.levelType
+        ) === "missing_letter"
+    ) {
+
+        return {
+
+            message:
+                "Regarde bien le mot 😊\n\n" +
+                "Il manque une lettre.\n\n" +
+                "La bonne lettre est « " +
+                correctAnswer +
+                " ».\n\n" +
+                "Essaie de relire le mot doucement. 📖",
+
+            speech:
+                "Regarde bien le mot. " +
+                "Il manque une lettre. " +
+                "La bonne lettre est " +
+                correctAnswer +
+                ". " +
+                "Essaie de relire le mot doucement."
+        };
+    }
+
+
+    // -------------------------------------------------
+    // 📚 CAS GÉNÉRAL DE LECTURE
+    // -------------------------------------------------
+
     return {
 
         message:
             "Ce n'est pas la bonne réponse 😊\n\n" +
-            "La bonne réponse est " +
-            questionData.answer +
-            ".",
+            "La bonne réponse est « " +
+            correctAnswer +
+            " ».\n\n" +
+            "Relis tranquillement la question et essaie " +
+            "de repérer l'indice important. 📚",
 
         speech:
             "Ce n'est pas la bonne réponse. " +
             "La bonne réponse est " +
+            correctAnswer +
+            ". " +
+            "Relis tranquillement la question et cherche " +
+            "l'indice important."
+    };
+}
+
+
+// =====================================================
+// ➕ PROFESSEUR — ADDITION
+// =====================================================
+
+function teacherAdditionExplanation(
+    questionData,
+    studentAnswer
+) {
+
+    const correct =
+        teacherAnswersAreEqual(
+            studentAnswer,
+            questionData.answer
+        );
+
+
+    if (correct) {
+
+        return {
+
+            message:
+                "Bravo Mama Binta 🎉\n\n" +
+                "Ton addition est correcte ! 👏🏾",
+
+            speech:
+                "Bravo Mama Binta ! " +
+                "Ton addition est correcte."
+        };
+    }
+
+
+    const numbers =
+        teacherNumbersFromQuestion(
+            questionData.question
+        );
+
+
+    const a = numbers[0];
+    const b = numbers[1];
+
+
+    if (
+        Number.isFinite(a) &&
+        Number.isFinite(b)
+    ) {
+
+        const result = a + b;
+
+
+        return {
+
+            message:
+                "Ce n'est pas grave 😊\n\n" +
+                "On avait : " +
+                a +
+                " + " +
+                b +
+                ".\n\n" +
+                "On ajoute " +
+                b +
+                " à " +
+                a +
+                ".\n\n" +
+                "Cela donne " +
+                result +
+                ". 🧮\n\n" +
+                "La bonne réponse est donc " +
+                questionData.answer +
+                ". 💪🏾",
+
+            speech:
+                "Ce n'est pas grave. " +
+                "On avait " +
+                a +
+                " plus " +
+                b +
+                ". " +
+                "On ajoute " +
+                b +
+                " à " +
+                a +
+                ". " +
+                "Cela donne " +
+                result +
+                ". " +
+                "La bonne réponse est donc " +
+                questionData.answer + "."
+        };
+    }
+
+
+    return teacherGenericWrongExplanation(
+        questionData
+    );
+}
+
+
+// =====================================================
+// ➖ PROFESSEUR — SOUSTRACTION
+// =====================================================
+
+function teacherSubtractionExplanation(
+    questionData,
+    studentAnswer
+) {
+
+    const correct =
+        teacherAnswersAreEqual(
+            studentAnswer,
+            questionData.answer
+        );
+
+
+    if (correct) {
+
+        return {
+
+            message:
+                "Bravo Mama Binta 🎉\n\n" +
+                "Ta soustraction est correcte ! 👏🏾",
+
+            speech:
+                "Bravo Mama Binta ! " +
+                "Ta soustraction est correcte."
+        };
+    }
+
+
+    const numbers =
+        teacherNumbersFromQuestion(
+            questionData.question
+        );
+
+
+    const a = numbers[0];
+    const b = numbers[1];
+
+
+    if (
+        Number.isFinite(a) &&
+        Number.isFinite(b)
+    ) {
+
+        const result = a - b;
+
+
+        return {
+
+            message:
+                "Ce n'est pas grave 😊\n\n" +
+                "On avait : " +
+                a +
+                " − " +
+                b +
+                ".\n\n" +
+                "On retire " +
+                b +
+                " à " +
+                a +
+                ".\n\n" +
+                "Il reste " +
+                result +
+                ". 🧮\n\n" +
+                "La bonne réponse est donc " +
+                questionData.answer +
+                ". 💪🏾",
+
+            speech:
+                "Ce n'est pas grave. " +
+                "On avait " +
+                a +
+                " moins " +
+                b +
+                ". " +
+                "On retire " +
+                b +
+                " à " +
+                a +
+                ". " +
+                "Il reste " +
+                result +
+                ". " +
+                "La bonne réponse est donc " +
+                questionData.answer + "."
+        };
+    }
+
+
+    return teacherGenericWrongExplanation(
+        questionData
+    );
+}
+
+
+// =====================================================
+// ✖️ PROFESSEUR — MULTIPLICATION
+// =====================================================
+
+function teacherMultiplicationExplanation(
+    questionData,
+    studentAnswer
+) {
+
+    const correct =
+        teacherAnswersAreEqual(
+            studentAnswer,
+            questionData.answer
+        );
+
+
+    if (correct) {
+
+        return {
+
+            message:
+                "Bravo Mama Binta 🎉\n\n" +
+                "Très bien ! Ta multiplication est correcte. 👏🏾",
+
+            speech:
+                "Bravo Mama Binta ! " +
+                "Ta multiplication est correcte."
+        };
+    }
+
+
+    const numbers =
+        teacherNumbersFromQuestion(
+            questionData.question
+        );
+
+
+    const a = numbers[0];
+    const b = numbers[1];
+
+
+    if (
+        Number.isFinite(a) &&
+        Number.isFinite(b)
+    ) {
+
+        const result = a * b;
+
+
+        return {
+
+            message:
+                "Ce n'est pas grave 😊\n\n" +
+                "On avait : " +
+                a +
+                " × " +
+                b +
+                ".\n\n" +
+                "Multiplier " +
+                a +
+                " par " +
+                b +
+                ", c'est additionner " +
+                a +
+                " fois " +
+                b +
+                ".\n\n" +
+                "Le résultat est " +
+                result +
+                ". 🧮\n\n" +
+                "La bonne réponse est donc " +
+                questionData.answer +
+                ". 💪🏾",
+
+            speech:
+                "Ce n'est pas grave. " +
+                "On avait " +
+                a +
+                " fois " +
+                b +
+                ". " +
+                "Le résultat est " +
+                result +
+                ". " +
+                "La bonne réponse est donc " +
+                questionData.answer + "."
+        };
+    }
+
+
+    return teacherGenericWrongExplanation(
+        questionData
+    );
+}
+
+
+// =====================================================
+// 🧠 PROFESSEUR — COMPRÉHENSION
+// =====================================================
+
+function teacherComprehensionExplanation(
+    questionData,
+    studentAnswer
+) {
+
+    const correct =
+        teacherAnswersAreEqual(
+            studentAnswer,
+            questionData.answer
+        );
+
+
+    if (correct) {
+
+        return {
+
+            message:
+                "Excellent Mama Binta 🌟\n\n" +
+                "Tu as bien compris la question ! 👏🏾",
+
+            speech:
+                "Excellent Mama Binta ! " +
+                "Tu as bien compris la question."
+        };
+    }
+
+
+    // Si un texte ou un indice est fourni par le générateur,
+    // le professeur peut l'utiliser.
+    if (questionData.explanation) {
+
+        return {
+
+            message:
+                "Ce n'est pas la bonne réponse 😊\n\n" +
+                questionData.explanation +
+                "\n\n" +
+                "La bonne réponse est : " +
+                questionData.answer +
+                ". 📚",
+
+            speech:
+                "Ce n'est pas la bonne réponse. " +
+                questionData.explanation +
+                " " +
+                "La bonne réponse est " +
+                questionData.answer + "."
+        };
+    }
+
+
+    return {
+
+        message:
+            "Ce n'est pas la bonne réponse 😊\n\n" +
+            "Relis attentivement la question et cherche " +
+            "l'information importante.\n\n" +
+            "La bonne réponse est : " +
+            questionData.answer +
+            ". 📚",
+
+        speech:
+            "Ce n'est pas la bonne réponse. " +
+            "Relis attentivement la question et cherche " +
+            "l'information importante. " +
+            "La bonne réponse est " +
             questionData.answer + "."
     };
 }
+
+
+// =====================================================
+// 🧩 EXPLICATION GÉNÉRALE
+// =====================================================
+
+function teacherGenericWrongExplanation(
+    questionData
+) {
+
+    return {
+
+        message:
+            "Ce n'est pas grave 😊\n\n" +
+            "La bonne réponse est : " +
+            questionData.answer +
+            ".\n\n" +
+            "Observe bien la question et essayons " +
+            "encore ensemble. 💪🏾",
+
+        speech:
+            "Ce n'est pas grave. " +
+            "La bonne réponse est " +
+            questionData.answer +
+            ". " +
+            "Observe bien la question et essayons " +
+            "encore ensemble."
+    };
+}
+
+
+// =====================================================
+// 👩🏾‍🏫 FONCTION PRINCIPALE
+// =====================================================
+
+function teacherExplain(
+    questionData,
+    studentAnswer
+) {
+
+    if (
+        !questionData ||
+        studentAnswer === undefined ||
+        studentAnswer === null ||
+        String(studentAnswer).trim() === ""
+    ) {
+
+        return {
+
+            message:
+                "Regardons la question ensemble 😊",
+
+            speech:
+                "Regardons la question ensemble."
+        };
+    }
+
+
+    const skill =
+        teacherGetSkill(questionData);
+
+
+    // -------------------------------------------------
+    // 📖 LECTURE
+    // -------------------------------------------------
+
+    if (skill === "reading") {
+
+        return teacherReadingExplanation(
+            questionData,
+            studentAnswer
+        );
+    }
+
+
+    // -------------------------------------------------
+    // ➕ ADDITION
+    // -------------------------------------------------
+
+    if (skill === "addition") {
+
+        return teacherAdditionExplanation(
+            questionData,
+            studentAnswer
+        );
+    }
+
+
+    // -------------------------------------------------
+    // ➖ SOUSTRACTION
+    // -------------------------------------------------
+
+    if (skill === "subtraction") {
+
+        return teacherSubtractionExplanation(
+            questionData,
+            studentAnswer
+        );
+    }
+
+
+    // -------------------------------------------------
+    // ✖️ MULTIPLICATION
+    // -------------------------------------------------
+
+    if (skill === "multiplication") {
+
+        return teacherMultiplicationExplanation(
+            questionData,
+            studentAnswer
+        );
+    }
+
+
+    // -------------------------------------------------
+    // 🧠 COMPRÉHENSION
+    // -------------------------------------------------
+
+    if (skill === "comprehension") {
+
+        return teacherComprehensionExplanation(
+            questionData,
+            studentAnswer
+        );
+    }
+
+
+    // -------------------------------------------------
+    // CAS INCONNU
+    // -------------------------------------------------
+
+    return teacherGenericWrongExplanation(
+        questionData
+    );
+}
+
+
+// =====================================================
+// 🧪 DEBUG
+// =====================================================
+
+console.log("👩🏾‍🏫 Agent Professeur de Mama Binta chargé.");
