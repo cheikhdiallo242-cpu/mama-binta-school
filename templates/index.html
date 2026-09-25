@@ -1,8 +1,11 @@
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
 
 <meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>École de Mama Binta</title>
 
@@ -11,18 +14,14 @@
 
 <!-- =====================================================
      🧠 AGENTS DE MAMA BINTA
-     
-     Ordre important :
-     
+
+     Ordre :
      1. Mémoire
      2. Analyste
      3. Planificateur
      4. Générateur
      5. Vérificateur
      6. Professeur
-     
-     Chaque agent doit être disponible avant que
-     l'application commence à utiliser les autres.
 ===================================================== -->
 
 <script src="/static/memory.js"></script>
@@ -43,7 +42,14 @@ if ("serviceWorker" in navigator) {
 
     navigator.serviceWorker.register(
         "/static/sw.js"
-    );
+    ).catch(function(error) {
+
+        console.warn(
+            "Service Worker non enregistré :",
+            error
+        );
+
+    });
 
 }
 
@@ -58,13 +64,15 @@ if ("serviceWorker" in navigator) {
 
 body {
 
-    font-family: Arial;
+    font-family: Arial, sans-serif;
 
     background: #fef6e4;
 
     text-align: center;
 
-    padding: 30px;
+    padding: 20px;
+
+    margin: 0;
 
 }
 
@@ -73,18 +81,20 @@ h1 {
 
     color: #f582ae;
 
+    margin-bottom: 10px;
+
 }
 
 
 button {
 
-    font-size: 18px;
+    font-size: 17px;
 
-    padding: 12px 20px;
+    padding: 12px 18px;
 
     margin: 6px;
 
-    border-radius: 10px;
+    border-radius: 12px;
 
     border: none;
 
@@ -95,9 +105,18 @@ button {
 }
 
 
+button:active {
+
+    transform: scale(0.97);
+
+}
+
+
 .choice {
 
     background: #ffd803;
+
+    min-width: 180px;
 
 }
 
@@ -127,12 +146,74 @@ button {
 
     background: #a7d8ff;
 
+    font-weight: bold;
+
 }
 
 
 .reset {
 
     background: #ff8a8a;
+
+}
+
+
+.secondary {
+
+    background: #e8e8e8;
+
+}
+
+
+.math {
+
+    background: #b8e0d2;
+
+}
+
+
+.hidden {
+
+    display: none;
+
+}
+
+
+#teacher {
+
+    background: #fde68a;
+
+    padding: 15px;
+
+    border-radius: 15px;
+
+    margin-bottom: 15px;
+
+}
+
+
+#level {
+
+    margin-top: 15px;
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+}
+
+
+#session {
+
+    background: #ffffff;
+
+    padding: 12px;
+
+    border-radius: 15px;
+
+    margin-top: 15px;
+
+    font-weight: bold;
 
 }
 
@@ -148,24 +229,38 @@ button {
 }
 
 
-#teacher {
+#menu {
 
-    background: #fde68a;
-
-    padding: 15px;
-
-    border-radius: 15px;
+    margin-top: 10px;
 
 }
 
 
-#level {
+.section-title {
 
-    margin-top: 15px;
-
-    font-size: 17px;
+    font-size: 18px;
 
     font-weight: bold;
+
+    margin-top: 18px;
+
+}
+
+
+.stars {
+
+    font-size: 30px;
+
+    margin: 10px;
+
+}
+
+
+.small {
+
+    font-size: 15px;
+
+    color: #555;
 
 }
 
@@ -178,7 +273,7 @@ button {
 
 
 <h1>
-École de Mama Binta 👧📚
+École de Mama Binta 👧🏾📚
 </h1>
 
 
@@ -196,12 +291,24 @@ button {
 </div>
 
 
-<br>
+<div id="session" class="hidden">
+
+🤖 Session personnalisée
+
+</div>
+
+
+<div id="menu">
 
 
 <!-- =====================================================
-     📚 MATIÈRES
+     📖 LECTURE
 ===================================================== -->
+
+<div class="section-title">
+📚 Entraînement libre
+</div>
+
 
 <button onclick="startReading()">
 
@@ -210,19 +317,51 @@ button {
 </button>
 
 
-<button onclick="startMaths()">
+<!-- =====================================================
+     🧮 MATHS
+===================================================== -->
 
-➕ Maths
+<button onclick="showMathMenu()">
+
+🧮 Maths
 
 </button>
 
 
-<br>
+<div id="mathMenu" class="hidden">
+
+<button
+    class="math"
+    onclick="startMathAddition()"
+>
+➕ Addition
+</button>
+
+<button
+    class="math"
+    onclick="startMathSubtraction()"
+>
+➖ Soustraction
+</button>
+
+<button
+    class="math"
+    onclick="startMathMultiplication()"
+>
+✖️ Multiplication
+</button>
+
+</div>
 
 
 <!-- =====================================================
-     🤖 EXERCICE ADAPTATIF
+     🤖 PARCOURS INTELLIGENT
 ===================================================== -->
+
+<div class="section-title">
+🧠 Parcours personnalisé
+</div>
+
 
 <button
     class="adaptive"
@@ -234,12 +373,14 @@ button {
 </button>
 
 
-<br>
-
-
 <!-- =====================================================
-     🧠 PROGRESSION
+     📊 SUIVI
 ===================================================== -->
+
+<div class="section-title">
+📊 Mon suivi
+</div>
+
 
 <button
     class="progress"
@@ -261,19 +402,12 @@ button {
 </button>
 
 
-<br>
-
-
-<!-- =====================================================
-     🔎 ANALYSE
-===================================================== -->
-
 <button
     class="analysis"
     onclick="showAnalysis()"
 >
 
-🔎 Analyse de mes difficultés
+🔎 Mes difficultés
 
 </button>
 
@@ -281,18 +415,17 @@ button {
 <br>
 
 
-<!-- =====================================================
-     🔄 RESET
-===================================================== -->
-
 <button
     class="reset"
-    onclick="resetStudentMemory()"
+    onclick="resetMamaBinta()"
 >
 
 🔄 Recommencer à zéro
 
 </button>
+
+
+</div>
 
 
 <div id="box"></div>
@@ -302,11 +435,20 @@ button {
 
 
 // =====================================================
-// 🎯 QUESTION ACTUELLE
+// 🎯 ÉTAT DE L'APPLICATION
 // =====================================================
 
 let current = null;
 
+let currentMode = "none";
+
+let currentFreeMathType = "addition";
+
+let adaptiveExercises = [];
+
+let adaptiveIndex = 0;
+
+let adaptiveLevel = 1;
 
 
 // =====================================================
@@ -324,6 +466,15 @@ function speak(text) {
     }
 
 
+    if (
+        !text
+    ) {
+
+        return;
+
+    }
+
+
     speechSynthesis.cancel();
 
 
@@ -333,16 +484,11 @@ function speak(text) {
         );
 
 
-    u.lang =
-        "fr-FR";
+    u.lang = "fr-FR";
 
+    u.rate = 0.85;
 
-    u.rate =
-        0.85;
-
-
-    u.pitch =
-        1.2;
+    u.pitch = 1.2;
 
 
     speechSynthesis.speak(u);
@@ -350,9 +496,53 @@ function speak(text) {
 }
 
 
+// =====================================================
+// 🎯 NIVEAU ACTUEL
+// =====================================================
+
+function getCurrentMamaLevel() {
+
+    try {
+
+        if (
+            typeof getPedagogicalLevel ===
+            "function"
+        ) {
+
+            return getPedagogicalLevel();
+
+        }
+
+
+        if (
+            typeof getMathPlan ===
+            "function"
+        ) {
+
+            const plan =
+                getMathPlan();
+
+            return plan.level || 1;
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Erreur récupération niveau :",
+            error
+        );
+
+    }
+
+
+    return 1;
+
+}
+
 
 // =====================================================
-// 🎯 AFFICHER LE NIVEAU ACTUEL
+// 🎯 AFFICHER LE NIVEAU
 // =====================================================
 
 function updateLevelDisplay() {
@@ -363,66 +553,128 @@ function updateLevelDisplay() {
         );
 
 
-    if (
-        !levelElement
-    ) {
+    if (!levelElement) {
 
         return;
 
     }
 
 
-    try {
-
-        if (
-            typeof getMathPlan !==
-            "function"
-        ) {
-
-            levelElement.innerText =
-                "🎯 Niveau pédagogique : 1";
-
-            return;
-
-        }
+    const level =
+        getCurrentMamaLevel();
 
 
-        const plan =
-            getMathPlan();
+    levelElement.innerText =
+        "🎯 Niveau pédagogique : " +
+        level +
+        " / 100";
+
+}
 
 
-        levelElement.innerText =
+// =====================================================
+// 📊 AFFICHER LA SESSION
+// =====================================================
 
-            "🎯 Niveau pédagogique : " +
-            plan.level +
-            "\n🧮 Additions jusqu'à " +
-            plan.maxSum;
+function updateSessionDisplay() {
 
-
-    } catch (error) {
-
-        console.error(
-            "Erreur affichage niveau :",
-            error
+    const sessionElement =
+        document.getElementById(
+            "session"
         );
 
-        levelElement.innerText =
-            "🎯 Niveau pédagogique : 1";
+
+    if (!sessionElement) {
+
+        return;
+
+    }
+
+
+    if (
+        currentMode !== "adaptive"
+    ) {
+
+        sessionElement.classList.add(
+            "hidden"
+        );
+
+        return;
+
+    }
+
+
+    sessionElement.classList.remove(
+        "hidden"
+    );
+
+
+    const number =
+        Math.min(
+            adaptiveIndex + 1,
+            5
+        );
+
+
+    sessionElement.innerText =
+        "🤖 Session personnalisée : exercice " +
+        number +
+        " / 5";
+
+}
+
+
+// =====================================================
+// 🧹 CACHER LE MENU MATHS
+// =====================================================
+
+function hideMathMenu() {
+
+    const menu =
+        document.getElementById(
+            "mathMenu"
+        );
+
+
+    if (menu) {
+
+        menu.classList.add(
+            "hidden"
+        );
 
     }
 
 }
 
 
+// =====================================================
+// 🧮 AFFICHER LE MENU MATHS
+// =====================================================
+
+function showMathMenu() {
+
+    const menu =
+        document.getElementById(
+            "mathMenu"
+        );
+
+
+    if (!menu) {
+
+        return;
+
+    }
+
+
+    menu.classList.toggle(
+        "hidden"
+    );
+
+}
+
 
 // =====================================================
 // 🛡️ QUESTION VÉRIFIÉE
-// =====================================================
-//
-// Le générateur propose.
-// Le vérificateur contrôle.
-// L'application n'affiche que les questions
-// considérées comme valides.
 // =====================================================
 
 function getVerifiedQuestion(
@@ -462,7 +714,7 @@ function getVerifiedQuestion(
                 updateLevelDisplay();
 
 
-                return;
+                return true;
 
             }
 
@@ -487,10 +739,11 @@ function getVerifiedQuestion(
 
 
         speak(
-            "La maîtresse prépare " +
-            "une nouvelle question."
+            "La maîtresse prépare une nouvelle question."
         );
 
+
+        return false;
 
     } catch (error) {
 
@@ -513,94 +766,395 @@ function getVerifiedQuestion(
             "La maîtresse prépare une nouvelle question."
         );
 
+
+        return false;
+
     }
 
 }
 
 
-
 // =====================================================
-// 📖 LECTURE
+// 📖 LECTURE LIBRE
 // =====================================================
 
 function startReading() {
 
-    getVerifiedQuestion(
-        generateReadingQuestion
-    );
+    currentMode =
+        "reading";
 
-}
+    hideMathMenu();
 
+    adaptiveExercises = [];
 
+    adaptiveIndex = 0;
 
-// =====================================================
-// ➕ MATHS
-// =====================================================
+    updateSessionDisplay();
 
-function startMaths() {
 
     getVerifiedQuestion(
-        generateMathQuestion
-    );
+        function() {
 
-}
-
-
-
-// =====================================================
-// 🤖 EXERCICE PERSONNALISÉ
-// =====================================================
-//
-// Ici, le système utilise le Planificateur.
-// Le planificateur observe la progression,
-// puis indique au Générateur quelle difficulté
-// proposer.
-// =====================================================
-
-function startAdaptive() {
-
-    getVerifiedQuestion(
-        generateAdaptiveQuestion
-    );
-
-}
-
-
-
-// =====================================================
-// 📝 AFFICHAGE DE LA QUESTION
-// =====================================================
-
-function showQuestion() {
-
-    let html =
-        current.question +
-        "\n\n";
-
-
-    current.choices.forEach(
-        function(c) {
-
-            html +=
-
-                '<button class="choice" ' +
-
-                'onclick="checkAnswer(\'' +
-                c +
-                '\')">' +
-
-                c +
-
-                '</button><br>';
+            return generateReadingQuestion(
+                getCurrentMamaLevel()
+            );
 
         }
     );
 
+}
 
-    document.getElementById(
-        "box"
-    ).innerHTML =
-        html;
+
+// =====================================================
+// 🧮 ADDITION LIBRE
+// =====================================================
+
+function startMathAddition() {
+
+    currentMode =
+        "math";
+
+    currentFreeMathType =
+        "addition";
+
+    hideMathMenu();
+
+    adaptiveExercises = [];
+
+    updateSessionDisplay();
+
+
+    getVerifiedQuestion(
+        function() {
+
+            return generateAdditionQuestion(
+                getCurrentMamaLevel()
+            );
+
+        }
+    );
+
+}
+
+
+// =====================================================
+// ➖ SOUSTRACTION LIBRE
+// =====================================================
+
+function startMathSubtraction() {
+
+    currentMode =
+        "math";
+
+    currentFreeMathType =
+        "subtraction";
+
+    hideMathMenu();
+
+    adaptiveExercises = [];
+
+    updateSessionDisplay();
+
+
+    getVerifiedQuestion(
+        function() {
+
+            return generateSubtractionQuestion(
+                getCurrentMamaLevel()
+            );
+
+        }
+    );
+
+}
+
+
+// =====================================================
+// ✖️ MULTIPLICATION LIBRE
+// =====================================================
+
+function startMathMultiplication() {
+
+    currentMode =
+        "math";
+
+    currentFreeMathType =
+        "multiplication";
+
+    hideMathMenu();
+
+    adaptiveExercises = [];
+
+    updateSessionDisplay();
+
+
+    getVerifiedQuestion(
+        function() {
+
+            return generateMultiplicationQuestion(
+                getCurrentMamaLevel()
+            );
+
+        }
+    );
+
+}
+
+
+// =====================================================
+// 🤖 DÉMARRER LE PARCOURS PERSONNALISÉ
+// =====================================================
+//
+// Ici, contrairement aux matières libres,
+// nous lançons une vraie session de 5 exercices.
+//
+// Le niveau vient du PLANIFICATEUR.
+// =====================================================
+
+function startAdaptive() {
+
+    currentMode =
+        "adaptive";
+
+    hideMathMenu();
+
+
+    try {
+
+        adaptiveLevel =
+            getCurrentMamaLevel();
+
+
+        // Démarrer une nouvelle session mémoire
+        if (
+            typeof startLearningSession ===
+            "function"
+        ) {
+
+            startLearningSession(
+                adaptiveLevel
+            );
+
+        }
+
+
+        // Générer les 5 exercices
+        const generated =
+            generateLearningSession(
+                adaptiveLevel
+            );
+
+
+        if (
+            !Array.isArray(generated) ||
+            generated.length !== 5
+        ) {
+
+            throw new Error(
+                "La session ne contient pas exactement 5 exercices."
+            );
+
+        }
+
+
+        // Vérifier chaque exercice
+        const verifiedExercises = [];
+
+
+        for (
+            let i = 0;
+            i < generated.length;
+            i++
+        ) {
+
+            const question =
+                generated[i];
+
+
+            const verification =
+                verifyQuestion(
+                    question
+                );
+
+
+            if (
+                !verification.valid
+            ) {
+
+                console.warn(
+                    "❌ Exercice refusé dans la session :",
+                    verification.reason
+                );
+
+
+                throw new Error(
+                    "Un exercice de la session est invalide."
+                );
+
+            }
+
+
+            verifiedExercises.push(
+                question
+            );
+
+        }
+
+
+        adaptiveExercises =
+            verifiedExercises;
+
+
+        adaptiveIndex = 0;
+
+
+        updateSessionDisplay();
+
+
+        showAdaptiveExercise();
+
+
+    } catch (error) {
+
+        console.error(
+            "Erreur démarrage session :",
+            error
+        );
+
+
+        document.getElementById(
+            "box"
+        ).innerText =
+
+            "⚠️ La maîtresse n'arrive pas " +
+            "à préparer la session.\n\n" +
+            "Essaie encore dans un instant. 😊";
+
+
+        speak(
+            "La maîtresse n'arrive pas à préparer la session. " +
+            "Essaie encore dans un instant."
+        );
+
+    }
+
+}
+
+
+// =====================================================
+// 🤖 AFFICHER UN EXERCICE PERSONNALISÉ
+// =====================================================
+
+function showAdaptiveExercise() {
+
+    if (
+        adaptiveIndex >= adaptiveExercises.length
+    ) {
+
+        finishAdaptiveSession();
+
+        return;
+
+    }
+
+
+    current =
+        adaptiveExercises[
+            adaptiveIndex
+        ];
+
+
+    updateSessionDisplay();
+
+
+    showQuestion();
+
+}
+
+
+// =====================================================
+// 📝 AFFICHER UNE QUESTION
+// =====================================================
+
+function showQuestion() {
+
+    if (!current) {
+
+        return;
+
+    }
+
+
+    const box =
+        document.getElementById(
+            "box"
+        );
+
+
+    box.innerHTML = "";
+
+
+    const questionElement =
+        document.createElement(
+            "div"
+        );
+
+
+    questionElement.style.marginBottom =
+        "15px";
+
+
+    questionElement.innerText =
+        current.question;
+
+
+    box.appendChild(
+        questionElement
+    );
+
+
+    current.choices.forEach(
+        function(choice) {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.className =
+                "choice";
+
+
+            button.innerText =
+                choice;
+
+
+            button.addEventListener(
+                "click",
+                function() {
+
+                    checkAnswer(
+                        choice
+                    );
+
+                }
+            );
+
+
+            box.appendChild(
+                button
+            );
+
+
+            box.appendChild(
+                document.createElement(
+                    "br"
+                )
+            );
+
+        }
+    );
 
 
     speak(
@@ -610,27 +1164,40 @@ function showQuestion() {
 }
 
 
-
 // =====================================================
-// ✅ RÉPONSE DE L'ÉLÈVE
-// =====================================================
-//
-// Ordre très important :
-//
-// 1. Mémoire
-// 2. Professeur
-//
-// Ainsi le professeur peut utiliser
-// la réponse qui vient d'être enregistrée.
+// ✅ ENREGISTRER UNE RÉPONSE
 // =====================================================
 
 function checkAnswer(
     choice
 ) {
 
+    if (!current) {
+
+        return;
+
+    }
+
+
+    // Empêcher plusieurs clics pendant
+    // le traitement de la réponse.
+    const buttons =
+        document.querySelectorAll(
+            ".choice"
+        );
+
+
+    buttons.forEach(
+        function(button) {
+
+            button.disabled = true;
+
+        }
+    );
+
 
     // -------------------------------------------------
-    // 🧠 1. MÉMOIRE
+    // 🧠 1. MÉMOIRE GÉNÉRALE
     // -------------------------------------------------
 
     rememberAnswer(
@@ -640,7 +1207,25 @@ function checkAnswer(
 
 
     // -------------------------------------------------
-    // 👩🏾‍🏫 2. PROFESSEUR
+    // 🤖 2. MÉMOIRE DE SESSION
+    // -------------------------------------------------
+
+    if (
+        currentMode === "adaptive" &&
+        typeof recordSessionExercise ===
+        "function"
+    ) {
+
+        recordSessionExercise(
+            current,
+            choice
+        );
+
+    }
+
+
+    // -------------------------------------------------
+    // 👩🏾‍🏫 3. PROFESSEUR
     // -------------------------------------------------
 
     const result =
@@ -651,7 +1236,7 @@ function checkAnswer(
 
 
     // -------------------------------------------------
-    // 💬 3. AFFICHAGE
+    // 💬 4. AFFICHAGE
     // -------------------------------------------------
 
     document.getElementById(
@@ -661,7 +1246,7 @@ function checkAnswer(
 
 
     // -------------------------------------------------
-    // 🔊 4. VOIX
+    // 🔊 5. VOIX
     // -------------------------------------------------
 
     speak(
@@ -670,13 +1255,433 @@ function checkAnswer(
 
 
     // -------------------------------------------------
-    // 🎯 5. ACTUALISER LE NIVEAU
+    // 🤖 SESSION PERSONNALISÉE
+    // -------------------------------------------------
+
+    if (
+        currentMode === "adaptive"
+    ) {
+
+        setTimeout(
+            function() {
+
+                adaptiveIndex++;
+
+                if (
+                    adaptiveIndex <
+                    adaptiveExercises.length
+                ) {
+
+                    showAdaptiveExercise();
+
+                } else {
+
+                    finishAdaptiveSession();
+
+                }
+
+            },
+            1800
+        );
+
+
+        return;
+
+    }
+
+
+    // -------------------------------------------------
+    // 🎯 ENTRAÎNEMENT LIBRE
     // -------------------------------------------------
 
     updateLevelDisplay();
 
 }
 
+
+// =====================================================
+// 🏆 FIN DE SESSION PERSONNALISÉE
+// =====================================================
+
+function finishAdaptiveSession() {
+
+    updateSessionDisplay();
+
+
+    let session = null;
+
+
+    if (
+        typeof getCurrentLearningSession ===
+        "function"
+    ) {
+
+        session =
+            getCurrentLearningSession();
+
+    }
+
+
+    if (!session) {
+
+        document.getElementById(
+            "box"
+        ).innerText =
+
+            "⚠️ Impossible de récupérer le résultat " +
+            "de la session.";
+
+        return;
+
+    }
+
+
+    const score =
+        Number(
+            session.score || 0
+        );
+
+
+    const stars =
+        getSessionStarsSafe(
+            score
+        );
+
+
+    const decision =
+        getSessionDecisionSafe(
+            score
+        );
+
+
+    let decisionText =
+        "";
+
+
+    if (
+        decision === "progress"
+    ) {
+
+        decisionText =
+            "🌟 Tu peux passer au niveau suivant !";
+
+    } else if (
+        decision === "consolidate"
+    ) {
+
+        decisionText =
+            "📚 Nous allons encore travailler ce niveau.";
+
+    } else {
+
+        decisionText =
+            "💪🏾 Nous allons renforcer les notions qui sont difficiles.";
+
+    }
+
+
+    // -------------------------------------------------
+    // 🧠 ENREGISTRER LE RÉSULTAT POUR LE PLANIFICATEUR
+    // -------------------------------------------------
+
+    savePlannerResultIfAvailable(
+        session,
+        score
+    );
+
+
+    // -------------------------------------------------
+    // 🏆 AFFICHAGE FINAL
+    // -------------------------------------------------
+
+    const message =
+
+        "🏆 SESSION TERMINÉE\n\n" +
+
+        "🎯 Niveau : " +
+        adaptiveLevel +
+        "\n\n" +
+
+        "⭐ Score : " +
+        score +
+        " / 5\n\n" +
+
+        "<STARS>\n\n" +
+
+        decisionText +
+        "\n\n" +
+
+        "👩🏾‍🏫 La maîtresse :\n" +
+        getSessionTeacherMessage(
+            score,
+            decision
+        );
+
+
+    const cleanMessage =
+        message.replace(
+            "<STARS>",
+            stars
+        );
+
+
+    document.getElementById(
+        "box"
+    ).innerText =
+        cleanMessage;
+
+
+    speak(
+        getSessionSpeech(
+            score,
+            decision
+        )
+    );
+
+
+    adaptiveExercises = [];
+
+    adaptiveIndex = 0;
+
+    current = null;
+
+
+    updateSessionDisplay();
+
+    updateLevelDisplay();
+
+}
+
+
+// =====================================================
+// ⭐ ÉTOILES
+// =====================================================
+
+function getSessionStarsSafe(
+    score
+) {
+
+    if (
+        typeof getSessionStars ===
+        "function"
+    ) {
+
+        return getSessionStars(
+            score
+        );
+
+    }
+
+
+    if (score >= 5) return "⭐⭐⭐⭐⭐";
+
+    if (score >= 4) return "⭐⭐⭐⭐";
+
+    if (score >= 3) return "⭐⭐⭐";
+
+    if (score >= 2) return "⭐⭐";
+
+    if (score >= 1) return "⭐";
+
+    return "Aucune étoile";
+}
+
+
+// =====================================================
+// 🎯 DÉCISION DU PLANIFICATEUR
+// =====================================================
+
+function getSessionDecisionSafe(
+    score
+) {
+
+    if (
+        typeof getSessionDecision ===
+        "function"
+    ) {
+
+        const decision =
+            getSessionDecision(
+                score
+            );
+
+
+        if (
+            typeof decision === "string"
+        ) {
+
+            return decision;
+
+        }
+
+
+        if (
+            decision &&
+            decision.decision
+        ) {
+
+            return decision.decision;
+
+        }
+
+    }
+
+
+    if (score >= 4) {
+        return "progress";
+    }
+
+    if (score === 3) {
+        return "consolidate";
+    }
+
+    return "reinforce";
+
+}
+
+
+// =====================================================
+// 🧠 ENREGISTRER LE RÉSULTAT DU PLANIFICATEUR
+// =====================================================
+
+function savePlannerResultIfAvailable(
+    session,
+    score
+) {
+
+    try {
+
+        if (
+            typeof savePlannerSessionResult ===
+            "function"
+        ) {
+
+            savePlannerSessionResult(
+                session,
+                score
+            );
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Erreur enregistrement planificateur :",
+            error
+        );
+
+    }
+
+}
+
+
+// =====================================================
+// 👩🏾‍🏫 MESSAGE FINAL
+// =====================================================
+
+function getSessionTeacherMessage(
+    score,
+    decision
+) {
+
+    if (score === 5) {
+
+        return (
+            "Excellent Mama Binta ! " +
+            "Tu as réussi les 5 exercices. " +
+            "Quel beau travail ! 🌟"
+        );
+
+    }
+
+
+    if (score === 4) {
+
+        return (
+            "Très beau travail ! " +
+            "Tu as réussi 4 exercices sur 5. " +
+            "Continue comme ça ! 💪🏾"
+        );
+
+    }
+
+
+    if (score === 3) {
+
+        return (
+            "Bravo pour tes efforts. " +
+            "Nous allons encore nous entraîner " +
+            "sur certaines notions. 📚"
+        );
+
+    }
+
+
+    if (score === 2) {
+
+        return (
+            "Ne te décourage pas. " +
+            "Les erreurs nous montrent ce qu'il faut " +
+            "encore apprendre. 💪🏾"
+        );
+
+    }
+
+
+    return (
+        "Ce n'est pas grave Mama Binta. " +
+        "Nous allons reprendre tranquillement " +
+        "les notions difficiles. ❤️"
+    );
+
+}
+
+
+function getSessionSpeech(
+    score,
+    decision
+) {
+
+    if (score === 5) {
+
+        return (
+            "Excellent Mama Binta ! " +
+            "Tu as réussi les cinq exercices. " +
+            "Quel beau travail !"
+        );
+
+    }
+
+
+    if (score === 4) {
+
+        return (
+            "Très beau travail ! " +
+            "Tu as réussi quatre exercices sur cinq. " +
+            "Continue comme ça !"
+        );
+
+    }
+
+
+    if (score === 3) {
+
+        return (
+            "Bravo pour tes efforts. " +
+            "Nous allons encore nous entraîner " +
+            "sur certaines notions."
+        );
+
+    }
+
+
+    return (
+        "Ne te décourage pas. " +
+        "Nous allons reprendre tranquillement " +
+        "les notions difficiles."
+    );
+
+}
 
 
 // =====================================================
@@ -685,72 +1690,71 @@ function checkAnswer(
 
 function showProgress() {
 
+    hideMathMenu();
+
+
     const report =
         getMemoryReport();
 
 
-    let levelMessage =
-        "";
+    let message =
+
+        "🧠 PROGRESSION DE MAMA BINTA\n\n" +
+
+        report.general +
+        "\n\n" +
+
+        report.reading +
+        "\n\n" +
+
+        report.maths;
 
 
     try {
 
+        const level =
+            getCurrentMamaLevel();
+
+
+        message +=
+
+            "\n\n🎯 NIVEAU PÉDAGOGIQUE\n\n" +
+
+            "Niveau actuel : " +
+            level +
+            " / 100";
+
+
         if (
-            typeof getMathPlan ===
+            typeof getLearningPlan ===
             "function"
         ) {
 
             const plan =
-                getMathPlan();
+                getLearningPlan();
 
 
-            levelMessage =
+            if (
+                plan &&
+                plan.message
+            ) {
 
-                "\n\n🎯 NIVEAU PÉDAGOGIQUE\n\n" +
+                message +=
+                    "\n\n" +
+                    plan.message;
 
-                "Niveau actuel : " +
-                plan.level +
-
-                "\nAdditions travaillées : jusqu'à " +
-                plan.maxSum +
-
-                "\nStatut : " +
-                plan.status +
-
-                "\n\n" +
-                plan.message;
+            }
 
         }
 
     } catch (error) {
 
         console.error(
-            "Erreur planificateur :",
+            "Erreur affichage progression :",
             error
         );
 
     }
-
-
-    const message =
-
-        "🧠 PROGRESSION DE MAMA BINTA\n\n" +
-
-        report.general +
-
-        "\n\n" +
-
-        report.reading +
-
-        "\n\n" +
-
-        report.maths +
-
-        levelMessage +
-
-        "\n\n" +
-
-        "Continue tes efforts ! 💪🏾📚";
 
 
     document.getElementById(
@@ -783,15 +1787,21 @@ function showProgress() {
 }
 
 
-
 // =====================================================
 // 📚 MES ERREURS
 // =====================================================
 
 function showMistakes() {
 
+    hideMathMenu();
+
+
+    const memory =
+        getStudentMemory();
+
+
     const mistakes =
-        getMistakes();
+        memory.mistakes || [];
 
 
     if (
@@ -814,11 +1824,8 @@ function showMistakes() {
 
 
         speak(
-
             "Aucune erreur enregistrée. " +
-
             "Continue comme ça Mama Binta !"
-
         );
 
 
@@ -835,7 +1842,9 @@ function showMistakes() {
         "revoir ensemble :\n\n";
 
 
-    mistakes.forEach(
+    mistakes.slice(
+        -10
+    ).reverse().forEach(
         function(
             mistake,
             index
@@ -844,34 +1853,42 @@ function showMistakes() {
             message +=
 
                 "❌ Erreur " +
-
                 (
                     index + 1
                 ) +
 
                 "\n" +
 
-                "Matière : " +
-
-                mistake.subject +
+                "Compétence : " +
+                (
+                    mistake.skill ||
+                    mistake.subject ||
+                    "—"
+                ) +
 
                 "\n" +
 
                 "Question : " +
-
-                mistake.question +
+                (
+                    mistake.question ||
+                    "—"
+                ) +
 
                 "\n" +
 
                 "Ta réponse : " +
-
-                mistake.studentAnswer +
+                (
+                    mistake.studentAnswer ||
+                    "—"
+                ) +
 
                 "\n" +
 
                 "Bonne réponse : " +
-
-                mistake.correctAnswer +
+                (
+                    mistake.correctAnswer ||
+                    "—"
+                ) +
 
                 "\n\n";
 
@@ -894,15 +1911,12 @@ function showMistakes() {
     speak(
 
         "Voici tes erreurs. " +
-
         "Nous allons les revoir ensemble. " +
-
         "Les erreurs sont des occasions d'apprendre."
 
     );
 
 }
-
 
 
 // =====================================================
@@ -911,15 +1925,46 @@ function showMistakes() {
 
 function showAnalysis() {
 
+    hideMathMenu();
+
+
+    if (
+        typeof analyzeStudent !==
+        "function"
+    ) {
+
+        document.getElementById(
+            "box"
+        ).innerText =
+            "L'analyse n'est pas encore disponible.";
+
+        return;
+
+    }
+
+
     const analysis =
         analyzeStudent();
 
 
-    const message =
+    let message =
 
-        "🔎 ANALYSE DE MAMA BINTA\n\n" +
+        "🔎 ANALYSE DE MAMA BINTA\n\n";
 
-        analysis.message;
+
+    if (
+        analysis.message
+    ) {
+
+        message +=
+            analysis.message;
+
+    } else {
+
+        message +=
+            "L'analyste observe encore les résultats de Mama Binta.";
+
+    }
 
 
     document.getElementById(
@@ -929,7 +1974,7 @@ function showAnalysis() {
 
 
     speak(
-        analysis.message
+        message
     );
 
 
@@ -938,6 +1983,97 @@ function showAnalysis() {
 }
 
 
+// =====================================================
+// 🔄 RECOMMENCER À ZÉRO
+// =====================================================
+
+function resetMamaBinta() {
+
+    const confirmed =
+        window.confirm(
+            "Voulez-vous vraiment recommencer la progression de Mama Binta à zéro ?"
+        );
+
+
+    if (!confirmed) {
+
+        return;
+
+    }
+
+
+    try {
+
+        if (
+            typeof resetStudentMemory ===
+            "function"
+        ) {
+
+            resetStudentMemory();
+
+        }
+
+
+        if (
+            typeof resetLearningPlan ===
+            "function"
+        ) {
+
+            resetLearningPlan();
+
+        } else if (
+            typeof resetMathPlan ===
+            "function"
+        ) {
+
+            resetMathPlan();
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Erreur lors de la réinitialisation :",
+            error
+        );
+
+    }
+
+
+    current = null;
+
+    adaptiveExercises = [];
+
+    adaptiveIndex = 0;
+
+    adaptiveLevel = 1;
+
+    currentMode = "none";
+
+
+    hideMathMenu();
+
+    updateSessionDisplay();
+
+    updateLevelDisplay();
+
+
+    document.getElementById(
+        "box"
+    ).innerText =
+
+        "🔄 La progression de Mama Binta " +
+        "a été remise à zéro.\n\n" +
+        "Nous recommençons au niveau 1. 🌱";
+
+
+    speak(
+        "La progression de Mama Binta a été remise à zéro. " +
+        "Nous recommençons au niveau un."
+    );
+
+}
+
 
 // =====================================================
 // 🚀 INITIALISATION
@@ -945,6 +2081,12 @@ function showAnalysis() {
 
 updateLevelDisplay();
 
+updateSessionDisplay();
+
+
+console.log(
+    "🏫 Interface de Mama Binta chargée."
+);
 
 </script>
 
