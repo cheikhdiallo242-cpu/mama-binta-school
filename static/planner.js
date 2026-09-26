@@ -304,6 +304,45 @@ function plannerReceiveAgentMessage(message) {
         "📡 Planificateur ← Bus ← Analyseur : analyse reçue.",
         message.data
     );
+
+
+    // ----------------------------------------------------
+    // 📡 ACCUSÉ DE RÉCEPTION
+    // ----------------------------------------------------
+
+    if (
+        typeof agentSendMessage ===
+        "function"
+    ) {
+
+        agentSendMessage(
+            "planner",
+            "analyzer",
+            "analysis_received",
+            {
+                analysisMessageId:
+                    message.id || null,
+
+                receivedAt:
+                    new Date().toISOString(),
+
+                skillsToPractice:
+                    message.data &&
+                    Array.isArray(
+                        message.data.skillsToPractice
+                    )
+                        ? message.data.skillsToPractice
+                        : []
+            },
+            "Le Planificateur a reçu et mémorisé l'analyse.",
+            "human"
+        );
+    }
+
+
+    console.log(
+        "📡 Planificateur → Bus → Analyseur : accusé de réception envoyé."
+    );
 }
 
 
