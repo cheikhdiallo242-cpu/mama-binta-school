@@ -1938,6 +1938,10 @@ function showMistakes() {
 // 🔎 ANALYSE
 // =====================================================
 
+// =====================================================
+// 🔎 ANALYSE
+// =====================================================
+
 function showAnalysis() {
 
     hideMathMenu();
@@ -1954,24 +1958,29 @@ function showAnalysis() {
             "L'analyse n'est pas encore disponible.";
 
         return;
+
     }
 
+
+    // -------------------------------------------------
+    // 🔎 ANALYSE RÉELLE
+    // -------------------------------------------------
 
     const analysis =
         analyzeStudent();
 
 
     let message =
-
         "🔎 ANALYSE DE MAMA BINTA\n\n";
 
 
     if (
-        analysis.message
+        typeof getAnalyzerMessage ===
+        "function"
     ) {
 
         message +=
-            analysis.message;
+            getAnalyzerMessage();
 
     } else {
 
@@ -1980,6 +1989,67 @@ function showAnalysis() {
 
     }
 
+
+    // -------------------------------------------------
+    // 📡 ANALYSEUR → BUS → PLANIFICATEUR
+    // -------------------------------------------------
+
+    let busMessage = null;
+
+
+    if (
+        typeof publishAnalyzerResultToPlanner ===
+        "function"
+    ) {
+
+        busMessage =
+            publishAnalyzerResultToPlanner(
+                analysis
+            );
+
+    }
+
+
+    // -------------------------------------------------
+    // 📡 AFFICHAGE DE LA COMMUNICATION RÉELLE
+    // -------------------------------------------------
+
+    message +=
+        "\n\n📡 COMMUNICATION DES AGENTS\n\n";
+
+
+    if (busMessage) {
+
+        message +=
+
+            "🔎 Analyseur\n" +
+
+            "      ↓\n" +
+
+            "📡 Bus de communication\n" +
+
+            "      ↓\n" +
+
+            "🎯 Planificateur\n\n" +
+
+            "✅ Analyse envoyée avec succès.\n\n" +
+
+            "Message envoyé :\n" +
+
+            busMessage.message;
+
+    } else {
+
+        message +=
+
+            "⚠️ L'analyse n'a pas été envoyée au Bus.";
+
+    }
+
+
+    // -------------------------------------------------
+    // 🖥️ AFFICHER
+    // -------------------------------------------------
 
     document.getElementById(
         "box"
@@ -1993,6 +2063,7 @@ function showAnalysis() {
 
 
     updateLevelDisplay();
+
 }
 
 
