@@ -180,18 +180,34 @@ function getPedagogicalLevelInfo(level) {
 // ========================================================
 // 📊 RÉCUPÉRER L'ANALYSE
 // ========================================================
-
 function plannerGetAnalysis() {
 
+    // ----------------------------------------------------
+    // 📡 PRIORITÉ À L'ANALYSE REÇUE PAR LE BUS
+    // ----------------------------------------------------
+
+    const receivedAnalysis =
+        plannerGetReceivedAnalysis();
+
+    if (receivedAnalysis) {
+        return receivedAnalysis;
+    }
+
+    // ----------------------------------------------------
+    // 🔄 COMPATIBILITÉ AVEC L'ANCIEN FONCTIONNEMENT
+    // ----------------------------------------------------
+
     if (
-        typeof analyzeStudent === "function"
+        typeof analyzeStudent ===
+        "function"
     ) {
 
         return analyzeStudent();
     }
 
     return null;
-}// ========================================================
+}
+// ========================================================
 // 📡 RÉCEPTION DE L'ANALYSEUR PAR LE BUS
 // ========================================================
 
