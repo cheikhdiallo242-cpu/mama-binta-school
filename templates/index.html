@@ -2069,6 +2069,201 @@ function showAnalysis() {
 
     updateLevelDisplay();
 
+}// =====================================================
+// 🧪 DIAGNOSTIC DU BUS DES AGENTS
+// =====================================================
+
+function showAgentBusDiagnostic() {
+
+    hideMathMenu();
+
+    let message =
+        "🧪 DIAGNOSTIC DU BUS DES AGENTS\n\n";
+
+
+    if (
+        typeof getMessagesBetweenAgents !==
+        "function"
+    ) {
+
+        message +=
+            "❌ Impossible d'accéder au Bus.\n\n" +
+            "La fonction getMessagesBetweenAgents() " +
+            "n'est pas disponible.";
+
+        document.getElementById(
+            "box"
+        ).innerText = message;
+
+        return;
+    }
+
+
+    const messages =
+        getMessagesBetweenAgents(
+            "analyzer",
+            "planner"
+        );
+
+
+    message +=
+        "🔎 Analyseur → 🎯 Planificateur\n\n";
+
+
+    if (
+        !messages ||
+        messages.length === 0
+    ) {
+
+        message +=
+            "⚠️ Aucun message trouvé.\n\n" +
+            "Clique d'abord sur « 🔎 Mes difficultés », " +
+            "puis reviens ici.";
+
+        document.getElementById(
+            "box"
+        ).innerText = message;
+
+        return;
+    }
+
+
+    message +=
+        "✅ " +
+        messages.length +
+        " message(s) trouvé(s).\n\n";
+
+
+    let analysisSent =
+        false;
+
+
+    messages.forEach(
+        function(agentMessage, index) {
+
+            message +=
+                "━━━━━━━━━━━━━━━━━━\n\n" +
+
+                "📨 Message " +
+                (index + 1) +
+                "\n\n" +
+
+                "De : " +
+                agentMessage.from +
+                "\n" +
+
+                "Vers : " +
+                agentMessage.to +
+                "\n" +
+
+                "Type : " +
+                agentMessage.type +
+                "\n" +
+
+                "Message : " +
+                (
+                    agentMessage.message ||
+                    "—"
+                ) +
+                "\n\n";
+
+
+            if (
+                agentMessage.type ===
+                "analysis_result"
+            ) {
+
+                analysisSent = true;
+
+                message +=
+                    "✅ ANALYSE ENVOYÉE\n\n";
+
+            }
+
+        }
+    );
+
+
+    // -------------------------------------------------
+    // 📡 VÉRIFICATION DE L'ACCUSÉ DE RÉCEPTION
+    // -------------------------------------------------
+
+    const allMessages =
+        typeof getAgentBusMessages ===
+        "function"
+            ? getAgentBusMessages()
+            : [];
+
+
+    const acknowledgments =
+        allMessages.filter(
+            function(agentMessage) {
+
+                return (
+                    agentMessage.from ===
+                    "planner" &&
+
+                    agentMessage.to ===
+                    "analyzer" &&
+
+                    agentMessage.type ===
+                    "analysis_received"
+                );
+
+            }
+        );
+
+
+    message +=
+        "\n━━━━━━━━━━━━━━━━━━\n\n" +
+
+        "📡 ACCUSÉ DE RÉCEPTION\n\n";
+
+
+    if (
+        acknowledgments.length > 0
+    ) {
+
+        message +=
+            "✅ Le Planificateur a répondu !\n\n" +
+
+            "🎯 Planificateur → 🔎 Analyseur\n" +
+
+            "Type : analysis_received\n\n" +
+
+            "➡️ La communication entre les deux agents " +
+            "fonctionne réellement. 🤖";
+
+    } else {
+
+        message +=
+            "⚠️ Aucun accusé de réception trouvé.\n\n" +
+
+            "L'Analyseur a peut-être envoyé son analyse, " +
+            "mais le retour du Planificateur n'est pas " +
+            "encore présent dans le Bus.";
+
+    }
+
+
+    if (
+        !analysisSent
+    ) {
+
+        message +=
+            "\n\n⚠️ Aucun message analysis_result trouvé.";
+    }
+
+
+    document.getElementById(
+        "box"
+    ).innerText = message;
+
+
+    speak(
+        "Diagnostic du Bus des agents terminé."
+    );
+
 }
 
 
