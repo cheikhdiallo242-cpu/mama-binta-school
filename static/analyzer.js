@@ -9,10 +9,12 @@ Rôle :
 - Identifier forces et difficultés
 - Observer les tendances récentes
 - Donner des informations au Planificateur
+- Envoyer réellement son analyse au Bus des agents
 
 IMPORTANT :
-L'Analyste NE décide PAS du niveau.
-Le Planificateur prendra cette décision.
+- L'Analyste NE décide PAS du niveau.
+- Le Bus NE décide RIEN.
+- Le Planificateur prendra les décisions pédagogiques.
 
 Compétences :
 📖 reading
@@ -23,6 +25,7 @@ Compétences :
 ==========================================================
 */
 
+
 const ANALYZER_SKILLS = [
     "reading",
     "addition",
@@ -31,12 +34,24 @@ const ANALYZER_SKILLS = [
     "comprehension"
 ];
 
+
 const ANALYZER_LABELS = {
-    reading: "📖 Lecture",
-    addition: "➕ Addition",
-    subtraction: "➖ Soustraction",
-    multiplication: "✖️ Multiplication",
-    comprehension: "🧠 Compréhension"
+
+    reading:
+        "📖 Lecture",
+
+    addition:
+        "➕ Addition",
+
+    subtraction:
+        "➖ Soustraction",
+
+    multiplication:
+        "✖️ Multiplication",
+
+    comprehension:
+        "🧠 Compréhension"
+
 };
 
 
@@ -45,20 +60,39 @@ const ANALYZER_LABELS = {
 ========================================================= */
 
 function analyzerClamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
+
+    return Math.max(
+        min,
+        Math.min(max, value)
+    );
+
 }
 
 
 function analyzerGetMemory() {
-    if (typeof loadStudentMemory === "function") {
+
+    if (
+        typeof loadStudentMemory ===
+        "function"
+    ) {
+
         return loadStudentMemory();
+
     }
 
-    if (typeof getStudentMemory === "function") {
+
+    if (
+        typeof getStudentMemory ===
+        "function"
+    ) {
+
         return getStudentMemory();
+
     }
+
 
     return null;
+
 }
 
 
@@ -68,22 +102,43 @@ function analyzerGetMemory() {
 
 function analyzeSkill(skill) {
 
-    const memory = analyzerGetMemory();
+    const memory =
+        analyzerGetMemory();
+
 
     if (!memory) {
+
         return {
+
             skill,
-            label: ANALYZER_LABELS[skill] || skill,
+
+            label:
+                ANALYZER_LABELS[skill] ||
+                skill,
+
             accuracy: 0,
+
             total: 0,
+
             correct: 0,
+
             incorrect: 0,
-            status: "unknown",
-            trend: "unknown",
+
+            status:
+                "unknown",
+
+            trend:
+                "unknown",
+
             recentAccuracy: 0,
-            difficulty: "unknown"
+
+            difficulty:
+                "unknown"
+
         };
+
     }
+
 
     const data =
         memory.skills &&
@@ -91,28 +146,58 @@ function analyzeSkill(skill) {
             ? memory.skills[skill]
             : null;
 
+
     if (!data) {
+
         return {
+
             skill,
-            label: ANALYZER_LABELS[skill] || skill,
+
+            label:
+                ANALYZER_LABELS[skill] ||
+                skill,
+
             accuracy: 0,
+
             total: 0,
+
             correct: 0,
+
             incorrect: 0,
-            status: "unknown",
-            trend: "unknown",
+
+            status:
+                "unknown",
+
+            trend:
+                "unknown",
+
             recentAccuracy: 0,
-            difficulty: "unknown"
+
+            difficulty:
+                "unknown"
+
         };
+
     }
 
-    const total = Number(data.total) || 0;
-    const correct = Number(data.correct) || 0;
-    const incorrect = Number(data.incorrect) || 0;
+
+    const total =
+        Number(data.total) || 0;
+
+
+    const correct =
+        Number(data.correct) || 0;
+
+
+    const incorrect =
+        Number(data.incorrect) || 0;
+
 
     const accuracy =
         total > 0
-            ? Math.round((correct / total) * 100)
+            ? Math.round(
+                (correct / total) * 100
+            )
             : 0;
 
 
@@ -122,22 +207,45 @@ function analyzeSkill(skill) {
 
     let recentResults = [];
 
-    if (Array.isArray(memory.recentResults)) {
 
-        recentResults = memory.recentResults
-            .filter(result => result.skill === skill)
-            .slice(-5);
+    if (
+        Array.isArray(
+            memory.recentResults
+        )
+    ) {
+
+        recentResults =
+            memory.recentResults
+
+                .filter(
+                    result =>
+                        result.skill ===
+                        skill
+                )
+
+                .slice(-5);
+
     }
 
-    const recentTotal = recentResults.length;
 
-    const recentCorrect = recentResults.filter(
-        result => result.correct === true
-    ).length;
+    const recentTotal =
+        recentResults.length;
+
+
+    const recentCorrect =
+        recentResults.filter(
+            result =>
+                result.correct === true
+        ).length;
+
 
     const recentAccuracy =
         recentTotal > 0
-            ? Math.round((recentCorrect / recentTotal) * 100)
+            ? Math.round(
+                (recentCorrect /
+                    recentTotal) *
+                100
+            )
             : 0;
 
 
@@ -145,19 +253,33 @@ function analyzeSkill(skill) {
        Statut général
     ----------------------------------------------------- */
 
-    let status = "insufficient_data";
+    let status =
+        "insufficient_data";
+
 
     if (total >= 3) {
 
         if (accuracy >= 80) {
-            status = "strong";
+
+            status =
+                "strong";
+
         }
+
         else if (accuracy >= 60) {
-            status = "developing";
+
+            status =
+                "developing";
+
         }
+
         else {
-            status = "needs_support";
+
+            status =
+                "needs_support";
+
         }
+
     }
 
 
@@ -165,19 +287,33 @@ function analyzeSkill(skill) {
        Difficulté
     ----------------------------------------------------- */
 
-    let difficulty = "unknown";
+    let difficulty =
+        "unknown";
+
 
     if (total >= 3) {
 
         if (accuracy >= 80) {
-            difficulty = "low";
+
+            difficulty =
+                "low";
+
         }
+
         else if (accuracy >= 60) {
-            difficulty = "medium";
+
+            difficulty =
+                "medium";
+
         }
+
         else {
-            difficulty = "high";
+
+            difficulty =
+                "high";
+
         }
+
     }
 
 
@@ -185,16 +321,26 @@ function analyzeSkill(skill) {
        Tendance récente
     ----------------------------------------------------- */
 
-    let trend = "stable";
+    let trend =
+        "stable";
+
 
     if (recentTotal >= 3) {
 
         if (recentAccuracy >= 80) {
-            trend = "improving";
+
+            trend =
+                "improving";
+
         }
+
         else if (recentAccuracy <= 40) {
-            trend = "declining";
+
+            trend =
+                "declining";
+
         }
+
     }
 
 
@@ -203,10 +349,15 @@ function analyzeSkill(skill) {
     ----------------------------------------------------- */
 
     const currentCorrectStreak =
-        Number(data.currentCorrectStreak) || 0;
+        Number(
+            data.currentCorrectStreak
+        ) || 0;
+
 
     const currentIncorrectStreak =
-        Number(data.currentIncorrectStreak) || 0;
+        Number(
+            data.currentIncorrectStreak
+        ) || 0;
 
 
     return {
@@ -240,7 +391,9 @@ function analyzeSkill(skill) {
         currentCorrectStreak,
 
         currentIncorrectStreak
+
     };
+
 }
 
 
@@ -252,11 +405,21 @@ function analyzeAllSkills() {
 
     const analysis = {};
 
-    ANALYZER_SKILLS.forEach(skill => {
-        analysis[skill] = analyzeSkill(skill);
-    });
+
+    ANALYZER_SKILLS.forEach(
+        skill => {
+
+            analysis[skill] =
+                analyzeSkill(
+                    skill
+                );
+
+        }
+    );
+
 
     return analysis;
+
 }
 
 
@@ -266,15 +429,21 @@ function analyzeAllSkills() {
 
 function getStrongSkills() {
 
-    const analysis = analyzeAllSkills();
+    const analysis =
+        analyzeAllSkills();
 
-    return ANALYZER_SKILLS.filter(skill => {
 
-        return (
-            analysis[skill].status === "strong"
-        );
+    return ANALYZER_SKILLS.filter(
+        skill => {
 
-    });
+            return (
+                analysis[skill].status ===
+                "strong"
+            );
+
+        }
+    );
+
 }
 
 
@@ -284,15 +453,21 @@ function getStrongSkills() {
 
 function getWeakSkills() {
 
-    const analysis = analyzeAllSkills();
+    const analysis =
+        analyzeAllSkills();
 
-    return ANALYZER_SKILLS.filter(skill => {
 
-        return (
-            analysis[skill].status === "needs_support"
-        );
+    return ANALYZER_SKILLS.filter(
+        skill => {
 
-    });
+            return (
+                analysis[skill].status ===
+                "needs_support"
+            );
+
+        }
+    );
+
 }
 
 
@@ -302,29 +477,53 @@ function getWeakSkills() {
 
 function getSkillsToPractice() {
 
-    const analysis = analyzeAllSkills();
+    const analysis =
+        analyzeAllSkills();
+
 
     return ANALYZER_SKILLS
-        .filter(skill => {
 
-            const data = analysis[skill];
+        .filter(
+            skill => {
 
-            return (
-                data.status === "needs_support" ||
-                data.trend === "declining"
-            );
+                const data =
+                    analysis[skill];
 
-        })
-        .sort((a, b) => {
 
-            const accuracyA =
-                analysis[a].accuracy;
+                return (
 
-            const accuracyB =
-                analysis[b].accuracy;
+                    data.status ===
+                        "needs_support"
 
-            return accuracyA - accuracyB;
-        });
+                    ||
+
+                    data.trend ===
+                        "declining"
+
+                );
+
+            }
+        )
+
+        .sort(
+            (a, b) => {
+
+                const accuracyA =
+                    analysis[a].accuracy;
+
+
+                const accuracyB =
+                    analysis[b].accuracy;
+
+
+                return (
+                    accuracyA -
+                    accuracyB
+                );
+
+            }
+        );
+
 }
 
 
@@ -334,42 +533,73 @@ function getSkillsToPractice() {
 
 function analyzeRecentSession() {
 
-    const memory = analyzerGetMemory();
+    const memory =
+        analyzerGetMemory();
 
-    if (!memory || !Array.isArray(memory.recentResults)) {
+
+    if (
+        !memory ||
+        !Array.isArray(
+            memory.recentResults
+        )
+    ) {
 
         return {
+
             total: 0,
+
             correct: 0,
+
             incorrect: 0,
+
             accuracy: 0
+
         };
+
     }
+
 
     const results =
         memory.recentResults.slice(-5);
 
-    const total = results.length;
+
+    const total =
+        results.length;
+
 
     const correct =
         results.filter(
-            result => result.correct === true
+            result =>
+                result.correct === true
         ).length;
 
+
     const incorrect =
-        total - correct;
+        total -
+        correct;
+
 
     const accuracy =
         total > 0
-            ? Math.round((correct / total) * 100)
+            ? Math.round(
+                (correct / total) *
+                100
+            )
             : 0;
 
+
     return {
+
         total,
+
         correct,
+
         incorrect,
+
         accuracy
+
     };
+
 }
 
 
@@ -379,16 +609,25 @@ function analyzeRecentSession() {
 
 function analyzeStudent() {
 
-    const memory = analyzerGetMemory();
+    const memory =
+        analyzerGetMemory();
 
-    const skills = analyzeAllSkills();
 
-    const strongSkills = getStrongSkills();
+    const skills =
+        analyzeAllSkills();
 
-    const weakSkills = getWeakSkills();
+
+    const strongSkills =
+        getStrongSkills();
+
+
+    const weakSkills =
+        getWeakSkills();
+
 
     const skillsToPractice =
         getSkillsToPractice();
+
 
     const recentSession =
         analyzeRecentSession();
@@ -396,21 +635,29 @@ function analyzeStudent() {
 
     let overallAccuracy = 0;
 
+
     if (memory) {
 
         const total =
-            Number(memory.total) || 0;
+            Number(memory.total) ||
+            0;
+
 
         const correct =
-            Number(memory.correct) || 0;
+            Number(memory.correct) ||
+            0;
+
 
         if (total > 0) {
 
             overallAccuracy =
                 Math.round(
-                    (correct / total) * 100
+                    (correct / total) *
+                    100
                 );
+
         }
+
     }
 
 
@@ -429,17 +676,206 @@ function analyzeStudent() {
         recentSession,
 
         currentLevel:
+
             memory &&
-            Number(memory.currentLevel)
-                ? Number(memory.currentLevel)
+            Number(
+                memory.currentLevel
+            )
+
+                ? Number(
+                    memory.currentLevel
+                )
+
                 : 1,
 
         highestLevelReached:
+
             memory &&
-            Number(memory.highestLevelReached)
-                ? Number(memory.highestLevelReached)
+            Number(
+                memory.highestLevelReached
+            )
+
+                ? Number(
+                    memory.highestLevelReached
+                )
+
                 : 1
+
     };
+
+}
+
+
+/* =========================================================
+   📡 COMMUNICATION AVEC LE BUS
+=========================================================
+//
+// Cette fonction transforme l'analyse réelle
+// en message destiné au Planificateur.
+//
+// IMPORTANT :
+// - elle ne change aucun niveau ;
+// - elle ne modifie pas la mémoire ;
+// - elle ne prend aucune décision pédagogique.
+//
+// Elle transmet uniquement les observations
+// calculées par l'Analyseur.
+//
+
+========================================================= */
+
+function publishAnalyzerResultToPlanner(
+    analysis = null
+) {
+
+    if (
+        typeof agentSendMessage !==
+        "function"
+    ) {
+
+        console.warn(
+            "⚠️ Bus des agents indisponible."
+        );
+
+        return null;
+
+    }
+
+
+    const currentAnalysis =
+        analysis ||
+        analyzeStudent();
+
+
+    const skills =
+        currentAnalysis.skills || {};
+
+
+    const messageData = {
+
+        overallAccuracy:
+            currentAnalysis.overallAccuracy,
+
+        currentLevel:
+            currentAnalysis.currentLevel,
+
+        highestLevelReached:
+            currentAnalysis.highestLevelReached,
+
+        strongSkills:
+            Array.isArray(
+                currentAnalysis.strongSkills
+            )
+                ? currentAnalysis.strongSkills
+                : [],
+
+        weakSkills:
+            Array.isArray(
+                currentAnalysis.weakSkills
+            )
+                ? currentAnalysis.weakSkills
+                : [],
+
+        skillsToPractice:
+            Array.isArray(
+                currentAnalysis.skillsToPractice
+            )
+                ? currentAnalysis.skillsToPractice
+                : [],
+
+        skills: {}
+
+    };
+
+
+    ANALYZER_SKILLS.forEach(
+        skill => {
+
+            if (skills[skill]) {
+
+                messageData.skills[
+                    skill
+                ] = {
+
+                    accuracy:
+                        skills[skill].accuracy,
+
+                    total:
+                        skills[skill].total,
+
+                    correct:
+                        skills[skill].correct,
+
+                    incorrect:
+                        skills[skill].incorrect,
+
+                    status:
+                        skills[skill].status,
+
+                    difficulty:
+                        skills[skill].difficulty,
+
+                    trend:
+                        skills[skill].trend,
+
+                    recentAccuracy:
+                        skills[skill]
+                            .recentAccuracy
+
+                };
+
+            }
+
+        }
+    );
+
+
+    let humanMessage =
+        getAnalyzerMessage();
+
+
+    if (
+        currentAnalysis
+            .skillsToPractice
+            .length === 0
+    ) {
+
+        humanMessage =
+            "L'analyse ne montre actuellement aucune compétence prioritaire.";
+
+    }
+
+
+    const sent =
+        agentSendMessage(
+
+            "analyzer",
+
+            "planner",
+
+            "analysis_result",
+
+            messageData,
+
+            humanMessage,
+
+            "human"
+
+        );
+
+
+    if (sent) {
+
+        console.log(
+            "📡 Analyseur → Bus → Planificateur : analyse envoyée.",
+            sent
+        );
+
+    }
+
+
+    return sent;
+
 }
 
 
@@ -452,25 +888,41 @@ function getAnalyzerMessage() {
     const analysis =
         analyzeStudent();
 
+
     const weak =
         analysis.skillsToPractice;
 
-    if (weak.length === 0) {
 
-        return "Mama Binta montre une progression équilibrée. 🌟";
+    if (
+        weak.length === 0
+    ) {
+
+        return (
+            "Mama Binta montre une progression équilibrée. 🌟"
+        );
+
     }
 
-    const firstSkill = weak[0];
+
+    const firstSkill =
+        weak[0];
+
 
     const label =
         ANALYZER_LABELS[firstSkill] ||
         firstSkill;
 
+
     return (
+
         label +
+
         " est actuellement la compétence " +
+
         "qui mérite le plus d'attention."
+
     );
+
 }
 
 
@@ -482,6 +934,25 @@ function getAnalysisReport() {
 
     const analysis =
         analyzeStudent();
+
+
+    /*
+    ---------------------------------------------------------
+    📡 COMMUNICATION RÉELLE
+    ---------------------------------------------------------
+
+    Lorsqu'un rapport d'analyse est demandé,
+    l'Analyseur transmet son observation réelle
+    au Planificateur via le Bus.
+
+    Le résultat du rapport lui-même reste inchangé.
+    ---------------------------------------------------------
+    */
+
+    publishAnalyzerResultToPlanner(
+        analysis
+    );
+
 
     return {
 
@@ -497,24 +968,32 @@ function getAnalysisReport() {
         pointsForts:
             analysis.strongSkills.map(
                 skill =>
-                    ANALYZER_LABELS[skill]
+                    ANALYZER_LABELS[
+                        skill
+                    ]
             ),
 
         difficultes:
             analysis.weakSkills.map(
                 skill =>
-                    ANALYZER_LABELS[skill]
+                    ANALYZER_LABELS[
+                        skill
+                    ]
             ),
 
         aRenforcer:
             analysis.skillsToPractice.map(
                 skill =>
-                    ANALYZER_LABELS[skill]
+                    ANALYZER_LABELS[
+                        skill
+                    ]
             ),
 
         sessionRecente:
             analysis.recentSession
+
     };
+
 }
 
 
@@ -526,7 +1005,13 @@ console.log(
     "🧠 Analyste Mama Binta chargé."
 );
 
+
 console.log(
     "Compétences analysées :",
     ANALYZER_SKILLS
+);
+
+
+console.log(
+    "📡 Communication Analyseur → Bus activée."
 );
