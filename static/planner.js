@@ -191,6 +191,119 @@ function plannerGetAnalysis() {
     }
 
     return null;
+}// ========================================================
+// 📡 RÉCEPTION DE L'ANALYSEUR PAR LE BUS
+// ========================================================
+
+const PLANNER_ANALYSIS_KEY =
+    "mamaBintaPlannerLastAnalysis";
+
+let plannerLastAnalyzerMessage = null;
+
+
+// --------------------------------------------------------
+// 💾 RÉCUPÉRER LA DERNIÈRE ANALYSE REÇUE
+// --------------------------------------------------------
+
+function plannerGetReceivedAnalysis() {
+
+    if (
+        plannerLastAnalyzerMessage &&
+        plannerLastAnalyzerMessage.data
+    ) {
+
+        return plannerLastAnalyzerMessage.data;
+    }
+
+
+    try {
+
+        const saved =
+            localStorage.getItem(
+                PLANNER_ANALYSIS_KEY
+            );
+
+        if (!saved) {
+            return null;
+        }
+
+        return JSON.parse(saved);
+
+    } catch (error) {
+
+        console.log(
+            "⚠️ Impossible de récupérer l'analyse reçue du Bus.",
+            error
+        );
+
+        return null;
+    }
+}
+
+
+// --------------------------------------------------------
+// 📡 RECEVOIR UN MESSAGE DE L'ANALYSEUR
+// --------------------------------------------------------
+
+function plannerReceiveAgentMessage(message) {
+
+    if (!message) {
+        return;
+    }
+
+
+    if (
+        message.from !== "analyzer" ||
+        message.to !== "planner" ||
+        message.type !== "analysis_result"
+    ) {
+
+        return;
+    }
+
+
+    plannerLastAnalyzerMessage =
+        message;
+
+
+    try {
+
+        localStorage.setItem(
+            PLANNER_ANALYSIS_KEY,
+            JSON.stringify(
+                message.data || {}
+            )
+        );
+
+    } catch (error) {
+
+        console.log(
+            "⚠️ Impossible de mémoriser l'analyse reçue.",
+            error
+        );
+    }
+
+
+    console.log(
+        "📡 Planificateur ← Bus ← Analyseur : analyse reçue.",
+        message.data
+    );
+}
+
+
+// --------------------------------------------------------
+// 👂 ÉCOUTER LE BUS
+// --------------------------------------------------------
+
+if (
+    typeof listenToAgentMessages ===
+    "function"
+) {
+
+    listenToAgentMessages(
+        plannerReceiveAgentMessage
+    );
+
 }
 
 
