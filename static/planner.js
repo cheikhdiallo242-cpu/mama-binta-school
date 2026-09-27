@@ -1502,25 +1502,254 @@ function startPlannedLearningSession() {
 // 📋 PLAN COMPLET — LECTURE SEULE
 // ========================================================
 
+// ========================================================
+
+// 📡 ENVOYER LE PLAN AU GÉNÉRATEUR
+
+// ========================================================
+
+const PLANNER_GENERATOR_PLAN_KEY =
+
+    "mamaBintaPlannerLastGeneratorPlan";
+
+let plannerLastPublishedPlanSignature =
+
+    null;
+
+function publishLearningPlanToGenerator(
+
+    plan
+
+) {
+
+    if (
+
+        !plan ||
+
+        typeof agentSendMessage !==
+
+        "function"
+
+    ) {
+
+        return null;
+
+    }
+
+    /*
+
+       ----------------------------------------------------
+
+       🔐 Éviter d'envoyer exactement le même plan
+
+       plusieurs fois inutilement.
+
+       ----------------------------------------------------
+
+    */
+
+    let signature = "";
+
+    try {
+
+        signature =
+
+            JSON.stringify({
+
+                level:
+
+                    plan.level,
+
+                sessionSize:
+
+                    plan.sessionSize,
+
+                priority:
+
+                    plan.priority,
+
+                analysis:
+
+                    plan.analysis
+
+            });
+
+    } catch (error) {
+
+        console.warn(
+
+            "⚠️ Impossible de créer la signature du plan.",
+
+            error
+
+        );
+
+        signature =
+
+            String(
+
+                Date.now()
+
+            );
+
+    }
+
+    if (
+
+        signature ===
+
+        plannerLastPublishedPlanSignature
+
+    ) {
+
+        return null;
+
+    }
+
+    plannerLastPublishedPlanSignature =
+
+        signature;
+
+    /*
+
+       ----------------------------------------------------
+
+       💾 Conserver le dernier plan envoyé
+
+       ----------------------------------------------------
+
+    */
+
+    try {
+
+        localStorage.setItem(
+
+            PLANNER_GENERATOR_PLAN_KEY,
+
+            JSON.stringify(
+
+                plan
+
+            )
+
+        );
+
+    } catch (error) {
+
+        console.warn(
+
+            "⚠️ Impossible de mémoriser le plan envoyé au Générateur.",
+
+            error
+
+        );
+
+    }
+
+    /*
+
+       ----------------------------------------------------
+
+       📡 VRAIE COMMUNICATION AGENT → BUS → AGENT
+
+       ----------------------------------------------------
+
+    */
+
+    const message =
+
+        agentSendMessage(
+
+            "planner",
+
+            "generator",
+
+            "learning_plan",
+
+            {
+
+                level:
+
+                    plan.level,
+
+                maxLevel:
+
+                    plan.maxLevel,
+
+                sessionSize:
+
+                    plan.sessionSize,
+
+                priority:
+
+                    Array.isArray(
+
+                        plan.priority
+
+                    )
+
+                        ? plan.priority
+
+                        : [],
+
+                analysis:
+
+                    plan.analysis || null,
+
+                levelInfo:
+
+                    plan.levelInfo || null
+
+            },
+
+            "Le Planificateur a envoyé le plan pédagogique au Générateur.",
+
+            "human"
+
+        );
+
+    console.log(
+
+        "📡 Planificateur → Bus → Générateur : plan envoyé.",
+
+        message
+
+    );
+
+    return message;
+
+}
+
+// ========================================================
+
+// 📋 PLAN COMPLET — LECTURE + PUBLICATION
+
+// ========================================================
+
 function getLearningPlan() {
 
     const level =
+
         getPedagogicalLevel();
 
     const analysis =
+
         plannerGetAnalysis();
 
     const priority =
+
         getPlannerPriority();
 
-    return {
+    const plan = {
 
         level,
 
         maxLevel:
+
             MAX_PEDAGOGICAL_LEVEL,
 
         sessionSize:
+
             SESSION_SIZE,
 
         priority,
@@ -1528,11 +1757,43 @@ function getLearningPlan() {
         analysis,
 
         levelInfo:
+
             getPedagogicalLevelInfo(
+
                 level
+
             )
+
     };
+
+    /*
+
+       ====================================================
+
+       📡 PUBLICATION VERS LE GÉNÉRATEUR
+
+       ====================================================
+
+       Le Planificateur ne se contente plus de
+
+       retourner son plan.
+
+       Il le transmet réellement au Bus des agents.
+
+       Le Générateur pourra ensuite écouter ce message.
+
+    */
+
+    publishLearningPlanToGenerator(
+
+        plan
+
+    );
+
+    return plan;
+
 }
+
 
 
 // ========================================================
