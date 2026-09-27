@@ -2028,6 +2028,193 @@ function getAdaptiveSkillAnalysis() {
 
 }
 
+
+// ========================================================
+// 📡 COMMUNICATION GÉNÉRATEUR → VÉRIFICATEUR
+// ========================================================
+
+let generatorVerificationResults = {};
+
+
+// ========================================================
+// 📥 RECEVOIR LE RÉSULTAT DU VÉRIFICATEUR
+// ========================================================
+
+function generatorReceiveVerificationResult(
+    message
+) {
+
+    if (!message) {
+        return;
+    }
+
+    if (
+        message.from !==
+        "verifier"
+    ) {
+        return;
+    }
+
+    if (
+        message.to !==
+        "generator"
+    ) {
+        return;
+    }
+
+    if (
+        message.type !==
+        "verification_result"
+    ) {
+        return;
+    }
+
+    if (!message.data) {
+        return;
+    }
+
+
+    const requestId =
+        message.data.requestId;
+
+
+    if (!requestId) {
+        return;
+    }
+
+
+    generatorVerificationResults[
+        requestId
+    ] =
+        message.data;
+
+
+    console.log(
+        "📥 Générateur ← Bus ← Vérificateur : résultat reçu.",
+        message.data
+    );
+}
+
+
+// ========================================================
+// 📡 INSTALLER L'ÉCOUTE DU BUS
+// ========================================================
+
+if (
+    typeof listenToAgentMessages ===
+    "function"
+) {
+
+    listenToAgentMessages(
+        generatorReceiveVerificationResult
+    );
+
+    console.log(
+        "📡 Générateur : écoute du Vérificateur activée."
+    );
+
+}
+
+
+// ========================================================
+// 🛡️ DEMANDER UNE VÉRIFICATION
+// ========================================================
+
+function verifyGeneratedQuestionThroughAgent(
+    question
+) {
+
+    if (!question) {
+
+        return {
+            valid: false,
+            reason:
+                "Question absente."
+        };
+
+    }
+
+
+    if (
+        typeof agentSendMessage !==
+        "function"
+    ) {
+
+        console.warn(
+            "⚠️ Agent Bus indisponible."
+        );
+
+        return null;
+
+    }
+
+
+    const requestId =
+        "verification_" +
+        Date.now() +
+        "_" +
+        Math.random()
+            .toString(36)
+            .slice(2);
+
+
+    delete generatorVerificationResults[
+        requestId
+    ];
+
+
+    agentSendMessage(
+        "generator",
+        "verifier",
+        "question_to_verify",
+        {
+            requestId,
+            question
+        },
+        "Le Générateur demande au Vérificateur de contrôler un exercice.",
+        "human"
+    );
+
+
+    console.log(
+        "📡 Générateur → Bus → Vérificateur : exercice envoyé.",
+        question
+    );
+
+
+    const result =
+        generatorVerificationResults[
+            requestId
+        ];
+
+
+    if (!result) {
+
+        console.warn(
+            "⚠️ Le Vérificateur n'a pas encore répondu."
+        );
+
+        return null;
+
+    }
+
+
+    return {
+        valid:
+            Boolean(
+                result.valid
+            ),
+
+        reason:
+            result.reason ||
+            "Résultat inconnu.",
+
+        skill:
+            result.skill ||
+            question.skill ||
+            null
+    };
+}
 /*
    Retourne les compétences réellement prioritaires.
 */
