@@ -530,6 +530,147 @@ function isQuestionValid(questionData) {
 }
 
 
+// ==================================================
+// 📡 COMMUNICATION AGENT — VÉRIFICATEUR
+// ==================================================
+
+function verifierReceiveAgentMessage(message) {
+
+    if (!message) {
+        return;
+    }
+
+    if (message.from !== "generator") {
+        return;
+    }
+
+    if (message.to !== "verifier") {
+        return;
+    }
+
+    if (message.type !== "question_to_verify") {
+        return;
+    }
+
+    if (!message.data || !message.data.question) {
+
+        if (
+            typeof agentSendMessage ===
+            "function"
+        ) {
+
+            agentSendMessage(
+                "verifier",
+                "generator",
+                "verification_result",
+                {
+                    requestId:
+                        message.data
+                            ? message.data.requestId
+                            : null,
+
+                    valid: false,
+
+                    reason:
+                        "La question à vérifier est absente."
+                },
+                "Le Vérificateur a refusé une question vide.",
+                "human"
+            );
+
+        }
+
+        return;
+    }
+
+
+    const question =
+        message.data.question;
+
+
+    const verification =
+        verifyQuestion(
+            question
+        );
+
+
+    if (
+        typeof agentSendMessage !==
+        "function"
+    ) {
+
+        console.warn(
+            "⚠️ Agent Bus indisponible pour répondre au Générateur."
+        );
+
+        return;
+    }
+
+
+    agentSendMessage(
+        "verifier",
+        "generator",
+        "verification_result",
+        {
+            requestId:
+                message.data.requestId,
+
+            valid:
+                Boolean(
+                    verification &&
+                    verification.valid
+                ),
+
+            reason:
+                verification &&
+                verification.reason
+                    ? verification.reason
+                    : "Résultat inconnu.",
+
+            skill:
+                verification &&
+                verification.skill
+                    ? verification.skill
+                    : (
+                        question.skill ||
+                        null
+                    )
+        },
+        verification &&
+        verification.valid
+            ? "Le Vérificateur a validé l'exercice."
+            : "Le Vérificateur a refusé l'exercice.",
+        "human"
+    );
+
+
+    console.log(
+        "📡 Vérificateur → Bus → Générateur : résultat envoyé.",
+        verification
+    );
+}
+
+
+// ==================================================
+// 📡 INSTALLER L'ÉCOUTE DU BUS
+// ==================================================
+
+if (
+    typeof listenToAgentMessages ===
+    "function"
+) {
+
+    listenToAgentMessages(
+        verifierReceiveAgentMessage
+    );
+
+    console.log(
+        "📡 Vérificateur : écoute du Bus activée."
+    );
+
+}
+
+
 // --------------------------------------------------
 // DEBUG
 // --------------------------------------------------
