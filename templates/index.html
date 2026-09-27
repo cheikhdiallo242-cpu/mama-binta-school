@@ -804,6 +804,24 @@ function startAdaptive() {
 
         adaptiveLevel =
             getCurrentMamaLevel();
+         // -------------------------------------------------
+// 📡 0️⃣ DEMANDER LE PLAN AU PLANIFICATEUR
+// -------------------------------------------------
+
+if (
+    typeof getLearningPlan ===
+    "function"
+) {
+
+    const learningPlan =
+        getLearningPlan();
+
+    console.log(
+        "📡 Session personnalisée : plan demandé au Planificateur.",
+        learningPlan
+    );
+
+}
 
 
         // -------------------------------------------------
