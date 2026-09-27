@@ -804,7 +804,7 @@ function startAdaptive() {
 
         adaptiveLevel =
             getCurrentMamaLevel();
-         // -------------------------------------------------
+// -------------------------------------------------
 // 📡 0️⃣ DEMANDER LE PLAN AU PLANIFICATEUR
 // -------------------------------------------------
 
@@ -1957,9 +1957,6 @@ function showMistakes() {
 }
 
 
-// =====================================================
-// 🔎 ANALYSE
-// =====================================================
 
 // =====================================================
 // 🔎 ANALYSE
@@ -2087,7 +2084,11 @@ function showAnalysis() {
 
     updateLevelDisplay();
 
-}// =====================================================
+}
+
+
+     
+// =====================================================
 // 🧪 DIAGNOSTIC DU BUS DES AGENTS
 // =====================================================
 
@@ -2311,6 +2312,162 @@ function showAgentBusDiagnostic() {
 
         message +=
             "ℹ️ Aucun message Générateur → Planificateur " +
+            "pour le moment.\n\n";
+
+    }
+
+
+         // =================================================
+    // ⚙️ GÉNÉRATEUR → VÉRIFICATEUR
+    // =================================================
+
+    const generatorVerifier =
+        allMessages.filter(
+            function(agentMessage) {
+
+                return (
+                    agentMessage.from ===
+                    "generator" &&
+
+                    agentMessage.to ===
+                    "verifier"
+                );
+
+            }
+        );
+
+
+    message +=
+        "━━━━━━━━━━━━━━━━━━\n\n" +
+        "⚙️ Générateur → 🛡️ Vérificateur\n\n" +
+        "Messages trouvés : " +
+        generatorVerifier.length +
+        "\n\n";
+
+
+    if (
+        generatorVerifier.length > 0
+    ) {
+
+        message +=
+            "✅ COMMUNICATION DÉTECTÉE !\n\n";
+
+        generatorVerifier.forEach(
+            function(
+                agentMessage,
+                index
+            ) {
+
+                message +=
+                    "📨 Message " +
+                    (index + 1) +
+                    "\n\n" +
+
+                    "De : " +
+                    agentMessage.from +
+                    "\n" +
+
+                    "Vers : " +
+                    agentMessage.to +
+                    "\n" +
+
+                    "Type : " +
+                    agentMessage.type +
+                    "\n" +
+
+                    "Message : " +
+                    (
+                        agentMessage.message ||
+                        "—"
+                    ) +
+
+                    "\n\n";
+
+            }
+        );
+
+    } else {
+
+        message +=
+            "⚠️ Aucun message Générateur → Vérificateur " +
+            "n'a encore été détecté.\n\n";
+
+    }
+
+
+    // =================================================
+    // 🛡️ VÉRIFICATEUR → GÉNÉRATEUR
+    // =================================================
+
+    const verifierGenerator =
+        allMessages.filter(
+            function(agentMessage) {
+
+                return (
+                    agentMessage.from ===
+                    "verifier" &&
+
+                    agentMessage.to ===
+                    "generator"
+                );
+
+            }
+        );
+
+
+    message +=
+        "━━━━━━━━━━━━━━━━━━\n\n" +
+        "🛡️ Vérificateur → ⚙️ Générateur\n\n" +
+        "Messages trouvés : " +
+        verifierGenerator.length +
+        "\n\n";
+
+
+    if (
+        verifierGenerator.length > 0
+    ) {
+
+        message +=
+            "✅ COMMUNICATION DÉTECTÉE !\n\n";
+
+        verifierGenerator.forEach(
+            function(
+                agentMessage,
+                index
+            ) {
+
+                message +=
+                    "📨 Message " +
+                    (index + 1) +
+                    "\n\n" +
+
+                    "De : " +
+                    agentMessage.from +
+                    "\n" +
+
+                    "Vers : " +
+                    agentMessage.to +
+                    "\n" +
+
+                    "Type : " +
+                    agentMessage.type +
+                    "\n" +
+
+                    "Message : " +
+                    (
+                        agentMessage.message ||
+                        "—"
+                    ) +
+
+                    "\n\n";
+
+            }
+        );
+
+    } else {
+
+        message +=
+            "ℹ️ Aucun message Vérificateur → Générateur " +
             "pour le moment.\n\n";
 
     }
