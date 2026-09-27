@@ -1620,68 +1620,231 @@ function generateComprehensionQuestion(
       = pas assez de données
 */
 
-function getAdaptiveSkillAnalysis() {
+// ========================================================
+// 📡 RÉCEPTION DU PLAN DU PLANIFICATEUR
+// ========================================================
 
-    /*
-       =====================================================
-       🧠 ANALYSE ADAPTATIVE — SOURCE : PLANIFICATEUR
-       =====================================================
+const GENERATOR_PLANNER_PLAN_KEY =
+    "mamaBintaPlannerLastGeneratorPlan";
 
-       Ordre normal :
+let generatorReceivedLearningPlan = null;
 
-       Mémoire
-          ↓
-       Analyseur
-          ↓
-       Bus
-          ↓
-       Planificateur
-          ↓
-       Générateur
 
-       Le Planificateur devient donc la source
-       principale de l'analyse utilisée par
-       le Générateur.
+// ========================================================
+// 🎯 RÉCUPÉRER LE DERNIER PLAN REÇU
+// ========================================================
 
-       Si le Planificateur n'est pas disponible,
-       l'Analyseur reste utilisé comme secours.
-    */
+function getGeneratorLearningPlan() {
 
-    let plannerAnalysis = null;
+    if (
+        generatorReceivedLearningPlan
+    ) {
+
+        return generatorReceivedLearningPlan;
+
+    }
+
 
     try {
 
+        const savedPlan =
+            localStorage.getItem(
+                GENERATOR_PLANNER_PLAN_KEY
+            );
+
         if (
-            typeof getLearningPlan ===
-            "function"
+            savedPlan
         ) {
 
-            const learningPlan =
-                getLearningPlan();
-
-            if (
-                learningPlan &&
-                learningPlan.analysis &&
-                learningPlan.analysis.skills
-            ) {
-
-                plannerAnalysis =
-                    learningPlan.analysis.skills;
-
-                console.log(
-                    "🎯 Générateur : analyse reçue du Planificateur.",
-                    plannerAnalysis
+            generatorReceivedLearningPlan =
+                JSON.parse(
+                    savedPlan
                 );
 
-            }
+            return generatorReceivedLearningPlan;
 
         }
 
     } catch (error) {
 
         console.warn(
-            "⚠️ Impossible de récupérer l'analyse du Planificateur :",
+            "⚠️ Impossible de récupérer le dernier plan du Planificateur.",
             error
+        );
+
+    }
+
+
+    return null;
+
+}
+
+
+// ========================================================
+// 📡 RECEVOIR UN MESSAGE DU BUS
+// ========================================================
+
+function generatorReceiveAgentMessage(
+    message
+) {
+
+    if (
+        !message
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+       Le Générateur n'accepte ici que
+       les messages envoyés par le Planificateur.
+    */
+
+    if (
+        message.from !==
+        "planner"
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        message.to !==
+        "generator"
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        message.type !==
+        "learning_plan"
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+       Vérifier que le message contient
+       bien les données du plan.
+    */
+
+    if (
+        !message.data
+    ) {
+
+        console.warn(
+            "⚠️ Le Générateur a reçu un plan vide."
+        );
+
+        return;
+
+    }
+
+
+    /*
+       ----------------------------------------------------
+       🧠 MÉMORISER LE PLAN REÇU
+       ----------------------------------------------------
+    */
+
+    generatorReceivedLearningPlan =
+        message.data;
+
+
+    try {
+
+        localStorage.setItem(
+
+            GENERATOR_PLANNER_PLAN_KEY,
+
+            JSON.stringify(
+                message.data
+            )
+
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "⚠️ Impossible de sauvegarder le plan reçu.",
+            error
+        );
+
+    }
+
+
+    console.log(
+        "📥 Générateur ← Bus ← Planificateur : plan reçu.",
+        generatorReceivedLearningPlan
+    );
+
+}
+
+
+// ========================================================
+// 📡 INSTALLER L'ÉCOUTE DU BUS
+// ========================================================
+
+if (
+    typeof listenToAgentMessages ===
+    "function"
+) {
+
+    listenToAgentMessages(
+        generatorReceiveAgentMessage
+    );
+
+
+    console.log(
+        "📡 Générateur : écoute du Bus activée."
+    );
+
+}
+
+
+// ========================================================
+// 🧠 ANALYSE ADAPTATIVE
+// ========================================================
+
+function getAdaptiveSkillAnalysis() {
+
+    const learningPlan =
+        getGeneratorLearningPlan();
+
+
+    let plannerAnalysis =
+        null;
+
+
+    /*
+       ====================================================
+       1️⃣ SOURCE PRINCIPALE :
+          PLAN REÇU PAR LE BUS
+       ====================================================
+    */
+
+    if (
+        learningPlan &&
+        learningPlan.analysis &&
+        learningPlan.analysis.skills
+    ) {
+
+        plannerAnalysis =
+            learningPlan.analysis.skills;
+
+
+        console.log(
+            "🎯 Générateur : analyse reçue du Planificateur par le Bus.",
+            plannerAnalysis
         );
 
     }
@@ -1698,10 +1861,9 @@ function getAdaptiveSkillAnalysis() {
 
 
         /*
-           =================================================
-           1️⃣ SOURCE PRINCIPALE :
-              analyse du Planificateur
-           =================================================
+           ------------------------------------------------
+           UTILISER L'ANALYSE REÇUE DU PLANIFICATEUR
+           ------------------------------------------------
         */
 
         if (
@@ -1716,42 +1878,14 @@ function getAdaptiveSkillAnalysis() {
 
 
         /*
-           =================================================
-           2️⃣ SECOURS :
-              Analyseur direct
-           =================================================
+           ------------------------------------------------
+           AUCUNE DONNÉE POUR CETTE COMPÉTENCE
+           ------------------------------------------------
         */
 
         if (
-            !result &&
-            typeof analyzeSkill ===
-            "function"
+            !result
         ) {
-
-            try {
-
-                result =
-                    analyzeSkill(skill);
-
-            } catch (error) {
-
-                console.warn(
-                    `Analyse indisponible pour ${skill} :`,
-                    error
-                );
-
-            }
-
-        }
-
-
-        /*
-           =================================================
-           3️⃣ AUCUNE DONNÉE
-           =================================================
-        */
-
-        if (!result) {
 
             analysis.push({
 
@@ -1780,9 +1914,9 @@ function getAdaptiveSkillAnalysis() {
 
 
         /*
-           =================================================
-           4️⃣ CALCUL DE LA PRIORITÉ
-           =================================================
+           ------------------------------------------------
+           CALCUL DE LA PRIORITÉ
+           ------------------------------------------------
         */
 
         let priority = 0;
@@ -1873,7 +2007,7 @@ function getAdaptiveSkillAnalysis() {
 
 
     /*
-       Les compétences les plus prioritaires
+       Les compétences prioritaires
        arrivent en premier.
     */
 
@@ -1891,8 +2025,8 @@ function getAdaptiveSkillAnalysis() {
 
 
     return analysis;
-}
 
+}
 
 /*
    Retourne les compétences réellement prioritaires.
