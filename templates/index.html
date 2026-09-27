@@ -2073,6 +2073,10 @@ function showAnalysis() {
 // 🧪 DIAGNOSTIC DU BUS DES AGENTS
 // =====================================================
 
+// =====================================================
+// 🧪 DIAGNOSTIC DU BUS DES AGENTS
+// =====================================================
+
 function showAgentBusDiagnostic() {
 
     hideMathMenu();
@@ -2080,15 +2084,14 @@ function showAgentBusDiagnostic() {
     let message =
         "🧪 DIAGNOSTIC DU BUS DES AGENTS\n\n";
 
-
     if (
-        typeof getMessagesBetweenAgents !==
+        typeof getAgentBusMessages !==
         "function"
     ) {
 
         message +=
             "❌ Impossible d'accéder au Bus.\n\n" +
-            "La fonction getMessagesBetweenAgents() " +
+            "La fonction getAgentBusMessages() " +
             "n'est pas disponible.";
 
         document.getElementById(
@@ -2099,26 +2102,21 @@ function showAgentBusDiagnostic() {
     }
 
 
-    const messages =
-        getMessagesBetweenAgents(
-            "analyzer",
-            "planner"
-        );
+    // =================================================
+    // 📡 RÉCUPÉRER TOUS LES MESSAGES
+    // =================================================
 
-
-    message +=
-        "🔎 Analyseur → 🎯 Planificateur\n\n";
+    const allMessages =
+        getAgentBusMessages();
 
 
     if (
-        !messages ||
-        messages.length === 0
+        !Array.isArray(allMessages) ||
+        allMessages.length === 0
     ) {
 
         message +=
-            "⚠️ Aucun message trouvé.\n\n" +
-            "Clique d'abord sur « 🔎 Mes difficultés », " +
-            "puis reviens ici.";
+            "⚠️ Aucun message trouvé dans le Bus.";
 
         document.getElementById(
             "box"
@@ -2128,74 +2126,56 @@ function showAgentBusDiagnostic() {
     }
 
 
-    message +=
-        "✅ " +
-        messages.length +
-        " message(s) trouvé(s).\n\n";
+    // =================================================
+    // 🔎 ANALYSEUR → PLANIFICATEUR
+    // =================================================
 
+    const analyzerPlanner =
+        allMessages.filter(
+            function(agentMessage) {
 
-    let analysisSent =
-        false;
+                return (
+                    agentMessage.from ===
+                    "analyzer" &&
 
-
-    messages.forEach(
-        function(agentMessage, index) {
-
-            message +=
-                "━━━━━━━━━━━━━━━━━━\n\n" +
-
-                "📨 Message " +
-                (index + 1) +
-                "\n\n" +
-
-                "De : " +
-                agentMessage.from +
-                "\n" +
-
-                "Vers : " +
-                agentMessage.to +
-                "\n" +
-
-                "Type : " +
-                agentMessage.type +
-                "\n" +
-
-                "Message : " +
-                (
-                    agentMessage.message ||
-                    "—"
-                ) +
-                "\n\n";
-
-
-            if (
-                agentMessage.type ===
-                "analysis_result"
-            ) {
-
-                analysisSent = true;
-
-                message +=
-                    "✅ ANALYSE ENVOYÉE\n\n";
+                    agentMessage.to ===
+                    "planner"
+                );
 
             }
-
-        }
-    );
+        );
 
 
-    // -------------------------------------------------
-    // 📡 VÉRIFICATION DE L'ACCUSÉ DE RÉCEPTION
-    // -------------------------------------------------
-
-    const allMessages =
-        typeof getAgentBusMessages ===
-        "function"
-            ? getAgentBusMessages()
-            : [];
+    message +=
+        "🔎 Analyseur → 🎯 Planificateur\n\n";
 
 
-    const acknowledgments =
+    message +=
+        "Messages trouvés : " +
+        analyzerPlanner.length +
+        "\n\n";
+
+
+    if (
+        analyzerPlanner.length > 0
+    ) {
+
+        message +=
+            "✅ Communication détectée.\n\n";
+
+    } else {
+
+        message +=
+            "⚠️ Aucun message détecté.\n\n";
+
+    }
+
+
+    // =================================================
+    // 🎯 PLANIFICATEUR → GÉNÉRATEUR
+    // =================================================
+
+    const plannerGenerator =
         allMessages.filter(
             function(agentMessage) {
 
@@ -2204,10 +2184,7 @@ function showAgentBusDiagnostic() {
                     "planner" &&
 
                     agentMessage.to ===
-                    "analyzer" &&
-
-                    agentMessage.type ===
-                    "analysis_received"
+                    "generator"
                 );
 
             }
@@ -2215,58 +2192,170 @@ function showAgentBusDiagnostic() {
 
 
     message +=
-        "\n━━━━━━━━━━━━━━━━━━\n\n" +
+        "━━━━━━━━━━━━━━━━━━\n\n" +
 
-        "📡 ACCUSÉ DE RÉCEPTION\n\n";
+        "🎯 Planificateur → ⚙️ Générateur\n\n" +
+
+        "Messages trouvés : " +
+        plannerGenerator.length +
+        "\n\n";
 
 
     if (
-        acknowledgments.length > 0
+        plannerGenerator.length > 0
     ) {
 
         message +=
-            "✅ Le Planificateur a répondu !\n\n" +
+            "✅ COMMUNICATION DÉTECTÉE !\n\n";
 
-            "🎯 Planificateur → 🔎 Analyseur\n" +
 
-            "Type : analysis_received\n\n" +
+        plannerGenerator.forEach(
+            function(
+                agentMessage,
+                index
+            ) {
 
-            "➡️ La communication entre les deux agents " +
-            "fonctionne réellement. 🤖";
+                message +=
+                    "📨 Message " +
+                    (index + 1) +
+                    "\n\n" +
+
+                    "De : " +
+                    agentMessage.from +
+                    "\n" +
+
+                    "Vers : " +
+                    agentMessage.to +
+                    "\n" +
+
+                    "Type : " +
+                    agentMessage.type +
+                    "\n" +
+
+                    "Message : " +
+                    (
+                        agentMessage.message ||
+                        "—"
+                    ) +
+
+                    "\n\n";
+
+            }
+        );
 
     } else {
 
         message +=
-            "⚠️ Aucun accusé de réception trouvé.\n\n" +
-
-            "L'Analyseur a peut-être envoyé son analyse, " +
-            "mais le retour du Planificateur n'est pas " +
-            "encore présent dans le Bus.";
+            "⚠️ Aucun message Planificateur → Générateur " +
+            "n'a encore été détecté.\n\n";
 
     }
+
+
+    // =================================================
+    // 📥 GÉNÉRATEUR → PLANIFICATEUR
+    // =================================================
+
+    const generatorPlanner =
+        allMessages.filter(
+            function(agentMessage) {
+
+                return (
+                    agentMessage.from ===
+                    "generator" &&
+
+                    agentMessage.to ===
+                    "planner"
+                );
+
+            }
+        );
+
+
+    message +=
+        "━━━━━━━━━━━━━━━━━━\n\n" +
+
+        "⚙️ Générateur → 🎯 Planificateur\n\n" +
+
+        "Messages trouvés : " +
+        generatorPlanner.length +
+        "\n\n";
 
 
     if (
-        !analysisSent
+        generatorPlanner.length > 0
     ) {
 
         message +=
-            "\n\n⚠️ Aucun message analysis_result trouvé.";
+            "📨 Communication détectée.\n\n";
+
+    } else {
+
+        message +=
+            "ℹ️ Aucun message Générateur → Planificateur " +
+            "pour le moment.\n\n";
+
     }
 
 
+    // =================================================
+    // 📊 RÉSUMÉ
+    // =================================================
+
+    message +=
+        "━━━━━━━━━━━━━━━━━━\n\n" +
+
+        "📊 RÉSUMÉ DU BUS\n\n" +
+
+        "🔎 Analyseur → Planificateur : " +
+        analyzerPlanner.length +
+        "\n" +
+
+        "🎯 Planificateur → Générateur : " +
+        plannerGenerator.length +
+        "\n" +
+
+        "⚙️ Générateur → Planificateur : " +
+        generatorPlanner.length +
+        "\n\n";
+
+
+    if (
+        plannerGenerator.length > 0
+    ) {
+
+        message +=
+            "🤖 Le Planificateur communique réellement " +
+            "avec le Générateur par le Bus.\n\n" +
+
+            "✅ Cette liaison est confirmée.";
+
+    } else {
+
+        message +=
+            "⏳ La liaison Planificateur → Générateur " +
+            "n'est pas encore confirmée par le diagnostic.";
+
+    }
+
+
+    // =================================================
+    // 🖥️ AFFICHER
+    // =================================================
+
     document.getElementById(
         "box"
-    ).innerText = message;
+    ).innerText =
+        message;
 
 
     speak(
-        "Diagnostic du Bus des agents terminé."
+        message
     );
 
+    updateLevelDisplay();
+
 }
-
-
 // =====================================================
 // 🔄 RECOMMENCER À ZÉRO
 // =====================================================
