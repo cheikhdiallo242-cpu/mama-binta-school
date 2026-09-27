@@ -1622,7 +1622,73 @@ function generateComprehensionQuestion(
 
 function getAdaptiveSkillAnalysis() {
 
+    /*
+       =====================================================
+       🧠 ANALYSE ADAPTATIVE — SOURCE : PLANIFICATEUR
+       =====================================================
+
+       Ordre normal :
+
+       Mémoire
+          ↓
+       Analyseur
+          ↓
+       Bus
+          ↓
+       Planificateur
+          ↓
+       Générateur
+
+       Le Planificateur devient donc la source
+       principale de l'analyse utilisée par
+       le Générateur.
+
+       Si le Planificateur n'est pas disponible,
+       l'Analyseur reste utilisé comme secours.
+    */
+
+    let plannerAnalysis = null;
+
+    try {
+
+        if (
+            typeof getLearningPlan ===
+            "function"
+        ) {
+
+            const learningPlan =
+                getLearningPlan();
+
+            if (
+                learningPlan &&
+                learningPlan.analysis &&
+                learningPlan.analysis.skills
+            ) {
+
+                plannerAnalysis =
+                    learningPlan.analysis.skills;
+
+                console.log(
+                    "🎯 Générateur : analyse reçue du Planificateur.",
+                    plannerAnalysis
+                );
+
+            }
+
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "⚠️ Impossible de récupérer l'analyse du Planificateur :",
+            error
+        );
+
+    }
+
+
     const analysis = [];
+
 
     for (
         const skill of GENERATOR_SKILLS
@@ -1630,90 +1696,152 @@ function getAdaptiveSkillAnalysis() {
 
         let result = null;
 
-        try {
 
-            if (
-                typeof analyzeSkill ===
-                "function"
-            ) {
+        /*
+           =================================================
+           1️⃣ SOURCE PRINCIPALE :
+              analyse du Planificateur
+           =================================================
+        */
+
+        if (
+            plannerAnalysis &&
+            plannerAnalysis[skill]
+        ) {
+
+            result =
+                plannerAnalysis[skill];
+
+        }
+
+
+        /*
+           =================================================
+           2️⃣ SECOURS :
+              Analyseur direct
+           =================================================
+        */
+
+        if (
+            !result &&
+            typeof analyzeSkill ===
+            "function"
+        ) {
+
+            try {
+
                 result =
                     analyzeSkill(skill);
+
+            } catch (error) {
+
+                console.warn(
+                    `Analyse indisponible pour ${skill} :`,
+                    error
+                );
+
             }
 
-        } catch (error) {
-
-            console.warn(
-                `Analyse indisponible pour ${skill} :`,
-                error
-            );
         }
+
+
+        /*
+           =================================================
+           3️⃣ AUCUNE DONNÉE
+           =================================================
+        */
 
         if (!result) {
 
             analysis.push({
+
                 skill,
+
                 status:
                     "insufficient_data",
+
                 difficulty:
                     "unknown",
+
                 trend:
                     "stable",
+
                 accuracy:
                     null,
+
                 priority:
                     0
+
             });
 
             continue;
+
         }
+
+
+        /*
+           =================================================
+           4️⃣ CALCUL DE LA PRIORITÉ
+           =================================================
+        */
 
         let priority = 0;
 
-        /*
-           Une difficulté persistante ou une baisse
-           de résultats reçoit la priorité maximale.
-        */
+
         if (
             result.status ===
             "needs_support"
         ) {
+
             priority = 100;
+
         }
 
         else if (
             result.trend ===
             "declining"
         ) {
+
             priority = 90;
+
         }
 
         else if (
             result.difficulty ===
             "high"
         ) {
+
             priority = 85;
+
         }
 
         else if (
             result.status ===
             "developing"
         ) {
+
             priority = 60;
+
         }
 
         else if (
             result.difficulty ===
             "medium"
         ) {
+
             priority = 50;
+
         }
 
         else if (
             result.status ===
             "strong"
         ) {
+
             priority = 10;
+
         }
+
 
         analysis.push({
 
@@ -1738,19 +1866,29 @@ function getAdaptiveSkillAnalysis() {
                     : null,
 
             priority
+
         });
+
     }
 
+
     /*
-       Les plus faibles viennent en premier.
-       En cas d'égalité, l'ordre original
-       des compétences est conservé.
+       Les compétences les plus prioritaires
+       arrivent en premier.
     */
+
     analysis.sort(
         (a, b) =>
             b.priority -
             a.priority
     );
+
+
+    console.log(
+        "🧠 Analyse adaptative utilisée par le Générateur :",
+        analysis
+    );
+
 
     return analysis;
 }
