@@ -917,6 +917,145 @@ function teacherExplain(
 
 
 // =====================================================
+// 🚌 PROFESSEUR — RÉCEPTION DU BUS
+// =====================================================
+//
+// Le Professeur reçoit les résultats du Vérificateur
+// par le Bus.
+//
+// Chaîne :
+// Vérificateur → Bus → Professeur
+//
+// Le Professeur ne décide pas du niveau.
+// Il explique simplement l'exercice à l'enfant.
+// =====================================================
+
+let teacherReceivedVerification = null;
+
+
+function teacherReceiveAgentMessage(message) {
+
+    if (!message) {
+        return;
+    }
+
+    if (message.from !== "verifier") {
+        return;
+    }
+
+    if (message.to !== "teacher") {
+        return;
+    }
+
+    if (message.type !== "verification_result") {
+        return;
+    }
+
+    if (!message.data) {
+        console.warn(
+            "⚠️ Le Professeur a reçu un message vide."
+        );
+        return;
+    }
+
+
+    const question =
+        message.data.question;
+
+    const verification =
+        message.data;
+
+
+    if (!question) {
+        console.warn(
+            "⚠️ Le Professeur a reçu un résultat sans question."
+        );
+        return;
+    }
+
+
+    /*
+       =================================================
+       LE PROFESSEUR REÇOIT LA QUESTION
+       =================================================
+
+       Pour l'instant, le résultat du Vérificateur
+       ne contient pas encore la réponse de l'enfant.
+
+       Nous conservons donc cette information
+       pour la prochaine étape.
+    */
+
+    teacherReceivedVerification = {
+        requestId:
+            verification.requestId || null,
+
+        question:
+            question,
+
+        valid:
+            Boolean(
+                verification.valid
+            ),
+
+        reason:
+            verification.reason ||
+            "",
+
+        skill:
+            verification.skill ||
+            question.skill ||
+            null
+    };
+
+
+    console.log(
+        "📥 Professeur ← Bus ← Vérificateur : résultat reçu.",
+        teacherReceivedVerification
+    );
+
+
+    /*
+       =================================================
+       PRÉPARATION DE L'EXPLICATION
+       =================================================
+
+       Le Professeur utilise maintenant
+       sa logique pédagogique existante.
+
+       Comme la réponse de l'enfant n'est pas encore
+       transmise par le Bus, on ne déclenche pas encore
+       l'explication finale.
+    */
+
+    if (
+        typeof teacherExplain ===
+        "function"
+    ) {
+
+        console.log(
+            "👩🏾‍🏫 Professeur : question reçue et prête pour explication."
+        );
+    }
+}
+
+
+if (
+    typeof listenToAgentMessages ===
+    "function"
+) {
+
+    listenToAgentMessages(
+        teacherReceiveAgentMessage
+    );
+
+    console.log(
+        "📡 Professeur : écoute du Bus activée."
+    );
+}
+
+
+// =====================================================
 // 🧪 DEBUG
 // =====================================================
 
