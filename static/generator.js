@@ -2619,16 +2619,30 @@ function generateLearningSession(
                 usedSkills
             );
 
-        let question = null;
+                let question = null;
+
+        let verification = null;
 
         /*
-           Pas de récursion.
-           On fait simplement plusieurs essais.
+           =====================================================
+           GÉNÉRATION + VÉRIFICATION PAR LES AGENTS
+           =====================================================
+
+           Une position de la session peut nécessiter
+           plusieurs générations.
+
+           Le Générateur ne valide donc jamais définitivement
+           une question sans avoir reçu la réponse
+           du Vérificateur par le Bus.
         */
+
+        const MAX_VERIFICATION_ATTEMPTS = 20;
+
         for (
-            let attempt = 0;
-            attempt < 10;
-            attempt++
+            let verificationAttempt = 0;
+            verificationAttempt <
+            MAX_VERIFICATION_ATTEMPTS;
+            verificationAttempt++
         ) {
 
             question =
@@ -2637,131 +2651,148 @@ function generateLearningSession(
                     safeLevel
                 );
 
+            /*
+               Première sécurité :
+               le Générateur vérifie sa structure.
+            */
             if (
-                question &&
-                generatorQuestionLooksValid(
+                !question ||
+                !generatorQuestionLooksValid(
                     question
                 )
             ) {
+                question = null;
+                continue;
+            }
+
+
+            /*
+               Vérification spéciale Lecture.
+            */
+            if (
+                question.type ===
+                "letter_word"
+            ) {
+
+                const match =
+                    question.question.match(
+                        /lettre\s+([A-Za-zÀ-ÿ])/i
+                    );
+
+                if (match) {
+
+                    const requested =
+                        normalizeLetter(
+                            match[1]
+                        );
+
+                    if (
+                        firstLetter(
+                            question.answer
+                        ) !== requested
+                    ) {
+
+                        console.warn(
+                            "⚠️ Exercice Lecture refusé avant le Vérificateur."
+                        );
+
+                        question = null;
+                        continue;
+                    }
+
+                    const badChoice =
+                        question.choices.find(
+                            choice =>
+                                String(
+                                    choice
+                                ) !==
+                                    String(
+                                        question.answer
+                                    ) &&
+                                firstLetter(
+                                    choice
+                                ) ===
+                                    requested
+                        );
+
+                    if (badChoice) {
+
+                        console.warn(
+                            "⚠️ Mauvais choix Lecture détecté."
+                        );
+
+                        question = null;
+                        continue;
+                    }
+                }
+            }
+
+
+            /*
+               =================================================
+               GÉNÉRATEUR → BUS → VÉRIFICATEUR
+               =================================================
+            */
+
+            verification =
+                verifyGeneratedQuestionThroughAgent(
+                    question
+                );
+
+
+            /*
+               Le Vérificateur doit répondre.
+            */
+            if (
+                verification &&
+                verification.valid
+            ) {
+
+                console.log(
+                    "✅ Générateur : exercice validé par le Vérificateur.",
+                    verification
+                );
+
                 break;
             }
+
+
+            /*
+               Question refusée :
+               on recommence proprement.
+            */
+            console.warn(
+                "⚠️ Générateur : exercice refusé par le Vérificateur.",
+                verification
+            );
 
             question = null;
         }
 
 
         /*
-           Sécurité :
-           si une compétence ne fonctionne pas,
-           on essaie les autres compétences.
+           =====================================================
+           SÉCURITÉ FINALE
+           =====================================================
         */
-        if (!question) {
-
-            for (
-                const fallbackSkill
-                of GENERATOR_SKILLS
-            ) {
-
-                if (
-                    fallbackSkill ===
-                    skill
-                ) {
-                    continue;
-                }
-
-                question =
-                    generateExerciseBySkill(
-                        fallbackSkill,
-                        safeLevel
-                    );
-
-                if (
-                    question &&
-                    generatorQuestionLooksValid(
-                        question
-                    )
-                ) {
-                    break;
-                }
-
-                question = null;
-            }
-        }
-
 
         if (!question) {
 
+            /*
+               Si le Générateur n'arrive pas à obtenir
+               une question validée après plusieurs essais,
+               on arrête proprement plutôt que de créer
+               une session potentiellement incorrecte.
+            */
             throw new Error(
-                `Impossible de générer l'exercice ${i + 1}.`
+                `Le Vérificateur n'a pas pu valider l'exercice ${i + 1} après plusieurs tentatives.`
             );
         }
 
 
         /*
-           Vérification spéciale Lecture
-           avant même l'arrivée dans verifier.js.
-        */
-        if (
-            question.type ===
-            "letter_word"
-        ) {
-
-            const match =
-                question.question.match(
-                    /lettre\s+([A-Za-zÀ-ÿ])/i
-                );
-
-            if (match) {
-
-                const requested =
-                    normalizeLetter(
-                        match[1]
-                    );
-
-                if (
-                    firstLetter(
-                        question.answer
-                    ) !== requested
-                ) {
-
-                    throw new Error(
-                        `Exercice ${i + 1} invalide : la réponse ne correspond pas à la lettre demandée.`
-                    );
-                }
-
-
-                const badChoice =
-                    question.choices.find(
-                        choice =>
-                            String(
-                                choice
-                            ) !==
-                                String(
-                                    question.answer
-                                ) &&
-                            firstLetter(
-                                choice
-                            ) ===
-                                requested
-                    );
-
-                if (badChoice) {
-
-                    throw new Error(
-                        `Exercice ${i + 1} invalide : un mauvais choix commence aussi par la lettre demandée.`
-                    );
-                }
-            }
-        }
-
-
-        /*
            On ajoute la compétence à l'historique
-           même lorsqu'elle revient plusieurs fois.
-
-           C'est volontaire :
-           le nouveau système doit pouvoir
-           renforcer une faiblesse.
+           uniquement APRÈS validation par le Vérificateur.
         */
         usedSkills.push(
             question.skill
