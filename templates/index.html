@@ -2687,6 +2687,49 @@ if (
         "n'a encore été détecté.\n\n";
 
 }
+     
+// =================================================
+// 👩🏾‍🏫 PROFESSEUR → 🧠 MÉMOIRE
+// =================================================
+
+const teacherMemory =
+    allMessages.filter(
+        function(agentMessage) {
+
+            return (
+                agentMessage.from ===
+                    "teacher" &&
+
+                agentMessage.to ===
+                    "memory"
+            );
+
+        }
+    );
+
+
+message +=
+    "━━━━━━━━━━━━━━━━━━\n\n" +
+    "👩🏾‍🏫 Professeur → 🧠 Mémoire\n\n" +
+    "Messages trouvés : " +
+    teacherMemory.length +
+    "\n\n";
+
+
+if (
+    teacherMemory.length > 0
+) {
+
+    message +=
+        "✅ COMMUNICATION DÉTECTÉE !\n\n";
+
+} else {
+
+    message +=
+        "⚠️ Aucun message Professeur → Mémoire " +
+        "n'a encore été détecté.\n\n";
+
+}
     // =================================================
     // 📊 RÉSUMÉ
     // =================================================
