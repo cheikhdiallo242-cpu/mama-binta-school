@@ -2351,7 +2351,7 @@ function showAgentBusDiagnostic() {
     }
 
 
-         // =================================================
+     // =================================================
     // ⚙️ GÉNÉRATEUR → VÉRIFICATEUR
     // =================================================
 
@@ -2506,7 +2506,156 @@ function showAgentBusDiagnostic() {
 
     }
 
+ // =================================================
+// 🛡️ VÉRIFICATEUR → PROFESSEUR
+// =================================================
 
+const verifierTeacher =
+    allMessages.filter(
+        function(agentMessage) {
+
+            return (
+                agentMessage.from ===
+                    "verifier" &&
+                agentMessage.to ===
+                    "teacher"
+            );
+
+        }
+    );
+
+message +=
+    "━━━━━━━━━━━━━━━━━━\n\n" +
+    "🛡️ Vérificateur → 👩🏾‍🏫 Professeur\n\n" +
+    "Messages trouvés : " +
+    verifierTeacher.length +
+    "\n\n";
+
+if (
+    verifierTeacher.length > 0
+) {
+
+    message +=
+        "✅ COMMUNICATION DÉTECTÉE !\n\n";
+
+    verifierTeacher.forEach(
+        function(
+            agentMessage,
+            index
+        ) {
+
+            message +=
+                "📨 Message " +
+                (index + 1) +
+                "\n\n" +
+                "De : " +
+                agentMessage.from +
+                "\n" +
+                "Vers : " +
+                agentMessage.to +
+                "\n" +
+                "Type : " +
+                agentMessage.type +
+                "\n" +
+                "Message : " +
+                (
+                    agentMessage.message ||
+                    "—"
+                ) +
+                "\n\n";
+
+        }
+    );
+
+} else {
+
+    message +=
+        "⚠️ Aucun message Vérificateur → Professeur " +
+        "n'a encore été détecté.\n\n";
+
+}
+
+
+// =================================================
+// 🤖 ORCHESTRATEUR → PROFESSEUR
+// =================================================
+
+const orchestratorTeacher =
+    allMessages.filter(
+        function(agentMessage) {
+
+            return (
+                agentMessage.from ===
+                    "orchestrator" &&
+                agentMessage.to ===
+                    "teacher"
+            );
+
+        }
+    );
+
+message +=
+    "━━━━━━━━━━━━━━━━━━\n\n" +
+    "🤖 Orchestrateur → 👩🏾‍🏫 Professeur\n\n" +
+    "Messages trouvés : " +
+    orchestratorTeacher.length +
+    "\n\n";
+
+if (
+    orchestratorTeacher.length > 0
+) {
+
+    message +=
+        "✅ COMMUNICATION DÉTECTÉE !\n\n";
+
+} else {
+
+    message +=
+        "⚠️ Aucun message Orchestrateur → Professeur " +
+        "n'a encore été détecté.\n\n";
+
+}
+
+
+// =================================================
+// 👩🏾‍🏫 PROFESSEUR → ORCHESTRATEUR
+// =================================================
+
+const teacherOrchestrator =
+    allMessages.filter(
+        function(agentMessage) {
+
+            return (
+                agentMessage.from ===
+                    "teacher" &&
+                agentMessage.to ===
+                    "orchestrator"
+            );
+
+        }
+    );
+
+message +=
+    "━━━━━━━━━━━━━━━━━━\n\n" +
+    "👩🏾‍🏫 Professeur → 🤖 Orchestrateur\n\n" +
+    "Messages trouvés : " +
+    teacherOrchestrator.length +
+    "\n\n";
+
+if (
+    teacherOrchestrator.length > 0
+) {
+
+    message +=
+        "✅ COMMUNICATION DÉTECTÉE !\n\n";
+
+} else {
+
+    message +=
+        "⚠️ Aucun message Professeur → Orchestrateur " +
+        "n'a encore été détecté.\n\n";
+
+}
     // =================================================
     // 📊 RÉSUMÉ
     // =================================================
@@ -2517,16 +2666,36 @@ function showAgentBusDiagnostic() {
         "📊 RÉSUMÉ DU BUS\n\n" +
 
         "🔎 Analyseur → Planificateur : " +
-        analyzerPlanner.length +
-        "\n" +
+analyzerPlanner.length +
+"\n" +
 
-        "🎯 Planificateur → Générateur : " +
-        plannerGenerator.length +
-        "\n" +
+"🎯 Planificateur → Générateur : " +
+plannerGenerator.length +
+"\n" +
 
-        "⚙️ Générateur → Planificateur : " +
-        generatorPlanner.length +
-        "\n\n";
+"⚙️ Générateur → Planificateur : " +
+generatorPlanner.length +
+"\n" +
+
+"⚙️ Générateur → Vérificateur : " +
+generatorVerifier.length +
+"\n" +
+
+"🛡️ Vérificateur → Générateur : " +
+verifierGenerator.length +
+"\n" +
+
+"🛡️ Vérificateur → Professeur : " +
+verifierTeacher.length +
+"\n" +
+
+"🤖 Orchestrateur → Professeur : " +
+orchestratorTeacher.length +
+"\n" +
+
+"👩🏾‍🏫 Professeur → Orchestrateur : " +
+teacherOrchestrator.length +
+"\n\n";
 
 
     if (
