@@ -607,42 +607,99 @@ function verifierReceiveAgentMessage(message) {
     }
 
 
+        // =================================================
+    // 🛡️ VÉRIFICATEUR → GÉNÉRATEUR
+    // =================================================
+    //
+    // On conserve exactement la communication
+    // actuelle avec le Générateur.
+    //
+    // Cette partie ne doit pas changer.
+    // =================================================
+
+    const verificationData = {
+        requestId:
+            message.data.requestId,
+
+        question:
+            question,
+
+        valid:
+            Boolean(
+                verification &&
+                verification.valid
+            ),
+
+        reason:
+            verification &&
+            verification.reason
+                ? verification.reason
+                : "Résultat inconnu.",
+
+        skill:
+            verification &&
+            verification.skill
+                ? verification.skill
+                : (
+                    question.skill ||
+                    null
+                )
+    };
+
+
     agentSendMessage(
         "verifier",
         "generator",
         "verification_result",
-        {
-            requestId:
-                message.data.requestId,
-           question:
-                question,
+        verificationData,
 
-            valid:
-                Boolean(
-                    verification &&
-                    verification.valid
-                ),
-
-            reason:
-                verification &&
-                verification.reason
-                    ? verification.reason
-                    : "Résultat inconnu.",
-
-            skill:
-                verification &&
-                verification.skill
-                    ? verification.skill
-                    : (
-                        question.skill ||
-                        null
-                    )
-        },
         verification &&
         verification.valid
             ? "Le Vérificateur a validé l'exercice."
             : "Le Vérificateur a refusé l'exercice.",
+
         "human"
+    );
+
+
+    console.log(
+        "📡 Vérificateur → Bus → Générateur : résultat envoyé.",
+        verification
+    );
+
+
+    // =================================================
+    // 🛡️ VÉRIFICATEUR → PROFESSEUR
+    // =================================================
+    //
+    // Le Professeur reçoit maintenant exactement
+    // le même résultat de vérification.
+    //
+    // IMPORTANT :
+    // Le Vérificateur ne demande PAS au Professeur
+    // de décider quoi que ce soit.
+    //
+    // Il lui transmet seulement l'information.
+    // =================================================
+
+    agentSendMessage(
+        "verifier",
+        "teacher",
+        "verification_result",
+        verificationData,
+
+        verification &&
+        verification.valid
+            ? "Le Vérificateur a validé l'exercice."
+            : "Le Vérificateur a refusé l'exercice.",
+
+        "human"
+    );
+
+
+    console.log(
+        "📡 Vérificateur → Bus → Professeur : résultat envoyé.",
+        verification
     );
 
 
