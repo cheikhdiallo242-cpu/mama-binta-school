@@ -1197,55 +1197,89 @@ function checkAnswer(choice) {
     }
 
 
-    // -------------------------------------------------
-    // 👩🏾‍🏫 PROFESSEUR
-    // -------------------------------------------------
+// -------------------------------------------------
+// 📡 RÉPONSE DE L'ENFANT → BUS → PROFESSEUR
+// -------------------------------------------------
 
-    let result = {
+let result = {
+    message:
+        choice === current.answer
+            ? "🎉 Bravo !"
+            : "💪🏾 Continue tes efforts !",
 
-        message:
-            choice === current.answer
-                ? "🎉 Bravo !"
-                : "💪🏾 Continue tes efforts !",
-
-        speech:
-            choice === current.answer
-                ? "Bravo !"
-                : "Continue tes efforts !"
-
-    };
+    speech:
+        choice === current.answer
+            ? "Bravo !"
+            : "Continue tes efforts !"
+};
 
 
-    if (
-        typeof teacherExplain ===
-        "function"
-    ) {
+if (
+    typeof agentSendMessage ===
+    "function"
+) {
 
-        try {
+    const teacherRequestId =
+        "teacher_" +
+        Date.now() +
+        "_" +
+        Math.random()
+            .toString(36)
+            .slice(2);
 
-            const teacherResult =
-                teacherExplain(
-                    current,
-                    choice
-                );
 
-            if (teacherResult) {
+    agentSendMessage(
+        "index",
+        "teacher",
+        "student_answer",
+        {
+            requestId:
+                teacherRequestId,
 
-                result =
-                    teacherResult;
+            question:
+                current,
 
-            }
+            studentAnswer:
+                choice,
 
-        } catch (error) {
+            correctAnswer:
+                current.answer,
 
-            console.warn(
-                "⚠️ Erreur professeur :",
-                error
-            );
+            isCorrect:
+                choice ===
+                current.answer,
 
+            skill:
+                current.skill ||
+                null
+        },
+
+        "La réponse de Mama Binta est envoyée au Professeur.",
+
+        "human"
+    );
+
+
+    console.log(
+        "📡 Application → Bus → Professeur : réponse envoyée.",
+        {
+            requestId:
+                teacherRequestId,
+
+            question:
+                current,
+
+            studentAnswer:
+                choice
         }
-    }
+    );
 
+} else {
+
+    console.warn(
+        "⚠️ Agent Bus indisponible : réponse non envoyée au Professeur."
+    );
+}
 
     // -------------------------------------------------
     // 💬 AFFICHAGE
