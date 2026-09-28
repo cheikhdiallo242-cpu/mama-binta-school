@@ -1794,3 +1794,113 @@ console.log(
     "🏆 Niveau maximum atteint :",
     studentMemory.highestLevelReached
 );
+
+// =====================================================
+// 🚌 MÉMOIRE — RÉCEPTION DU BUS
+// =====================================================
+//
+// La Mémoire reçoit les réponses du Professeur.
+// Chaîne :
+// Professeur → Bus → Mémoire
+//
+// La Mémoire enregistre les faits.
+// Elle ne décide pas du niveau.
+// =====================================================
+
+function memoryReceiveAgentMessage(message) {
+
+    if (!message) {
+        return;
+    }
+
+    if (message.to !== "memory") {
+        return;
+    }
+
+    if (!message.data) {
+        console.warn(
+            "⚠️ La Mémoire a reçu un message sans données."
+        );
+        return;
+    }
+
+    // =================================================
+    // 👩🏾‍🏫 PROFESSEUR → MÉMOIRE
+    // =================================================
+
+    if (
+        message.from === "teacher" &&
+        message.type === "student_result"
+    ) {
+
+        const question =
+            message.data.question;
+
+        const studentAnswer =
+            message.data.studentAnswer;
+
+        if (!question) {
+            console.warn(
+                "⚠️ La Mémoire a reçu un résultat sans question."
+            );
+            return;
+        }
+
+        if (
+            studentAnswer === undefined ||
+            studentAnswer === null
+        ) {
+            console.warn(
+                "⚠️ La Mémoire a reçu une réponse vide."
+            );
+            return;
+        }
+
+        rememberAnswer(
+            question,
+            studentAnswer
+        );
+
+        console.log(
+            "📥 Mémoire ← Bus ← Professeur : réponse mémorisée.",
+            {
+                requestId:
+                    message.data.requestId || null,
+
+                question:
+                    question,
+
+                studentAnswer:
+                    studentAnswer,
+
+                isCorrect:
+                    Boolean(
+                        message.data.isCorrect
+                    ),
+
+                skill:
+                    message.data.skill ||
+                    question.skill ||
+                    null
+            }
+        );
+    }
+}
+
+// =====================================================
+// 🎧 ÉCOUTE DU BUS
+// =====================================================
+
+if (
+    typeof listenToAgentMessages ===
+    "function"
+) {
+
+    listenToAgentMessages(
+        memoryReceiveAgentMessage
+    );
+
+    console.log(
+        "📡 Mémoire : écoute du Bus activée."
+    );
+}
