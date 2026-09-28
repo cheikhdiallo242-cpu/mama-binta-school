@@ -939,106 +939,259 @@ function teacherReceiveAgentMessage(message) {
         return;
     }
 
-    if (message.from !== "verifier") {
-        return;
-    }
 
     if (message.to !== "teacher") {
         return;
     }
 
-    if (message.type !== "verification_result") {
-        return;
-    }
 
     if (!message.data) {
         console.warn(
-            "⚠️ Le Professeur a reçu un message vide."
+            "⚠️ Le Professeur a reçu un message sans données."
         );
         return;
     }
 
 
-    const question =
-        message.data.question;
-
-    const verification =
-        message.data;
-
-
-    if (!question) {
-        console.warn(
-            "⚠️ Le Professeur a reçu un résultat sans question."
-        );
-        return;
-    }
-
-
-    /*
-       =================================================
-       LE PROFESSEUR REÇOIT LA QUESTION
-       =================================================
-
-       Pour l'instant, le résultat du Vérificateur
-       ne contient pas encore la réponse de l'enfant.
-
-       Nous conservons donc cette information
-       pour la prochaine étape.
-    */
-
-    teacherReceivedVerification = {
-        requestId:
-            verification.requestId || null,
-
-        question:
-            question,
-
-        valid:
-            Boolean(
-                verification.valid
-            ),
-
-        reason:
-            verification.reason ||
-            "",
-
-        skill:
-            verification.skill ||
-            question.skill ||
-            null
-    };
-
-
-    console.log(
-        "📥 Professeur ← Bus ← Vérificateur : résultat reçu.",
-        teacherReceivedVerification
-    );
-
-
-    /*
-       =================================================
-       PRÉPARATION DE L'EXPLICATION
-       =================================================
-
-       Le Professeur utilise maintenant
-       sa logique pédagogique existante.
-
-       Comme la réponse de l'enfant n'est pas encore
-       transmise par le Bus, on ne déclenche pas encore
-       l'explication finale.
-    */
+    // =================================================
+    // 🛡️ VÉRIFICATEUR → PROFESSEUR
+    // =================================================
 
     if (
-        typeof teacherExplain ===
-        "function"
+        message.from === "verifier" &&
+        message.type === "verification_result"
     ) {
 
+        const question =
+            message.data.question;
+
+        const verification =
+            message.data;
+
+
+        if (!question) {
+
+            console.warn(
+                "⚠️ Le Professeur a reçu un résultat sans question."
+            );
+
+            return;
+        }
+
+
+        teacherReceivedVerification = {
+
+            requestId:
+                verification.requestId ||
+                null,
+
+            question:
+                question,
+
+            valid:
+                Boolean(
+                    verification.valid
+                ),
+
+            reason:
+                verification.reason ||
+                "",
+
+            skill:
+                verification.skill ||
+                question.skill ||
+                null
+        };
+
+
         console.log(
-            "👩🏾‍🏫 Professeur : question reçue et prête pour explication."
+            "📥 Professeur ← Bus ← Vérificateur : résultat reçu.",
+            teacherReceivedVerification
         );
+
+
+        return;
+    }
+
+
+    // =================================================
+    // 🧒 ORCHESTRATEUR → PROFESSEUR
+    // =================================================
+
+    if (
+        message.from === "orchestrator" &&
+        message.type === "student_answer"
+    ) {
+
+        const question =
+            message.data.question;
+
+        const studentAnswer =
+            message.data.studentAnswer;
+
+
+        if (!question) {
+
+            console.warn(
+                "⚠️ Le Professeur a reçu une réponse sans question."
+            );
+
+            return;
+        }
+
+
+        if (
+            studentAnswer ===
+                undefined ||
+            studentAnswer ===
+                null
+        ) {
+
+            console.warn(
+                "⚠️ Le Professeur a reçu une réponse vide."
+            );
+
+            return;
+        }
+
+
+        /*
+           =============================================
+           LE PROFESSEUR REÇOIT LA RÉPONSE DE L'ENFANT
+           =============================================
+        */
+
+        const teacherResult =
+            teacherExplain(
+                question,
+                studentAnswer
+            );
+
+
+        console.log(
+            "📥 Professeur ← Bus ← Orchestrateur : réponse reçue.",
+            {
+                question:
+                    question,
+
+                studentAnswer:
+                    studentAnswer,
+
+                correctAnswer:
+                    message.data.correctAnswer,
+
+                isCorrect:
+                    message.data.isCorrect,
+
+                skill:
+                    message.data.skill ||
+                    question.skill ||
+                    null
+            }
+        );
+
+
+        /*
+           =============================================
+           MÉMORISER LA RÉPONSE DU PROFESSEUR
+           =============================================
+        */
+
+        teacherReceivedVerification = {
+
+            requestId:
+                message.data.requestId ||
+                null,
+
+            question:
+                question,
+
+            studentAnswer:
+                studentAnswer,
+
+            correctAnswer:
+                message.data.correctAnswer,
+
+            isCorrect:
+                Boolean(
+                    message.data.isCorrect
+                ),
+
+            skill:
+                message.data.skill ||
+                question.skill ||
+                null,
+
+            teacherResult:
+                teacherResult
+        };
+
+
+        console.log(
+            "👩🏾‍🏫 Professeur : explication préparée.",
+            teacherResult
+        );
+
+
+        /*
+           =============================================
+           LE RÉSULTAT EST RENVOYÉ PAR LE BUS
+           =============================================
+        */
+
+        if (
+            typeof agentSendMessage ===
+            "function"
+        ) {
+
+            agentSendMessage(
+                "teacher",
+                "orchestrator",
+                "teacher_explanation",
+                {
+                    requestId:
+                        message.data.requestId ||
+                        null,
+
+                    question:
+                        question,
+
+                    studentAnswer:
+                        studentAnswer,
+
+                    correctAnswer:
+                        message.data.correctAnswer,
+
+                    isCorrect:
+                        Boolean(
+                            message.data.isCorrect
+                        ),
+
+                    skill:
+                        message.data.skill ||
+                        question.skill ||
+                        null,
+
+                    teacherResult:
+                        teacherResult
+                },
+
+                "Le Professeur a préparé l'explication pour Mama Binta.",
+
+                "human"
+            );
+
+
+            console.log(
+                "📡 Professeur → Bus → Orchestrateur : explication envoyée.",
+                teacherResult
+            );
+        }
+
+
+        return;
     }
 }
-
 
 if (
     typeof listenToAgentMessages ===
