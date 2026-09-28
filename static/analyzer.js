@@ -615,7 +615,41 @@ function analyzeStudent() {
 
     const skills =
         analyzeAllSkills();
+    /* -----------------------------------------------------
+       🧠 ERREURS DÉTAILLÉES DE LA MÉMOIRE
+    ----------------------------------------------------- */
 
+    const recentMistakes =
+        memory &&
+        Array.isArray(
+            memory.mistakes
+        )
+            ? memory.mistakes.slice(-10)
+            : [];
+
+    const mistakesBySkill = {};
+
+    recentMistakes.forEach(
+        mistake => {
+
+            const skill =
+                mistake.skill ||
+                "unknown";
+
+            if (
+                !mistakesBySkill[skill]
+            ) {
+
+                mistakesBySkill[skill] = [];
+
+            }
+
+            mistakesBySkill[skill].push(
+                mistake
+            );
+
+        }
+    );
 
     const strongSkills =
         getStrongSkills();
@@ -666,6 +700,10 @@ function analyzeStudent() {
         overallAccuracy,
 
         skills,
+
+        recentMistakes,
+
+        mistakesBySkill,
 
         strongSkills,
 
