@@ -1451,7 +1451,41 @@ function finishAdaptiveSession() {
 
     const action =
         decisionObject.action;
+     
+     // -------------------------------------------------
+// 🔎 ANALYSEUR : ANALYSER LA SESSION TERMINÉE
+// -------------------------------------------------
 
+if (
+    typeof analyzeStudent ===
+    "function" &&
+    typeof publishAnalyzerResultToPlanner ===
+    "function"
+) {
+
+    try {
+
+        const analysis =
+            analyzeStudent();
+
+        publishAnalyzerResultToPlanner(
+            analysis
+        );
+
+        console.log(
+            "📡 Analyseur → Bus → Planificateur : analyse de la session terminée envoyée."
+        );
+
+    } catch (error) {
+
+        console.error(
+            "❌ Erreur lors de l'envoi de l'analyse au Planificateur :",
+            error
+        );
+
+    }
+
+}
 
     // -------------------------------------------------
     // 🧠 ENREGISTRER LA SESSION DANS LE PLANIFICATEUR
@@ -2122,9 +2156,6 @@ function showAnalysis() {
 
 
      
-// =====================================================
-// 🧪 DIAGNOSTIC DU BUS DES AGENTS
-// =====================================================
 
 // =====================================================
 // 🧪 DIAGNOSTIC DU BUS DES AGENTS
