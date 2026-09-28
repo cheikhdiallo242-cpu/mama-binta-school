@@ -614,6 +614,8 @@ function verifierReceiveAgentMessage(message) {
         {
             requestId:
                 message.data.requestId,
+           question:
+                question,
 
             valid:
                 Boolean(
