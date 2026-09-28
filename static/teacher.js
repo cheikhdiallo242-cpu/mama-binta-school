@@ -1211,8 +1211,7 @@ console.log(
     "📡 Professeur → Bus → Orchestrateur : explication envoyée.",
     teacherResult
 );
-        }
-
+    
 
 // =================================================
 // 👩🏾‍🏫 PROFESSEUR → 🧠 MÉMOIRE
@@ -1277,10 +1276,9 @@ if (
     );
 }
 
+return;
+    
 
-        return;
-    }
-}
 
 // =====================================================
 // 🧪 DEBUG
