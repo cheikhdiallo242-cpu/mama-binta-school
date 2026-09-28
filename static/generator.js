@@ -2182,6 +2182,13 @@ function verifyGeneratedQuestionThroughAgent(
     );
 
 
+    /*
+       Le Bus fonctionne de manière synchrone
+       dans notre architecture actuelle.
+
+       Le Vérificateur doit donc avoir répondu
+       avant que cette fonction continue.
+    */
     const result =
         generatorVerificationResults[
             requestId
@@ -2191,15 +2198,27 @@ function verifyGeneratedQuestionThroughAgent(
     if (!result) {
 
         console.warn(
-            "⚠️ Le Vérificateur n'a pas encore répondu."
+            "⚠️ Le Vérificateur n'a pas répondu au Générateur."
         );
 
-        return null;
+        return {
+            valid: false,
+            reason:
+                "Le Vérificateur n'a pas répondu.",
+            requestId
+        };
 
     }
 
 
+    console.log(
+        "📥 Générateur ← Bus ← Vérificateur : réponse reçue.",
+        result
+    );
+
+
     return {
+
         valid:
             Boolean(
                 result.valid
@@ -2212,8 +2231,12 @@ function verifyGeneratedQuestionThroughAgent(
         skill:
             result.skill ||
             question.skill ||
-            null
+            null,
+
+        requestId
+
     };
+
 }
 /*
    Retourne les compétences réellement prioritaires.
