@@ -1132,12 +1132,11 @@ function teacherReceiveAgentMessage(message) {
             teacherResult
         );
 
-
-        /*
-           =============================================
-           LE RÉSULTAT EST RENVOYÉ PAR LE BUS
-           =============================================
-        */
+/*
+   =============================================
+   LE RÉSULTAT EST RENVOYÉ PAR LE BUS
+   =============================================
+*/
 
         if (
             typeof agentSendMessage ===
@@ -1189,9 +1188,79 @@ function teacherReceiveAgentMessage(message) {
         }
 
 
+// =================================================
+// 👩🏾‍🏫 PROFESSEUR → 🧠 MÉMOIRE
+// =================================================
+
+        if (
+            typeof agentSendMessage ===
+            "function"
+        ) {
+
+            agentSendMessage(
+                "teacher",
+                "memory",
+                "student_result",
+                {
+                    requestId:
+                        message.data.requestId ||
+                        null,
+
+                    question:
+                        question,
+
+                    studentAnswer:
+                        studentAnswer,
+
+                    correctAnswer:
+                        message.data.correctAnswer,
+
+                    isCorrect:
+                        Boolean(
+                            message.data.isCorrect
+                        ),
+
+                    skill:
+                        message.data.skill ||
+                        question.skill ||
+                        null
+                },
+
+                "Le Professeur transmet le résultat à la Mémoire.",
+
+                "human"
+            );
+
+
+            console.log(
+                "📡 Professeur → Bus → Mémoire : résultat envoyé.",
+                {
+                    requestId:
+                        message.data.requestId ||
+                        null,
+
+                    isCorrect:
+                        Boolean(
+                            message.data.isCorrect
+                        ),
+
+                    skill:
+                        message.data.skill ||
+                        question.skill ||
+                        null
+                }
+            );
+        }
+
+
         return;
     }
 }
+
+
+// =====================================================
+// 🎧 ÉCOUTE DU BUS
+// =====================================================
 
 if (
     typeof listenToAgentMessages ===
@@ -1207,81 +1276,11 @@ if (
     );
 }
 
-console.log(
-    "📡 Professeur → Bus → Orchestrateur : explication envoyée.",
-    teacherResult
-);
-    
-
-// =================================================
-// 👩🏾‍🏫 PROFESSEUR → 🧠 MÉMOIRE
-// =================================================
-
-if (
-    typeof agentSendMessage ===
-    "function"
-) {
-
-    agentSendMessage(
-        "teacher",
-        "memory",
-        "student_result",
-        {
-            requestId:
-                message.data.requestId ||
-                null,
-
-            question:
-                question,
-
-            studentAnswer:
-                studentAnswer,
-
-            correctAnswer:
-                message.data.correctAnswer,
-
-            isCorrect:
-                Boolean(
-                    message.data.isCorrect
-                ),
-
-            skill:
-                message.data.skill ||
-                question.skill ||
-                null
-        },
-
-        "Le Professeur transmet le résultat à la Mémoire.",
-
-        "human"
-    );
-
-    console.log(
-        "📡 Professeur → Bus → Mémoire : résultat envoyé.",
-        {
-            requestId:
-                message.data.requestId ||
-                null,
-
-            isCorrect:
-                Boolean(
-                    message.data.isCorrect
-                ),
-
-            skill:
-                message.data.skill ||
-                question.skill ||
-                null
-        }
-    );
-}
-
-return;
-    
-
 
 // =====================================================
 // 🧪 DEBUG
 // =====================================================
 
-console.log("👩🏾‍🏫 Agent Professeur de Mama Binta chargé.");
+console.log(
+    "👩🏾‍🏫 Agent Professeur de Mama Binta chargé."
+);
