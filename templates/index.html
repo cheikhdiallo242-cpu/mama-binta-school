@@ -1162,21 +1162,7 @@ function checkAnswer(choice) {
     );
 
 
-    // -------------------------------------------------
-    // 🧠 MÉMOIRE GÉNÉRALE
-    // -------------------------------------------------
-
-    if (
-        typeof rememberAnswer ===
-        "function"
-    ) {
-
-        rememberAnswer(
-            current,
-            choice
-        );
-
-    }
+   
 
 
     // -------------------------------------------------
@@ -1452,7 +1438,7 @@ function finishAdaptiveSession() {
     const action =
         decisionObject.action;
      
-     // -------------------------------------------------
+// -------------------------------------------------
 // 🔎 ANALYSEUR : ANALYSER LA SESSION TERMINÉE
 // -------------------------------------------------
 
