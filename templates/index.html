@@ -354,6 +354,12 @@ let currentFreeMathType = "addition";
 
 let adaptiveExercises = [];
 
+// =====================================================
+// 🧠 DERNIÈRE COMPOSITION GÉNÉRÉE
+// =====================================================
+
+let lastGeneratedComposition = [];
+
 let adaptiveIndex = 0;
 
 let adaptiveLevel = 1;
@@ -970,7 +976,11 @@ if (
 
         adaptiveExercises =
             verifiedExercises;
-
+         lastGeneratedComposition = verifiedExercises.map(
+    function(question) {
+        return question.skill || "inconnue";
+    }
+);
         adaptiveIndex = 0;
 
         updateSessionDisplay();
