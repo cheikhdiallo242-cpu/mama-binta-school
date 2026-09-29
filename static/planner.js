@@ -758,6 +758,98 @@ function getPlannerPriority() {
     return ordered;
 }
 
+// ========================================================
+// 🧠 DÉTERMINER LA PRIORITÉ
+// ========================================================
+
+function getPlannerPriority() {
+
+    const weakSkills =
+        getPlannerWeakSkills();
+
+    const mistakePriority =
+        getPlannerMistakePriority();
+
+    const ordered = [];
+
+    function addSkill(skill) {
+
+        if (
+            PLANNER_SKILLS.includes(skill) &&
+            !ordered.includes(skill)
+        ) {
+
+            ordered.push(skill);
+        }
+    }
+
+    /*
+    --------------------------------------------------------
+    1️⃣ COMPÉTENCES FAIBLES + ERREURS RÉCENTES
+    --------------------------------------------------------
+    Une compétence qui est déjà identifiée comme faible
+    ET qui présente aussi des erreurs récentes devient
+    prioritaire.
+    */
+
+    mistakePriority.forEach(
+        skill => {
+
+            if (
+                weakSkills.includes(skill)
+            ) {
+
+                addSkill(skill);
+            }
+        }
+    );
+
+    /*
+    --------------------------------------------------------
+    2️⃣ AUTRES COMPÉTENCES FAIBLES
+    --------------------------------------------------------
+    */
+
+    weakSkills.forEach(
+        skill => {
+
+            addSkill(skill);
+
+        }
+    );
+
+    /*
+    --------------------------------------------------------
+    3️⃣ ERREURS RÉCENTES
+    --------------------------------------------------------
+    Une erreur récente peut attirer l'attention même si
+    la compétence n'est pas encore classée "faible".
+    */
+
+    mistakePriority.forEach(
+        skill => {
+
+            addSkill(skill);
+
+        }
+    );
+
+    /*
+    --------------------------------------------------------
+    4️⃣ COMPLÉTER AVEC LES AUTRES COMPÉTENCES
+    --------------------------------------------------------
+    */
+
+    PLANNER_SKILLS.forEach(
+        skill => {
+
+            addSkill(skill);
+
+        }
+    );
+
+    return ordered;
+}
 
 // ========================================================
 // 🔴 HISTORIQUE DES SESSIONS
