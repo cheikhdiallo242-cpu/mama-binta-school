@@ -724,39 +724,6 @@ function getPlannerMistakePriority() {
     );
 }
 
-// ========================================================
-// 🧠 DÉTERMINER LA PRIORITÉ
-// ========================================================
-
-function getPlannerPriority() {
-
-    const weakSkills =
-        getPlannerWeakSkills();
-
-    if (
-        weakSkills.length === 0
-    ) {
-
-        return PLANNER_SKILLS.slice();
-    }
-
-    const ordered =
-        weakSkills.slice();
-
-    PLANNER_SKILLS.forEach(
-        skill => {
-
-            if (
-                !ordered.includes(skill)
-            ) {
-
-                ordered.push(skill);
-            }
-        }
-    );
-
-    return ordered;
-}
 
 // ========================================================
 // 🧠 DÉTERMINER LA PRIORITÉ
