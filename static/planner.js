@@ -663,6 +663,66 @@ function getPlannerWeakSkills() {
     return analysis.skillsToPractice;
 }
 
+// ========================================================
+// 🧠 ANALYSER LES ERREURS RÉCENTES
+// ========================================================
+
+function getPlannerMistakePriority() {
+
+    const analysis =
+        plannerGetAnalysis();
+
+    if (
+        !analysis ||
+        !analysis.mistakesBySkill
+    ) {
+
+        return [];
+    }
+
+    const mistakesBySkill =
+        analysis.mistakesBySkill;
+
+    const priorities = [];
+
+    PLANNER_SKILLS.forEach(
+        skill => {
+
+            const mistakes =
+                Array.isArray(
+                    mistakesBySkill[skill]
+                )
+                    ? mistakesBySkill[skill]
+                    : [];
+
+            if (
+                mistakes.length === 0
+            ) {
+                return;
+            }
+
+            priorities.push({
+                skill:
+                    skill,
+
+                mistakes:
+                    mistakes.length
+            });
+
+        }
+    );
+
+    priorities.sort(
+        (a, b) =>
+            b.mistakes -
+            a.mistakes
+    );
+
+    return priorities.map(
+        item =>
+            item.skill
+    );
+}
 
 // ========================================================
 // 🧠 DÉTERMINER LA PRIORITÉ
