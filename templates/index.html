@@ -2280,38 +2280,52 @@ function showAgentBusDiagnostic() {
 
 
         plannerGenerator.forEach(
-            function(
-                agentMessage,
-                index
-            ) {
+    function(
+        agentMessage,
+        index
+    ) {
 
-                message +=
-                    "📨 Message " +
-                    (index + 1) +
-                    "\n\n" +
+        message +=
+            "📨 Message " +
+            (index + 1) +
+            "\n\n" +
 
-                    "De : " +
-                    agentMessage.from +
-                    "\n" +
+            "De : " +
+            agentMessage.from +
+            "\n" +
 
-                    "Vers : " +
-                    agentMessage.to +
-                    "\n" +
+            "Vers : " +
+            agentMessage.to +
+            "\n" +
 
-                    "Type : " +
-                    agentMessage.type +
-                    "\n" +
+            "Type : " +
+            agentMessage.type +
+            "\n\n" +
 
-                    "Message : " +
-                    (
-                        agentMessage.message ||
-                        "—"
-                    ) +
+            "Message : " +
+            (
+                agentMessage.message ||
+                "—"
+            ) +
 
-                    "\n\n";
+            "\n\n" +
 
-            }
-        );
+            "📦 DONNÉES DU PLAN :\n" +
+
+            (
+                agentMessage.data
+                    ? JSON.stringify(
+                        agentMessage.data,
+                        null,
+                        2
+                    )
+                    : "Aucune donnée."
+            ) +
+
+            "\n\n";
+
+    }
+);
 
     } else {
 
