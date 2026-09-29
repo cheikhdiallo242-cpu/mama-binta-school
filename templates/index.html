@@ -2346,6 +2346,45 @@ function showAgentBusDiagnostic() {
 
     }
 
+ // =================================================
+// 🧠 COMPOSITION RÉELLE DE LA SESSION
+// =================================================
+
+message +=
+    "━━━━━━━━━━━━━━━━━━\n\n" +
+    "🧠 COMPOSITION RÉELLE DE LA SESSION\n\n";
+
+if (
+    Array.isArray(lastGeneratedComposition) &&
+    lastGeneratedComposition.length > 0
+) {
+
+    message +=
+        "Exercices générés : " +
+        lastGeneratedComposition.length +
+        " / 5\n\n";
+
+    lastGeneratedComposition.forEach(
+        function(skill, index) {
+
+            message +=
+                "Exercice " +
+                (index + 1) +
+                " : " +
+                skill +
+                "\n";
+
+        }
+    );
+
+    message += "\n";
+
+} else {
+
+    message +=
+        "⚠️ Aucune composition générée pour le moment.\n\n";
+
+}
 
     // =================================================
     // 📥 GÉNÉRATEUR → PLANIFICATEUR
