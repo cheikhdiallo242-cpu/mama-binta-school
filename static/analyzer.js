@@ -799,7 +799,7 @@ function publishAnalyzerResultToPlanner(
 
         highestLevelReached:
             currentAnalysis.highestLevelReached,
-              recentMistakes:
+        recentMistakes:
             Array.isArray(
                 currentAnalysis.recentMistakes
             )
