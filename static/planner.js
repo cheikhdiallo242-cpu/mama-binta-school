@@ -1035,15 +1035,25 @@ function canProgressFromSession(score) {
 // 📉 RÉGRESSION POSSIBLE
 // ========================================================
 
-function canRegress(level) {
-
+function canRegress(level, score) {
     const safeLevel =
         plannerClampLevel(level);
+
+    const safeScore =
+        Number(score) || 0;
 
     if (
         safeLevel <= MIN_LEVEL
     ) {
+        return false;
+    }
 
+    // Une session à 4/5 ou 5/5 ne peut jamais
+    // provoquer une régression, même si des difficultés
+    // anciennes existent dans l'historique.
+    if (
+        safeScore > 2
+    ) {
         return false;
     }
 
@@ -1051,7 +1061,6 @@ function canRegress(level) {
         safeLevel
     );
 }
-
 
 // ========================================================
 // 🧠 MARQUER UNE DÉCISION COMME APPLIQUÉE
@@ -1332,9 +1341,10 @@ function planLearningLevel() {
     // 📉 DIFFICULTÉ PERSISTANTE
     // ====================================================
 
-    if (
-        canRegress(
-            currentLevel
+      if (
+         canRegress(
+             currentLevel,
+             score
         )
     ) {
 
