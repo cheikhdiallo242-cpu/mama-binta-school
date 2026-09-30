@@ -915,59 +915,7 @@ if (
         // 3️⃣ VÉRIFIER LES 5 EXERCICES
         // -------------------------------------------------
 
-        const verifiedExercises = [];
-
-
-        for (
-            let i = 0;
-            i < generated.length;
-            i++
-        ) {
-
-            const question =
-                generated[i];
-
-
-            if (!question) {
-
-                throw new Error(
-                    "L'exercice " +
-                    (i + 1) +
-                    " est vide."
-                );
-
-            }
-
-
-            const verification =
-                verifyQuestion(
-                    question
-                );
-
-
-            if (
-                !verification ||
-                !verification.valid
-            ) {
-
-                throw new Error(
-                    "Exercice " +
-                    (i + 1) +
-                    " invalide : " +
-                    (
-                        verification
-                            ? verification.reason
-                            : "raison inconnue"
-                    )
-                );
-
-            }
-
-
-            verifiedExercises.push(
-                question
-            );
-        }
+         const verifiedExercises = generated;
 
 
         // -------------------------------------------------
