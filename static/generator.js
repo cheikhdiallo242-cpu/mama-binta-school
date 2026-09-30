@@ -1825,6 +1825,10 @@ function getAdaptiveSkillAnalysis() {
         null;
 
 
+    let plannerPriority =
+        [];
+
+
     /*
        ====================================================
        1️⃣ SOURCE PRINCIPALE :
@@ -1845,6 +1849,36 @@ function getAdaptiveSkillAnalysis() {
         console.log(
             "🎯 Générateur : analyse reçue du Planificateur par le Bus.",
             plannerAnalysis
+        );
+
+    }
+
+
+    /*
+       ====================================================
+       2️⃣ PRIORITÉ PÉDAGOGIQUE DU PLANIFICATEUR
+       ====================================================
+    */
+
+    if (
+        learningPlan &&
+        Array.isArray(
+            learningPlan.priority
+        )
+    ) {
+
+        plannerPriority =
+            learningPlan.priority
+                .filter(
+                    skill =>
+                        GENERATOR_SKILLS.includes(
+                            skill
+                        )
+                );
+
+        console.log(
+            "📋 Générateur : priorité reçue du Planificateur :",
+            plannerPriority
         );
 
     }
@@ -1914,65 +1948,108 @@ function getAdaptiveSkillAnalysis() {
 
 
         /*
-           ------------------------------------------------
-           CALCUL DE LA PRIORITÉ
-           ------------------------------------------------
+           ====================================================
+           3️⃣ PRIORITÉ :
+              LE PLANIFICATEUR EST AUTORITAIRE
+           ====================================================
         */
 
-        let priority = 0;
+        let priority =
+            0;
+
+
+        const plannerIndex =
+            plannerPriority.indexOf(
+                skill
+            );
 
 
         if (
-            result.status ===
-            "needs_support"
+            plannerIndex !== -1
         ) {
 
-            priority = 100;
+            /*
+               Le premier skill reçoit la
+               priorité la plus forte.
+
+               Les suivants restent ordonnés
+               derrière lui.
+            */
+
+            priority =
+                100 -
+                (
+                    plannerIndex * 10
+                );
 
         }
 
-        else if (
-            result.trend ===
-            "declining"
-        ) {
 
-            priority = 90;
-
-        }
-
-        else if (
-            result.difficulty ===
-            "high"
-        ) {
-
-            priority = 85;
-
-        }
+        /*
+           ------------------------------------------------
+           SECOURS :
+           si aucun ordre n'a été reçu,
+           conserver l'ancien comportement.
+           ------------------------------------------------
+        */
 
         else if (
-            result.status ===
-            "developing"
+            plannerPriority.length === 0
         ) {
 
-            priority = 60;
+            if (
+                result.status ===
+                "needs_support"
+            ) {
 
-        }
+                priority = 100;
 
-        else if (
-            result.difficulty ===
-            "medium"
-        ) {
+            }
 
-            priority = 50;
+            else if (
+                result.trend ===
+                "declining"
+            ) {
 
-        }
+                priority = 90;
 
-        else if (
-            result.status ===
-            "strong"
-        ) {
+            }
 
-            priority = 10;
+            else if (
+                result.difficulty ===
+                "high"
+            ) {
+
+                priority = 85;
+
+            }
+
+            else if (
+                result.status ===
+                "developing"
+            ) {
+
+                priority = 60;
+
+            }
+
+            else if (
+                result.difficulty ===
+                "medium"
+            ) {
+
+                priority = 50;
+
+            }
+
+            else if (
+                result.status ===
+                "strong"
+            ) {
+
+                priority = 10;
+
+            }
 
         }
 
@@ -2007,8 +2084,9 @@ function getAdaptiveSkillAnalysis() {
 
 
     /*
-       Les compétences prioritaires
-       arrivent en premier.
+       ====================================================
+       4️⃣ ORDRE DÉCIDÉ PAR LE PLANIFICATEUR
+       ====================================================
     */
 
     analysis.sort(
