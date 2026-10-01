@@ -667,7 +667,11 @@ function getPlannerWeakSkills() {
 // 🧠 ANALYSER LES ERREURS RÉCENTES
 // ========================================================
 
-function getPlannerMistakePriority() {
+// ========================================================
+// 🎯 CIBLES PÉDAGOGIQUES PAR COMPÉTENCE
+// ========================================================
+
+function getPlannerSkillTargets() {
 
     const analysis =
         plannerGetAnalysis();
@@ -676,23 +680,19 @@ function getPlannerMistakePriority() {
         !analysis ||
         !analysis.mistakesBySkill
     ) {
-
         return [];
     }
 
-    const mistakesBySkill =
-        analysis.mistakesBySkill;
-
-    const priorities = [];
+    const targets = [];
 
     PLANNER_SKILLS.forEach(
         skill => {
 
             const mistakes =
                 Array.isArray(
-                    mistakesBySkill[skill]
+                    analysis.mistakesBySkill[skill]
                 )
-                    ? mistakesBySkill[skill]
+                    ? analysis.mistakesBySkill[skill]
                     : [];
 
             if (
@@ -701,29 +701,55 @@ function getPlannerMistakePriority() {
                 return;
             }
 
-            priorities.push({
-                skill:
-                    skill,
+            const recentMistakes =
+                mistakes.slice(-5);
 
-                mistakes:
+            const levels =
+                recentMistakes
+                    .map(
+                        mistake =>
+                            plannerClampLevel(
+                                mistake.level
+                            )
+                    );
+
+            const latestMistake =
+                recentMistakes[
+                    recentMistakes.length - 1
+                ];
+
+            targets.push({
+
+                skill,
+
+                mistakeCount:
+                    mistakes.length,
+
+                recentMistakes,
+
+                levels,
+
+                latestLevel:
+                    latestMistake
+                        ? plannerClampLevel(
+                            latestMistake.level
+                        )
+                        : null,
+
+                priority:
                     mistakes.length
             });
-
         }
     );
 
-    priorities.sort(
+    targets.sort(
         (a, b) =>
-            b.mistakes -
-            a.mistakes
+            b.priority -
+            a.priority
     );
 
-    return priorities.map(
-        item =>
-            item.skill
-    );
+    return targets;
 }
-
 
 // ========================================================
 // 🧠 DÉTERMINER LA PRIORITÉ
