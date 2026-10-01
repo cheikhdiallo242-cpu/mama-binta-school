@@ -1823,7 +1823,9 @@ function getAdaptiveSkillAnalysis() {
 
     let plannerAnalysis =
         null;
-
+   
+   let plannerSkillAssessment =
+    null;
 
     let plannerPriority =
         [];
@@ -1852,6 +1854,21 @@ function getAdaptiveSkillAnalysis() {
         );
 
     }
+
+   if (
+    learningPlan &&
+    learningPlan.skillAssessment
+) {
+
+    plannerSkillAssessment =
+        learningPlan.skillAssessment;
+
+    console.log(
+        "🧠 Générateur : évaluation des compétences reçue du Planificateur par le Bus.",
+        plannerSkillAssessment
+    );
+
+}
 
 
     /*
@@ -2075,6 +2092,11 @@ function getAdaptiveSkillAnalysis() {
                 "number"
                     ? result.accuracy
                     : null,
+           assessment:
+    plannerSkillAssessment &&
+    plannerSkillAssessment[skill]
+        ? plannerSkillAssessment[skill]
+        : null,
 
             priority
 
