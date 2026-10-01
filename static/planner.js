@@ -2034,6 +2034,14 @@ function getLearningPlan() {
 
         plannerGetAnalysis();
 
+    const skillAssessment =
+
+        getPlannerSkillAssessment(
+
+            analysis
+
+        );
+
     const priority =
 
         getPlannerPriority();
@@ -2053,6 +2061,8 @@ function getLearningPlan() {
         priority,
 
         analysis,
+
+        skillAssessment,
 
         levelInfo:
 
