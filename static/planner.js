@@ -1434,16 +1434,19 @@ function planLearningLevel() {
     // ====================================================
 
     const alreadyApplied =
-        getAlreadyAppliedPlan(
-            currentSession,
-            currentLevel,
-            priority
-        );
+    getAlreadyAppliedPlan(
+        currentSession,
+        currentLevel,
+        priority
+    );
 
-    if (alreadyApplied) {
+if (alreadyApplied) {
 
-        return alreadyApplied;
-    }
+    alreadyApplied.skillAssessment =
+        skillAssessment;
+
+    return alreadyApplied;
+}
 
 
     // ====================================================
@@ -1489,8 +1492,10 @@ function planLearningLevel() {
             priority,
 
             analysis,
-
+            skillAssessment,
+           
             message:
+    
                 "🧠 La session est en cours. Continuons les exercices."
         };
     }
@@ -1557,7 +1562,7 @@ function planLearningLevel() {
             priority,
 
             analysis,
-
+            skillAssessment,
             message:
                 "🧠 Cette difficulté se répète. " +
                 "Nous allons revenir temporairement au niveau " +
@@ -1623,7 +1628,7 @@ function planLearningLevel() {
                 priority,
 
                 analysis,
-
+                skillAssessment,
                 message:
                     "🌟 Bravo ! Mama Binta a réussi " +
                     score +
@@ -1667,7 +1672,7 @@ function planLearningLevel() {
             priority,
 
             analysis,
-
+            skillAssessment,
             message:
                 "🏆 Mama Binta est arrivée au niveau 100. " +
                 "Nous allons maintenant renforcer et approfondir ses compétences."
@@ -1713,7 +1718,7 @@ function planLearningLevel() {
             priority,
 
             analysis,
-
+            skillAssessment,
             message:
                 "🧠 Mama Binta a réussi 3/5. " +
                 "Nous allons rester au niveau " +
@@ -1757,7 +1762,8 @@ function planLearningLevel() {
         priority,
 
         analysis,
-
+    
+        skillAssessment,
         message:
             "💪 Nous allons rester au niveau " +
             currentLevel +
