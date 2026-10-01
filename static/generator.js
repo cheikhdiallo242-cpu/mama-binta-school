@@ -1972,13 +1972,18 @@ function getAdaptiveSkillAnalysis() {
         */
 
         let priority =
-            0;
+    0;
 
+const assessment =
+    plannerSkillAssessment &&
+    plannerSkillAssessment[skill]
+        ? plannerSkillAssessment[skill]
+        : null;
 
-        const plannerIndex =
-            plannerPriority.indexOf(
-                skill
-            );
+const plannerIndex =
+    plannerPriority.indexOf(
+        skill
+    );
 
 
         if (
@@ -2010,14 +2015,20 @@ function getAdaptiveSkillAnalysis() {
            ------------------------------------------------
         */
 
-        else if (
-            plannerPriority.length === 0
-        ) {
+        if (
+            assessment &&
+            assessment.priority ===
+           "élevée"
+      ) {
 
-            if (
-                result.status ===
-                "needs_support"
-            ) {
+            priority = 100;
+
+      }
+
+     else if (
+         result.status ===
+         "needs_support"
+    ) {
 
                 priority = 100;
 
