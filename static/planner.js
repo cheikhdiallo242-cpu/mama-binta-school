@@ -1417,11 +1417,13 @@ function planLearningLevel() {
             sessionSize:
                 SESSION_SIZE,
 
-            priority,
+                priority,
 
-            analysis,
+                analysis,
 
-            message:
+                skillAssessment,
+
+                message:
                 "🎯 Mama Binta est prête pour une nouvelle session de 5 exercices."
         };
     }
