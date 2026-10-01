@@ -810,6 +810,89 @@ function getPlannerSkillTargets() {
 }
 
 // ========================================================
+// 🧠 ÉVALUATION DES COMPÉTENCES PAR LE PLANIFICATEUR
+// ========================================================
+//
+// Rôle :
+// - Observer l'état de chaque compétence
+// - Utiliser les informations fournies par l'Analyseur
+// - Identifier les compétences solides, fragiles ou faibles
+// - Donner une base plus précise au Planificateur
+//
+// IMPORTANT :
+// Cette fonction NE change PAS le niveau.
+// Elle NE modifie PAS la mémoire.
+// Elle NE décide PAS seule de progresser ou régresser.
+// Elle prépare simplement une évaluation pédagogique.
+//
+// ========================================================
+
+function getPlannerSkillAssessment(analysis) {
+
+    if (!analysis || !analysis.skills) {
+        console.warn("⚠️ Planificateur : aucune donnée de compétence disponible.");
+        return {};
+    }
+
+    const assessment = {};
+
+    Object.keys(analysis.skills).forEach(skill => {
+
+        const data = analysis.skills[skill] || {};
+
+        const accuracy = Number(data.accuracy || 0);
+        const trend = data.trend || "stable";
+
+        let state = "à surveiller";
+        let priority = "normale";
+
+        // ------------------------------------------------
+        // 🟢 COMPÉTENCE SOLIDE
+        // ------------------------------------------------
+        if (accuracy >= 80 && trend !== "negative") {
+            state = "solide";
+            priority = "faible";
+        }
+
+        // ------------------------------------------------
+        // 🟡 COMPÉTENCE FRAGILE
+        // ------------------------------------------------
+        else if (accuracy >= 60) {
+            state = "fragile";
+            priority = "moyenne";
+        }
+
+        // ------------------------------------------------
+        // 🔴 COMPÉTENCE FAIBLE
+        // ------------------------------------------------
+        else {
+            state = "faible";
+            priority = "élevée";
+        }
+
+        // Une tendance négative augmente toujours
+        // l'attention portée à la compétence.
+        if (trend === "negative") {
+            priority = "élevée";
+        }
+
+        assessment[skill] = {
+            accuracy,
+            trend,
+            state,
+            priority
+        };
+    });
+
+    console.log(
+        "🧠 Planificateur — Évaluation des compétences :",
+        assessment
+    );
+
+    return assessment;
+}
+
+// ========================================================
 // 🧠 DÉTERMINER LA PRIORITÉ
 // ========================================================
 
