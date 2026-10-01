@@ -1868,7 +1868,9 @@ function publishLearningPlanToGenerator(
 
                 analysis:
 
-                    plan.analysis
+                    plan.analysis,
+                skillAssessment:
+                   plan.skillAssessment
 
             });
 
@@ -1991,12 +1993,13 @@ function publishLearningPlanToGenerator(
                         : [],
 
                 analysis:
+    plan.analysis || null,
 
-                    plan.analysis || null,
+skillAssessment:
+    plan.skillAssessment || null,
 
-                levelInfo:
-
-                    plan.levelInfo || null
+levelInfo:
+    plan.levelInfo || null
 
             },
 
