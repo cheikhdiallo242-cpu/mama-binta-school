@@ -2015,71 +2015,75 @@ const plannerIndex =
            ------------------------------------------------
         */
 
-        if (
-            assessment &&
-            assessment.priority ===
-           "élevée"
-      ) {
+        else if (
+    plannerPriority.length === 0
+) {
 
-            priority = 100;
-
-      }
-
-     else if (
-         result.status ===
-         "needs_support"
+    if (
+        assessment &&
+        assessment.priority ===
+        "élevée"
     ) {
 
-                priority = 100;
+        priority = 100;
 
-            }
+    }
 
-            else if (
-                result.trend ===
-                "declining"
-            ) {
+    else if (
+        result.status ===
+        "needs_support"
+    ) {
 
-                priority = 90;
+        priority = 100;
 
-            }
+    }
 
-            else if (
-                result.difficulty ===
-                "high"
-            ) {
+    else if (
+        result.trend ===
+        "declining"
+    ) {
 
-                priority = 85;
+        priority = 90;
 
-            }
+    }
 
-            else if (
-                result.status ===
-                "developing"
-            ) {
+    else if (
+        result.difficulty ===
+        "high"
+    ) {
 
-                priority = 60;
+        priority = 85;
 
-            }
+    }
 
-            else if (
-                result.difficulty ===
-                "medium"
-            ) {
+    else if (
+        result.status ===
+        "developing"
+    ) {
 
-                priority = 50;
+        priority = 60;
 
-            }
+    }
 
-            else if (
-                result.status ===
-                "strong"
-            ) {
+    else if (
+        result.difficulty ===
+        "medium"
+    ) {
 
-                priority = 10;
+        priority = 50;
 
-            }
+    }
 
-        }
+    else if (
+        result.status ===
+        "strong"
+    ) {
+
+        priority = 10;
+
+    }
+
+}
 
 
         analysis.push({
