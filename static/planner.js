@@ -1388,6 +1388,11 @@ function planLearningLevel() {
     const analysis =
         plannerGetAnalysis();
 
+    const skillAssessment =
+    getPlannerSkillAssessment(
+        analysis
+    );
+    
     const priority =
         getPlannerPriority();
 
