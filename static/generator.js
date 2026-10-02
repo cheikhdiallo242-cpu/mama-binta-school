@@ -2851,6 +2851,15 @@ function generateLearningSession(
                    exerciseLevel
                );
 
+           console.log(
+              "🧠 Générateur — Difficulté adaptée :",
+              {
+                 skill,
+                 niveauGlobal: safeLevel,
+                 niveauAdapte: exerciseLevel
+              }
+           );
+
             /*
                Première sécurité :
                le Générateur vérifie sa structure.
