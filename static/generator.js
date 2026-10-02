@@ -2871,13 +2871,13 @@ if (!diagnostic) {
         "fixed";
 
     diagnostic.style.top =
-        "10px";
+        "5px";
 
     diagnostic.style.left =
-        "10px";
+        "5px";
 
     diagnostic.style.right =
-        "10px";
+        "5px";
 
     diagnostic.style.zIndex =
         "9999";
