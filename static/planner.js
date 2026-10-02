@@ -898,91 +898,132 @@ function getPlannerSkillAssessment(analysis) {
 
 function getPlannerPriority() {
 
+    const analysis =
+        plannerGetAnalysis();
+
     const weakSkills =
         getPlannerWeakSkills();
 
     const mistakePriority =
         getPlannerMistakePriority();
 
-    const ordered = [];
+    const skillAssessment =
+        getPlannerSkillAssessment(
+            analysis
+        );
 
-    function addSkill(skill) {
+    const ordered =
+        [...PLANNER_SKILLS];
 
+    /*
+    🧠 Niveau de priorité pédagogique
+    */
+    const assessmentScore = {
+
+        "élevée": 300,
+
+        "moyenne": 200,
+
+        "faible": 100,
+
+        "normale": 50
+
+    };
+
+    /*
+    🎯 Calcul de la priorité de chaque compétence
+    */
+    function getSkillScore(skill) {
+
+        const assessment =
+            skillAssessment[skill] || {};
+
+        let score =
+            assessmentScore[
+                assessment.priority
+            ] || 0;
+
+        /*
+        Une compétence identifiée comme faible
+        par l'Analyseur reçoit un bonus.
+        */
         if (
-            PLANNER_SKILLS.includes(skill) &&
-            !ordered.includes(skill)
+            weakSkills.includes(skill)
         ) {
 
-            ordered.push(skill);
+            score += 50;
+
         }
+
+        /*
+        Les erreurs récentes servent
+        de départage entre compétences
+        de même niveau.
+        */
+        const mistakeIndex =
+            mistakePriority.indexOf(
+                skill
+            );
+
+        if (
+            mistakeIndex !== -1
+        ) {
+
+            score +=
+                Math.max(
+                    20 - mistakeIndex,
+                    1
+                );
+
+        }
+
+        return score;
+
     }
 
     /*
-    --------------------------------------------------------
-    1️⃣ COMPÉTENCES FAIBLES + ERREURS RÉCENTES
-    --------------------------------------------------------
-    Une compétence qui est déjà identifiée comme faible
-    ET qui présente aussi des erreurs récentes devient
-    prioritaire.
+    📊 Classement des compétences
     */
+    ordered.sort(
+        (a, b) => {
 
-    mistakePriority.forEach(
-        skill => {
+            const scoreA =
+                getSkillScore(a);
+
+            const scoreB =
+                getSkillScore(b);
 
             if (
-                weakSkills.includes(skill)
+                scoreB !== scoreA
             ) {
 
-                addSkill(skill);
+                return (
+                    scoreB -
+                    scoreA
+                );
+
             }
-        }
-    );
 
-    /*
-    --------------------------------------------------------
-    2️⃣ AUTRES COMPÉTENCES FAIBLES
-    --------------------------------------------------------
-    */
-
-    weakSkills.forEach(
-        skill => {
-
-            addSkill(skill);
+            /*
+            En cas d'égalité,
+            on conserve l'ordre pédagogique
+            défini dans PLANNER_SKILLS.
+            */
+            return (
+                PLANNER_SKILLS.indexOf(a) -
+                PLANNER_SKILLS.indexOf(b)
+            );
 
         }
     );
 
-    /*
-    --------------------------------------------------------
-    3️⃣ ERREURS RÉCENTES
-    --------------------------------------------------------
-    Une erreur récente peut attirer l'attention même si
-    la compétence n'est pas encore classée "faible".
-    */
-
-    mistakePriority.forEach(
-        skill => {
-
-            addSkill(skill);
-
-        }
-    );
-
-    /*
-    --------------------------------------------------------
-    4️⃣ COMPLÉTER AVEC LES AUTRES COMPÉTENCES
-    --------------------------------------------------------
-    */
-
-    PLANNER_SKILLS.forEach(
-        skill => {
-
-            addSkill(skill);
-
-        }
+    console.log(
+        "🎯 Planificateur — Priorité des compétences :",
+        ordered
     );
 
     return ordered;
+
 }
 
 // ========================================================
