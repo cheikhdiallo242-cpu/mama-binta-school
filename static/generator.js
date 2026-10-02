@@ -403,6 +403,84 @@ function clampLevel(level) {
     );
 }
 
+// ========================================================
+// 🧠 AJUSTER LE NIVEAU SELON LA COMPÉTENCE
+// ========================================================
+
+function getSkillAdjustedLevel(
+    skill,
+    level,
+    analysis
+) {
+
+    const safeLevel =
+        clampLevel(level);
+
+    const item =
+        Array.isArray(analysis)
+            ? analysis.find(
+                entry =>
+                    entry.skill === skill
+            )
+            : null;
+
+    if (!item) {
+        return safeLevel;
+    }
+
+    const assessment =
+        item.assessment || {};
+
+    /*
+    🔴 Compétence faible :
+    on facilite nettement l'exercice.
+    */
+    if (
+        assessment.priority ===
+        "élevée"
+    ) {
+        return clampLevel(
+            Math.round(
+                safeLevel * 0.70
+            )
+        );
+    }
+
+    /*
+    🟠 Compétence fragile :
+    on facilite légèrement l'exercice.
+    */
+    if (
+        assessment.priority ===
+        "moyenne"
+    ) {
+        return clampLevel(
+            Math.round(
+                safeLevel * 0.80
+            )
+        );
+    }
+
+    /*
+    🟢 Compétence solide :
+    on peut proposer un petit défi supplémentaire.
+    */
+    if (
+        assessment.priority ===
+        "faible"
+    ) {
+        return clampLevel(
+            Math.round(
+                safeLevel * 1.10
+            )
+        );
+    }
+
+    /*
+    Niveau normal si aucune priorité particulière.
+    */
+    return safeLevel;
+}
 function shuffle(array) {
     const copy = Array.isArray(array) ? [...array] : [];
 
@@ -2760,11 +2838,18 @@ function generateLearningSession(
             verificationAttempt++
         ) {
 
-            question =
-                generateExerciseBySkill(
+            const exerciseLevel =
+                getSkillAdjustedLevel(
                     skill,
-                    safeLevel
-                );
+                    safeLevel,
+                    adaptiveAnalysis
+               );
+
+           question =
+               generateExerciseBySkill(
+                   skill,
+                   exerciseLevel
+               );
 
             /*
                Première sécurité :
