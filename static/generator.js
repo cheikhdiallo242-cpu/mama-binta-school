@@ -2870,7 +2870,7 @@ if (!diagnostic) {
     diagnostic.style.position =
         "fixed";
 
-    diagnostic.style.bottom =
+    diagnostic.style.top =
         "10px";
 
     diagnostic.style.left =
