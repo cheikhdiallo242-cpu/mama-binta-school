@@ -2851,14 +2851,65 @@ function generateLearningSession(
                    exerciseLevel
                );
 
-           console.log(
-              "🧠 Générateur — Difficulté adaptée :",
-              {
-                 skill,
-                 niveauGlobal: safeLevel,
-                 niveauAdapte: exerciseLevel
-              }
-           );
+// ========================================================
+// 📱 DIAGNOSTIC VISIBLE SUR L'ÉCRAN
+// ========================================================
+
+let diagnostic = document.getElementById(
+    "generator-diagnostic"
+);
+
+if (!diagnostic) {
+
+    diagnostic =
+        document.createElement("div");
+
+    diagnostic.id =
+        "generator-diagnostic";
+
+    diagnostic.style.position =
+        "fixed";
+
+    diagnostic.style.bottom =
+        "10px";
+
+    diagnostic.style.left =
+        "10px";
+
+    diagnostic.style.right =
+        "10px";
+
+    diagnostic.style.zIndex =
+        "9999";
+
+    diagnostic.style.padding =
+        "12px";
+
+    diagnostic.style.borderRadius =
+        "12px";
+
+    diagnostic.style.background =
+        "#fff3cd";
+
+    diagnostic.style.color =
+        "#333";
+
+    diagnostic.style.fontSize =
+        "14px";
+
+    diagnostic.style.fontWeight =
+        "bold";
+
+    diagnostic.style.textAlign =
+        "center";
+
+    document.body.appendChild(
+        diagnostic
+    );
+}
+
+diagnostic.textContent =
+    `🧠 ${skill} : niveau global ${safeLevel} → niveau adapté ${exerciseLevel}`;
 
             /*
                Première sécurité :
