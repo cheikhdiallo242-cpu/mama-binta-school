@@ -223,7 +223,7 @@ function analyzeSkill(skill) {
                         skill
                 )
 
-                .slice(-5);
+                .slice(-10);
 
     }
 
