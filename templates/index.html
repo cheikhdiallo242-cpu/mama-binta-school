@@ -2883,44 +2883,60 @@ if (
 }
      
 // =================================================
-// 📊 RÉSUMÉ DU BUS
+// 📊 RÉSUMÉ COMPACT DU BUS
 // =================================================
 
 let busSummary =
     "━━━━━━━━━━━━━━━━━━\n\n" +
 
-    "📊 RÉSUMÉ DU BUS\n\n" +
+    "📊 BUS DES AGENTS\n\n" +
 
-    "🔎 Analyseur → Planificateur : " +
+    "🔎 Analyseur → 🎯 Planificateur     " +
+    (analyzerPlanner.length > 0 ? "✅ " : "⚠️ ") +
     analyzerPlanner.length +
+
     "\n" +
 
-    "🎯 Planificateur → Générateur : " +
+    "🎯 Planificateur → 📚 Générateur   " +
+    (plannerGenerator.length > 0 ? "✅ " : "⚠️ ") +
     plannerGenerator.length +
+
     "\n" +
 
-    "⚙️ Générateur → Planificateur : " +
+    "📚 Générateur → 🎯 Planificateur   " +
+    (generatorPlanner.length > 0 ? "✅ " : "⚠️ ") +
     generatorPlanner.length +
+
     "\n" +
 
-    "⚙️ Générateur → Vérificateur : " +
+    "📚 Générateur → 🛡️ Vérificateur    " +
+    (generatorVerifier.length > 0 ? "✅ " : "⚠️ ") +
     generatorVerifier.length +
+
     "\n" +
 
-    "🛡️ Vérificateur → Générateur : " +
+    "🛡️ Vérificateur → 📚 Générateur    " +
+    (verifierGenerator.length > 0 ? "✅ " : "⚠️ ") +
     verifierGenerator.length +
+
     "\n" +
 
-    "🛡️ Vérificateur → Professeur : " +
+    "🛡️ Vérificateur → 👩🏾‍🏫 Professeur " +
+    (verifierTeacher.length > 0 ? "✅ " : "⚠️ ") +
     verifierTeacher.length +
+
     "\n" +
 
-    "🤖 Orchestrateur → Professeur : " +
+    "🤖 Orchestrateur → 👩🏾‍🏫 Professeur  " +
+    (orchestratorTeacher.length > 0 ? "✅ " : "⚠️ ") +
     orchestratorTeacher.length +
+
     "\n" +
 
-    "👩🏾‍🏫 Professeur → Orchestrateur : " +
+    "👩🏾‍🏫 Professeur → 🤖 Orchestrateur  " +
+    (teacherOrchestrator.length > 0 ? "✅ " : "⚠️ ") +
     teacherOrchestrator.length +
+
     "\n\n";
 
 
@@ -2929,16 +2945,14 @@ if (
 ) {
 
     busSummary +=
-        "🤖 Le Planificateur communique réellement " +
-        "avec le Générateur par le Bus.\n\n" +
-
-        "✅ Cette liaison est confirmée.";
+        "🤖 Planificateur → Générateur\n" +
+        "✅ Liaison confirmée par le Bus.";
 
 } else {
 
     busSummary +=
-        "⏳ La liaison Planificateur → Générateur " +
-        "n'est pas encore confirmée par le diagnostic.";
+        "🤖 Planificateur → Générateur\n" +
+        "⚠️ Liaison non détectée.";
 
 }
 
