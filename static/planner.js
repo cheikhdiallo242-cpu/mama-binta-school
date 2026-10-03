@@ -1578,9 +1578,12 @@ function planLearningLevel() {
     getPlannerSkillAssessment(
         analysis
     );
-    
-    const priority =
-        getPlannerPriority();
+
+const skillTargets =
+    getPlannerSkillTargets();
+
+const priority =
+    getPlannerPriority();
 
 
     // ====================================================
@@ -1608,7 +1611,8 @@ function planLearningLevel() {
                 analysis,
 
                 skillAssessment,
-
+            
+                skillTargets,
                 message:
                 "🎯 Mama Binta est prête pour une nouvelle session de 5 exercices."
         };
