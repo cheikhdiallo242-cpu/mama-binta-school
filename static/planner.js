@@ -2044,27 +2044,33 @@ function publishLearningPlanToGenerator(
 
         signature =
 
-            JSON.stringify({
+    JSON.stringify({
 
-                level:
+        level:
 
-                    plan.level,
+            plan.level,
 
-                sessionSize:
+        sessionSize:
 
-                    plan.sessionSize,
+            plan.sessionSize,
 
-                priority:
+        priority:
 
-                    plan.priority,
+            plan.priority,
 
-                analysis:
+        analysis:
 
-                    plan.analysis,
-                skillAssessment:
-                   plan.skillAssessment
+            plan.analysis,
 
-            });
+        skillAssessment:
+
+            plan.skillAssessment,
+
+        skillTargets:
+
+            plan.skillTargets
+
+    });
 
     } catch (error) {
 
@@ -2189,6 +2195,9 @@ function publishLearningPlanToGenerator(
 
 skillAssessment:
     plan.skillAssessment || null,
+
+skillTargets:
+    plan.skillTargets || [],
 
 levelInfo:
     plan.levelInfo || null
