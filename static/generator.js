@@ -1905,6 +1905,9 @@ function getAdaptiveSkillAnalysis() {
    let plannerSkillAssessment =
     null;
 
+   let plannerSkillTargets =
+    [];
+   
     let plannerPriority =
         [];
 
@@ -1948,6 +1951,22 @@ function getAdaptiveSkillAnalysis() {
 
 }
 
+   if (
+    learningPlan &&
+    Array.isArray(
+        learningPlan.skillTargets
+    )
+) {
+
+    plannerSkillTargets =
+        learningPlan.skillTargets;
+
+    console.log(
+        "🎯 Générateur : cibles pédagogiques reçues du Planificateur par le Bus.",
+        plannerSkillTargets
+    );
+
+}
 
     /*
        ====================================================
