@@ -670,29 +670,29 @@ function analyzeStudent() {
     let overallAccuracy = 0;
 
 
-    if (memory) {
+if (memory) {
 
-        const total =
-            Number(memory.total) ||
-            0;
-
-
-        const correct =
-            Number(memory.correct) ||
-            0;
+    const total =
+        Number(memory.totalQuestions) ||
+        0;
 
 
-        if (total > 0) {
+    const correct =
+        Number(memory.correct) ||
+        0;
 
-            overallAccuracy =
-                Math.round(
-                    (correct / total) *
-                    100
-                );
 
-        }
+    if (total > 0) {
+
+        overallAccuracy =
+            Math.round(
+                (correct / total) *
+                100
+            );
 
     }
+
+}
 
 
     return {
