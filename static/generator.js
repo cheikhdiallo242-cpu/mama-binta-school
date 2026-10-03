@@ -432,6 +432,57 @@ function getSkillAdjustedLevel(
         item.assessment || {};
 
     /*
+    🎯 Chercher une cible pédagogique
+    envoyée par le Planificateur.
+    */
+    const learningPlan =
+        getGeneratorLearningPlan();
+
+    const skillTargets =
+        learningPlan &&
+        Array.isArray(
+            learningPlan.skillTargets
+        )
+            ? learningPlan.skillTargets
+            : [];
+
+    const target =
+        skillTargets.find(
+            entry =>
+                entry.skill === skill
+        );
+
+    /*
+    🎯 Si le Planificateur a identifié
+    un niveau précis lié aux erreurs,
+    on rapproche l'exercice de ce niveau.
+    */
+    if (
+        target &&
+        typeof target.latestLevel ===
+            "number"
+    ) {
+
+        const targetLevel =
+            clampLevel(
+                target.latestLevel
+            );
+
+        /*
+        On garde une partie du niveau global
+        pour éviter un changement brutal.
+        */
+        return clampLevel(
+            Math.round(
+                (
+                    safeLevel +
+                    targetLevel
+                ) / 2
+            )
+        );
+    }
+
+    /*
     🔴 Compétence faible :
     on facilite nettement l'exercice.
     */
