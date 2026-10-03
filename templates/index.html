@@ -2881,72 +2881,90 @@ if (
         "n'a encore été détecté.\n\n";
 
 }
-    // =================================================
-    // 📊 RÉSUMÉ
-    // =================================================
+     
+// =================================================
+// 📊 RÉSUMÉ DU BUS
+// =================================================
 
-    message +=
-        "━━━━━━━━━━━━━━━━━━\n\n" +
+let busSummary =
+    "━━━━━━━━━━━━━━━━━━\n\n" +
 
-        "📊 RÉSUMÉ DU BUS\n\n" +
+    "📊 RÉSUMÉ DU BUS\n\n" +
 
-        "🔎 Analyseur → Planificateur : " +
-analyzerPlanner.length +
-"\n" +
+    "🔎 Analyseur → Planificateur : " +
+    analyzerPlanner.length +
+    "\n" +
 
-"🎯 Planificateur → Générateur : " +
-plannerGenerator.length +
-"\n" +
+    "🎯 Planificateur → Générateur : " +
+    plannerGenerator.length +
+    "\n" +
 
-"⚙️ Générateur → Planificateur : " +
-generatorPlanner.length +
-"\n" +
+    "⚙️ Générateur → Planificateur : " +
+    generatorPlanner.length +
+    "\n" +
 
-"⚙️ Générateur → Vérificateur : " +
-generatorVerifier.length +
-"\n" +
+    "⚙️ Générateur → Vérificateur : " +
+    generatorVerifier.length +
+    "\n" +
 
-"🛡️ Vérificateur → Générateur : " +
-verifierGenerator.length +
-"\n" +
+    "🛡️ Vérificateur → Générateur : " +
+    verifierGenerator.length +
+    "\n" +
 
-"🛡️ Vérificateur → Professeur : " +
-verifierTeacher.length +
-"\n" +
+    "🛡️ Vérificateur → Professeur : " +
+    verifierTeacher.length +
+    "\n" +
 
-"🤖 Orchestrateur → Professeur : " +
-orchestratorTeacher.length +
-"\n" +
+    "🤖 Orchestrateur → Professeur : " +
+    orchestratorTeacher.length +
+    "\n" +
 
-"👩🏾‍🏫 Professeur → Orchestrateur : " +
-teacherOrchestrator.length +
-"\n\n";
-
-
-    if (
-        plannerGenerator.length > 0
-    ) {
-
-        message +=
-            "🤖 Le Planificateur communique réellement " +
-            "avec le Générateur par le Bus.\n\n" +
-
-            "✅ Cette liaison est confirmée.";
-
-    } else {
-
-        message +=
-            "⏳ La liaison Planificateur → Générateur " +
-            "n'est pas encore confirmée par le diagnostic.";
-
-    }
+    "👩🏾‍🏫 Professeur → Orchestrateur : " +
+    teacherOrchestrator.length +
+    "\n\n";
 
 
-    // =================================================
-    // 🖥️ AFFICHER
-    // =================================================
+if (
+    plannerGenerator.length > 0
+) {
 
-    // -------------------------------------------------
+    busSummary +=
+        "🤖 Le Planificateur communique réellement " +
+        "avec le Générateur par le Bus.\n\n" +
+
+        "✅ Cette liaison est confirmée.";
+
+} else {
+
+    busSummary +=
+        "⏳ La liaison Planificateur → Générateur " +
+        "n'est pas encore confirmée par le diagnostic.";
+
+}
+
+
+// =================================================
+// 📌 RÉSUMÉ EN HAUT DU DIAGNOSTIC
+// =================================================
+
+message =
+    "🧪 DIAGNOSTIC DU BUS DES AGENTS\n\n" +
+
+    busSummary +
+
+    "\n\n━━━━━━━━━━━━━━━━━━\n\n" +
+
+    message.replace(
+        "🧪 DIAGNOSTIC DU BUS DES AGENTS\n\n",
+        ""
+    );
+
+
+// =================================================
+// 🖥️ AFFICHER
+// =================================================
+
+// -------------------------------------------------
 // 🖥️ AFFICHER LE DIAGNOSTIC
 // -------------------------------------------------
 
