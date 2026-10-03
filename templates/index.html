@@ -2477,17 +2477,70 @@ message +=
     "━━━━━━━━━━━━━━━━━━\n\n" +
     "🧠 COMPOSITION RÉELLE DE LA SESSION\n\n";
 
+// -------------------------------------------------
+// 💾 RÉCUPÉRER LA COMPOSITION SAUVEGARDÉE
+// -------------------------------------------------
+
+let savedComposition = null;
+
+try {
+
+    const storedComposition =
+        localStorage.getItem(
+            "mamaBintaLastGeneratedComposition"
+        );
+
+    if (
+        storedComposition
+    ) {
+
+        savedComposition =
+            JSON.parse(
+                storedComposition
+            );
+
+    }
+
+} catch (error) {
+
+    console.warn(
+        "⚠️ Impossible de récupérer la composition sauvegardée.",
+        error
+    );
+
+}
+
+// -------------------------------------------------
+// 🔎 CHOISIR LA COMPOSITION DISPONIBLE
+// -------------------------------------------------
+
+const compositionToDisplay =
+    (
+        Array.isArray(
+            lastGeneratedComposition
+        ) &&
+        lastGeneratedComposition.length > 0
+    )
+        ? lastGeneratedComposition
+        : savedComposition;
+
+// -------------------------------------------------
+// 📊 AFFICHER LA COMPOSITION
+// -------------------------------------------------
+
 if (
-    Array.isArray(lastGeneratedComposition) &&
-    lastGeneratedComposition.length > 0
+    Array.isArray(
+        compositionToDisplay
+    ) &&
+    compositionToDisplay.length > 0
 ) {
 
     message +=
         "Exercices générés : " +
-        lastGeneratedComposition.length +
+        compositionToDisplay.length +
         " / 5\n\n";
 
-    lastGeneratedComposition.forEach(
+    compositionToDisplay.forEach(
         function(skill, index) {
 
             message +=
