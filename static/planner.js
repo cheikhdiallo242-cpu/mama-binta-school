@@ -830,62 +830,207 @@ function getPlannerSkillTargets() {
 function getPlannerSkillAssessment(analysis) {
 
     if (!analysis || !analysis.skills) {
-        console.warn("⚠️ Planificateur : aucune donnée de compétence disponible.");
+        console.warn(
+            "⚠️ Planificateur : aucune donnée de compétence disponible."
+        );
+
         return {};
     }
 
     const assessment = {};
 
-    Object.keys(analysis.skills).forEach(skill => {
+    Object.keys(analysis.skills).forEach(
+        skill => {
 
-        const data = analysis.skills[skill] || {};
+            const data =
+                analysis.skills[skill] || {};
 
-        const accuracy = Number(data.accuracy || 0);
-        const trend = data.trend || "stable";
+            /*
+            ====================================================
+            📊 DONNÉES DE LA COMPÉTENCE
+            ====================================================
+            */
 
-        let state = "à surveiller";
-        let priority = "normale";
+            const accuracy =
+                Number(
+                    data.accuracy || 0
+                );
 
-        // ------------------------------------------------
-        // 🟢 COMPÉTENCE SOLIDE
-        // ------------------------------------------------
-        if (accuracy >= 80 && trend !== "negative") {
-            state = "solide";
-            priority = "faible";
+            const recentAccuracy =
+                Number(
+                    data.recentAccuracy ??
+                    accuracy
+                );
+
+            const trend =
+                data.trend ||
+                "stable";
+
+            /*
+            ====================================================
+            🧠 ÉCART ENTRE HISTORIQUE ET RÉCENT
+            ====================================================
+            */
+
+            const recentDifference =
+                recentAccuracy -
+                accuracy;
+
+            let state =
+                "à surveiller";
+
+            let priority =
+                "normale";
+
+            /*
+            ====================================================
+            🔴 1. COMPÉTENCE FAIBLE
+            ====================================================
+
+            La réussite globale est basse.
+            */
+
+            if (
+                accuracy < 60
+            ) {
+
+                state =
+                    "faible";
+
+                priority =
+                    "élevée";
+
+            }
+
+            /*
+            ====================================================
+            🟠 2. BAISSE RÉCENTE IMPORTANTE
+            ====================================================
+
+            Même si la moyenne historique est correcte,
+            une forte baisse récente mérite une attention
+            particulière.
+            */
+
+            else if (
+                recentAccuracy < 60 ||
+                recentDifference <= -15 ||
+                trend === "negative"
+            ) {
+
+                state =
+                    "fragile";
+
+                priority =
+                    "élevée";
+
+            }
+
+            /*
+            ====================================================
+            🟡 3. COMPÉTENCE FRAGILE
+            ====================================================
+            */
+
+            else if (
+                accuracy < 80 ||
+                recentAccuracy < 75
+            ) {
+
+                state =
+                    "fragile";
+
+                priority =
+                    "moyenne";
+
+            }
+
+            /*
+            ====================================================
+            🟢 4. COMPÉTENCE SOLIDE
+            ====================================================
+
+            Elle est bonne historiquement ET récemment.
+            */
+
+            else if (
+                accuracy >= 80 &&
+                recentAccuracy >= 75 &&
+                trend !== "negative"
+            ) {
+
+                state =
+                    "solide";
+
+                priority =
+                    "faible";
+
+            }
+
+            /*
+            ====================================================
+            🔵 5. AMÉLIORATION RÉCENTE
+            ====================================================
+
+            Une compétence qui progresse ne doit pas être
+            inutilement considérée comme faible.
+            */
+
+            if (
+                trend === "improving" &&
+                recentDifference >= 10 &&
+                accuracy >= 60
+            ) {
+
+                if (
+                    accuracy >= 80
+                ) {
+
+                    state =
+                        "solide";
+
+                    priority =
+                        "faible";
+
+                }
+                else {
+
+                    state =
+                        "fragile";
+
+                    priority =
+                        "moyenne";
+
+                }
+            }
+
+            /*
+            ====================================================
+            📦 ENREGISTRER L'ÉVALUATION
+            ====================================================
+            */
+
+            assessment[skill] = {
+
+                accuracy,
+
+                recentAccuracy,
+
+                recentDifference,
+
+                trend,
+
+                state,
+
+                priority
+
+            };
+
         }
-
-        // ------------------------------------------------
-        // 🟡 COMPÉTENCE FRAGILE
-        // ------------------------------------------------
-        else if (accuracy >= 60) {
-            state = "fragile";
-            priority = "moyenne";
-        }
-
-        // ------------------------------------------------
-        // 🔴 COMPÉTENCE FAIBLE
-        // ------------------------------------------------
-        else {
-            state = "faible";
-            priority = "élevée";
-        }
-
-        // Une tendance négative augmente toujours
-        // l'attention portée à la compétence.
-        if (trend === "negative") {
-            priority = "élevée";
-        }
-
-        assessment[skill] = {
-            accuracy,
-            trend,
-            state,
-            priority
-        };
-    });
+    );
 
     console.log(
-        "🧠 Planificateur — Évaluation des compétences :",
+        "🧠 Planificateur — Évaluation intelligente des compétences :",
         assessment
     );
 
