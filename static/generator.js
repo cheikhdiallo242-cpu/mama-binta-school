@@ -2526,6 +2526,7 @@ function getSkillSessionQuota(
    usedSkills devient volontairement un historique
    des compétences déjà utilisées.
 */
+
 function chooseSkillForSession(
     level = 1,
     index = 0,
@@ -2539,8 +2540,11 @@ function chooseSkillForSession(
         getAdaptiveSkillAnalysis();
 
     /*
-       Compter les utilisations actuelles.
+    =====================================================
+    🧠 COMPTER LES UTILISATIONS
+    =====================================================
     */
+
     const usage = {};
 
     defaultSkills.forEach(
@@ -2560,15 +2564,17 @@ function chooseSkillForSession(
             ) {
                 usage[skill]++;
             }
+
         }
     );
 
-
     /*
-       =====================================================
-       CAS 1
-       Une faiblesse importante existe.
-       =====================================================
+    =====================================================
+    🔴 1. COMPÉTENCE PRINCIPALEMENT FAIBLE
+    =====================================================
+
+    Une compétence très faible reste prioritaire,
+    mais elle ne peut plus monopoliser la session.
     */
 
     const primaryWeak =
@@ -2576,42 +2582,28 @@ function chooseSkillForSession(
 
     if (
         primaryWeak &&
-        usage[primaryWeak] < 3
+        usage[primaryWeak] === 0
     ) {
 
-        /*
-           On réserve les positions 1, 3 et 5
-           à la faiblesse principale lorsque possible.
-        */
-        const preferredIndexes = [
-            0,
-            2,
-            4
-        ];
+        return primaryWeak;
 
-        if (
-            preferredIndexes.includes(
-                index
-            )
-        ) {
-            return primaryWeak;
-        }
     }
 
-
     /*
-       =====================================================
-       CAS 2
-       Une deuxième compétence est en difficulté
-       ou en développement.
-       =====================================================
+    =====================================================
+    🟠 2. COMPÉTENCES PRIORITAIRES
+    =====================================================
+
+    On cherche les compétences qui ont besoin
+    de davantage de travail.
     */
 
-    const candidates =
+    const priorityCandidates =
         analysis.filter(
             item =>
-                item.skill !==
-                    primaryWeak &&
+
+                item.priority >= 50 &&
+
                 usage[item.skill] <
                     getSkillSessionQuota(
                         item.skill,
@@ -2619,93 +2611,147 @@ function chooseSkillForSession(
                     )
         );
 
-
     /*
-       Parmi les compétences restantes,
-       choisir celle qui possède la plus grande priorité.
-    */
-    if (
-        candidates.length > 0
-    ) {
+    =====================================================
+    🟢 3. COMPÉTENCES JAMAIS UTILISÉES
+    =====================================================
 
-        /*
-           On favorise d'abord les compétences
-           les plus faibles.
-        */
-        candidates.sort(
-            (a, b) => {
+    IMPORTANT :
 
-                if (
-                    b.priority !==
-                    a.priority
-                ) {
-                    return (
-                        b.priority -
-                        a.priority
-                    );
-                }
+    Tant qu'une compétence n'est pas encore apparue
+    dans la session, elle reçoit une chance.
 
-                /*
-                   À priorité égale, favoriser
-                   celle qui a été la moins utilisée.
-                */
-                return (
-                    usage[a.skill] -
-                    usage[b.skill]
-                );
-            }
-        );
+    Cela garantit une vraie rotation entre :
 
-        /*
-           Pour éviter que deux compétences faibles
-           soient toujours dans le même ordre,
-           une petite variation est possible
-           lorsque leurs priorités sont proches.
-        */
-        const top =
-            candidates.filter(
-                candidate =>
-                    candidate.priority ===
-                    candidates[0].priority
-            );
-
-        if (
-            top.length > 1
-        ) {
-            return randomItem(
-                top
-            ).skill;
-        }
-
-        return candidates[0].skill;
-    }
-
-
-    /*
-       =====================================================
-       CAS 3
-       Plus aucune priorité disponible.
-       Répartition normale.
-       =====================================================
+    Lecture
+    Addition
+    Soustraction
+    Multiplication
+    Compréhension
     */
 
-    const unused =
+    const unusedSkills =
         defaultSkills.filter(
             skill =>
                 usage[skill] === 0
         );
 
     if (
-        unused.length > 0
+        unusedSkills.length > 0
     ) {
-        return unused[0];
+
+        /*
+        Parmi les compétences jamais utilisées,
+        on donne la priorité à celles qui ont
+        besoin de soutien.
+        */
+
+        const unusedPriority =
+            priorityCandidates.filter(
+                item =>
+                    unusedSkills.includes(
+                        item.skill
+                    )
+            );
+
+        if (
+            unusedPriority.length > 0
+        ) {
+
+            unusedPriority.sort(
+                (a, b) =>
+                    b.priority -
+                    a.priority
+            );
+
+            return unusedPriority[0].skill;
+
+        }
+
+        /*
+        Sinon, on choisit une compétence
+        encore absente de la session.
+        */
+
+        return randomItem(
+            unusedSkills
+        );
+
     }
 
+    /*
+    =====================================================
+    🧠 4. TOUTES LES COMPÉTENCES SONT DÉJÀ PRÉSENTES
+    =====================================================
+
+    À partir de maintenant, l'adaptation reprend
+    complètement ses droits.
+
+    Les compétences faibles peuvent revenir.
+    */
+
+    if (
+        priorityCandidates.length > 0
+    ) {
+
+        priorityCandidates.sort(
+            (a, b) => {
+
+                if (
+                    b.priority !==
+                    a.priority
+                ) {
+
+                    return (
+                        b.priority -
+                        a.priority
+                    );
+
+                }
+
+                return (
+                    usage[a.skill] -
+                    usage[b.skill]
+                );
+
+            }
+        );
+
+        const bestPriority =
+            priorityCandidates[0].priority;
+
+        const top =
+            priorityCandidates.filter(
+                item =>
+                    item.priority ===
+                    bestPriority
+            );
+
+        if (
+            top.length > 1
+        ) {
+
+            return randomItem(
+                top
+            ).skill;
+
+        }
+
+        return (
+            priorityCandidates[0].skill
+        );
+
+    }
 
     /*
-       Toutes les compétences ont déjà été utilisées.
-       On choisit celle qui a été la moins utilisée.
+    =====================================================
+    ⚖️ 5. AUCUNE PRIORITÉ
+    =====================================================
+
+    On entretient simplement les compétences
+    en choisissant celle qui a été la moins utilisée.
     */
+
     const minimumUsage =
         Math.min(
             ...defaultSkills.map(
