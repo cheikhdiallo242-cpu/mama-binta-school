@@ -1753,6 +1753,7 @@ if (alreadyApplied) {
 
             analysis,
             skillAssessment,
+            skillTargets,
             message:
                 "🧠 Cette difficulté se répète. " +
                 "Nous allons revenir temporairement au niveau " +
@@ -1819,6 +1820,7 @@ if (alreadyApplied) {
 
                 analysis,
                 skillAssessment,
+                skillTargets,
                 message:
                     "🌟 Bravo ! Mama Binta a réussi " +
                     score +
@@ -1863,6 +1865,7 @@ if (alreadyApplied) {
 
             analysis,
             skillAssessment,
+            skillTargets,
             message:
                 "🏆 Mama Binta est arrivée au niveau 100. " +
                 "Nous allons maintenant renforcer et approfondir ses compétences."
@@ -1909,6 +1912,7 @@ if (alreadyApplied) {
 
             analysis,
             skillAssessment,
+            skillTargets,
             message:
                 "🧠 Mama Binta a réussi 3/5. " +
                 "Nous allons rester au niveau " +
@@ -1954,6 +1958,7 @@ if (alreadyApplied) {
         analysis,
     
         skillAssessment,
+        skillTargets,
         message:
             "💪 Nous allons rester au niveau " +
             currentLevel +
