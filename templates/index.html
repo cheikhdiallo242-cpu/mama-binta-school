@@ -3030,6 +3030,177 @@ document.getElementById(
 );
 
 // -------------------------------------------------
+// 🔎 RECHERCHER PAR AGENT
+// -------------------------------------------------
+
+const diagnosticSearch =
+    document.createElement("select");
+
+diagnosticSearch.style.marginTop =
+    "10px";
+
+diagnosticSearch.style.width =
+    "100%";
+
+diagnosticSearch.style.padding =
+    "12px";
+
+diagnosticSearch.style.borderRadius =
+    "10px";
+
+diagnosticSearch.style.border =
+    "1px solid #ccc";
+
+diagnosticSearch.innerHTML =
+    `
+    <option value="all">
+        🔎 Tous les agents
+    </option>
+
+    <option value="analyzer">
+        🔎 Analyseur
+    </option>
+
+    <option value="planner">
+        🎯 Planificateur
+    </option>
+
+    <option value="generator">
+        📚 Générateur
+    </option>
+
+    <option value="verifier">
+        🛡️ Vérificateur
+    </option>
+
+    <option value="teacher">
+        👩🏾‍🏫 Professeur
+    </option>
+
+    <option value="orchestrator">
+        🤖 Orchestrateur
+    </option>
+
+    <option value="memory">
+        🧠 Mémoire
+    </option>
+
+    <option value="profile">
+        🧑🏾‍🏫 Profil
+    </option>
+    `;
+
+diagnosticSearch.onchange =
+    function () {
+
+        const selectedAgent =
+            diagnosticSearch.value;
+
+        if (
+            selectedAgent === "all"
+        ) {
+
+            document.getElementById(
+                "box"
+            ).innerText =
+                message;
+
+            return;
+        }
+
+        const filteredMessages =
+            allMessages.filter(
+                function(agentMessage) {
+
+                    return (
+                        agentMessage.from ===
+                            selectedAgent ||
+
+                        agentMessage.to ===
+                            selectedAgent
+                    );
+
+                }
+            );
+
+        let filteredMessage =
+            "🔎 RECHERCHE DANS LE BUS\n\n";
+
+        filteredMessage +=
+            "Agent recherché : " +
+            selectedAgent +
+            "\n\n";
+
+        filteredMessage +=
+            "Messages trouvés : " +
+            filteredMessages.length +
+            "\n\n";
+
+        if (
+            filteredMessages.length === 0
+        ) {
+
+            filteredMessage +=
+                "⚠️ Aucun message trouvé.";
+
+        } else {
+
+            filteredMessages.forEach(
+                function(
+                    agentMessage,
+                    index
+                ) {
+
+                    filteredMessage +=
+                        "📨 Message " +
+                        (index + 1) +
+                        "\n\n" +
+
+                        "De : " +
+                        agentMessage.from +
+                        "\n" +
+
+                        "Vers : " +
+                        agentMessage.to +
+                        "\n" +
+
+                        "Type : " +
+                        agentMessage.type +
+                        "\n" +
+
+                        "Date : " +
+                        agentMessage.timestamp +
+                        "\n\n" +
+
+                        "Message : " +
+                        (
+                            agentMessage.message ||
+                            "—"
+                        ) +
+
+                        "\n\n" +
+
+                        "━━━━━━━━━━━━━━━━━━\n\n";
+
+                }
+            );
+
+        }
+
+        document.getElementById(
+            "box"
+        ).innerText =
+            filteredMessage;
+
+    };
+
+document.getElementById(
+    "box"
+).prepend(
+    diagnosticSearch
+);
+     
+// -------------------------------------------------
 // 📋 COPIER LES INFORMATIONS DU DIAGNOSTIC
 // -------------------------------------------------
 
