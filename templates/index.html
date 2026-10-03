@@ -1077,14 +1077,36 @@ if (
 
         adaptiveExercises =
             verifiedExercises;
-         lastGeneratedComposition = verifiedExercises.map(
-    function(question) {
-        return question.skill || "inconnue";
-    }
-);
-         
- adaptiveIndex = 0;
+       lastGeneratedComposition = verifiedExercises.map(
+          function(question) {
+             return question.skill || "inconnue";
+          }
+      );
 
+    // -------------------------------------------------
+    // 💾 SAUVEGARDER LA COMPOSITION RÉELLE
+    // -------------------------------------------------
+
+try {
+
+    localStorage.setItem(
+        "mamaBintaLastGeneratedComposition",
+        JSON.stringify(
+            lastGeneratedComposition
+        )
+    );
+
+} catch (error) {
+
+    console.warn(
+        "⚠️ Impossible de sauvegarder la composition réelle.",
+        error
+    );
+
+}
+
+adaptiveIndex = 0;
+       
         updateSessionDisplay();
 
         showAdaptiveExercise();
