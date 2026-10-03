@@ -373,6 +373,10 @@ let adaptiveSessionFinished = false;
 // 🔊 VOIX
 // =====================================================
 
+// =====================================================
+// 🔊 VOIX DE MAMA BINTA
+// =====================================================
+
 function speak(text) {
 
     if (
@@ -385,18 +389,167 @@ function speak(text) {
         return;
     }
 
+    // 🔇 Ne pas faire prononcer les emojis
+    const speechText =
+        String(text)
+            .replace(
+                /[\p{Extended_Pictographic}\uFE0F\u200D]/gu,
+                " "
+            )
+            .replace(
+                /\s+/g,
+                " "
+            )
+            .trim();
+
+    if (!speechText) {
+        return;
+    }
+
+    // 🛑 Arrêter une éventuelle ancienne phrase
     speechSynthesis.cancel();
+
+    const voices =
+        speechSynthesis.getVoices();
+
+    // 🇫🇷 Garder uniquement les voix françaises
+    const frenchVoices =
+        voices.filter(
+            function(voice) {
+
+                return (
+                    voice.lang &&
+                    voice.lang
+                        .toLowerCase()
+                        .startsWith("fr")
+                );
+
+            }
+        );
+
+    // 👩 Chercher en priorité une voix féminine
+    const femaleNames = [
+        "amelie",
+        "amélie",
+        "audrey",
+        "aurelie",
+        "aurélie",
+        "marie",
+        "virginie",
+        "julie",
+        "sophie",
+        "claire",
+        "celine",
+        "céline",
+        "chloe",
+        "chloé",
+        "lea",
+        "léa",
+        "louise",
+        "camille",
+        "manon",
+        "emma",
+        "charlotte",
+        "margot",
+        "fanny",
+        "alice",
+        "nathalie",
+        "helene",
+        "hélène",
+        "florence",
+        "isabelle",
+        "justine",
+        "pauline",
+        "valerie",
+        "valérie",
+        "caroline",
+        "elodie",
+        "élodie"
+    ];
+
+    let femaleVoice =
+        frenchVoices.find(
+            function(voice) {
+
+                const name =
+                    voice.name
+                        .toLowerCase();
+
+                return femaleNames.some(
+                    function(firstName) {
+
+                        return name.includes(
+                            firstName
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+    // 🇫🇷 Si aucune voix féminine identifiable
+    // n'est disponible, utiliser une voix française.
+    if (!femaleVoice) {
+
+        femaleVoice =
+            frenchVoices[0] || null;
+
+    }
 
     const u =
         new SpeechSynthesisUtterance(
-            text
+            speechText
         );
 
     u.lang = "fr-FR";
+
+    // 👩 Utiliser la voix française sélectionnée
+    if (femaleVoice) {
+
+        u.voice =
+            femaleVoice;
+
+    }
+
+    // 👧 Voix douce adaptée à l'enfant
     u.rate = 0.85;
     u.pitch = 1.2;
 
     speechSynthesis.speak(u);
+}
+
+
+// =====================================================
+// 🔊 CHARGER LES VOIX DU NAVIGATEUR
+// =====================================================
+
+if (
+    "speechSynthesis" in window
+) {
+
+    speechSynthesis.addEventListener(
+        "voiceschanged",
+        function() {
+
+            console.log(
+                "🔊 Voix disponibles :",
+                speechSynthesis
+                    .getVoices()
+                    .map(
+                        function(voice) {
+                            return (
+                                voice.name +
+                                " — " +
+                                voice.lang
+                            );
+                        }
+                    )
+            );
+
+        }
+    );
+
 }
 
 
