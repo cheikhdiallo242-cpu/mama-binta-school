@@ -3029,6 +3029,75 @@ document.getElementById(
     diagnosticToggle
 );
 
+// -------------------------------------------------
+// 📋 COPIER LES INFORMATIONS DU DIAGNOSTIC
+// -------------------------------------------------
+
+const diagnosticCopy =
+    document.createElement("button");
+
+diagnosticCopy.innerText =
+    "📋 Copier les informations";
+
+diagnosticCopy.style.marginTop =
+    "10px";
+
+diagnosticCopy.style.width =
+    "100%";
+
+diagnosticCopy.style.padding =
+    "12px";
+
+diagnosticCopy.style.borderRadius =
+    "10px";
+
+diagnosticCopy.style.border =
+    "none";
+
+diagnosticCopy.style.cursor =
+    "pointer";
+
+diagnosticCopy.onclick =
+    async function () {
+
+        try {
+
+            await navigator.clipboard.writeText(
+                message
+            );
+
+            diagnosticCopy.innerText =
+                "✅ Informations copiées !";
+
+            setTimeout(
+                function () {
+
+                    diagnosticCopy.innerText =
+                        "📋 Copier les informations";
+
+                },
+                2000
+            );
+
+        } catch (error) {
+
+            console.error(
+                "❌ Impossible de copier le diagnostic :",
+                error
+            );
+
+            diagnosticCopy.innerText =
+                "⚠️ Copie impossible";
+
+        }
+
+    };
+
+document.getElementById(
+    "box"
+).prepend(
+    diagnosticCopy
+);
 
 // 🔇 Le diagnostic des agents reste silencieux.
 // Il est destiné à la vérification technique.
