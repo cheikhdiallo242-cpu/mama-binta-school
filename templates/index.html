@@ -2946,16 +2946,94 @@ teacherOrchestrator.length +
     // 🖥️ AFFICHER
     // =================================================
 
-    document.getElementById(
-        "box"
-    ).innerText =
-        message;
+    // -------------------------------------------------
+// 🖥️ AFFICHER LE DIAGNOSTIC
+// -------------------------------------------------
+
+document.getElementById(
+    "box"
+).innerText =
+    message;
 
 
- // 🔇 Le diagnostic des agents reste silencieux.
+// -------------------------------------------------
+// 👁️ OPTION AFFICHER / MASQUER LES DÉTAILS
+// -------------------------------------------------
+
+const diagnosticToggle =
+    document.createElement("button");
+
+diagnosticToggle.innerText =
+    "👁️ Masquer les détails";
+
+diagnosticToggle.style.marginTop =
+    "10px";
+
+diagnosticToggle.style.width =
+    "100%";
+
+diagnosticToggle.style.padding =
+    "12px";
+
+diagnosticToggle.style.borderRadius =
+    "10px";
+
+diagnosticToggle.style.border =
+    "none";
+
+diagnosticToggle.style.cursor =
+    "pointer";
+
+let diagnosticDetailsVisible =
+    true;
+
+diagnosticToggle.onclick =
+    function () {
+
+        diagnosticDetailsVisible =
+            !diagnosticDetailsVisible;
+
+        if (
+            diagnosticDetailsVisible
+        ) {
+
+            document.getElementById(
+                "box"
+            ).innerText =
+                message;
+
+            diagnosticToggle.innerText =
+                "👁️ Masquer les détails";
+
+        }
+
+        else {
+
+            document.getElementById(
+                "box"
+            ).innerText =
+                "🧪 DIAGNOSTIC DU BUS DES AGENTS\n\n" +
+                "ℹ️ Les informations détaillées " +
+                "des agents sont masquées.";
+
+            diagnosticToggle.innerText =
+                "👁️ Afficher les détails";
+
+        }
+
+    };
+
+document.getElementById(
+    "box"
+).appendChild(
+    diagnosticToggle
+);
+
+
+// 🔇 Le diagnostic des agents reste silencieux.
 // Il est destiné à la vérification technique.
 
-    updateLevelDisplay();
+updateLevelDisplay();
 
 }
      
