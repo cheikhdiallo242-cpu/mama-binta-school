@@ -2231,35 +2231,41 @@ function getLearningPlan() {
 
     const skillAssessment =
 
-        getPlannerSkillAssessment(
+    getPlannerSkillAssessment(
 
-            analysis
+        analysis
 
-        );
+    );
 
-    const priority =
+const skillTargets =
 
-        getPlannerPriority();
+    getPlannerSkillTargets();
 
-    const plan = {
+const priority =
 
-        level,
+    getPlannerPriority();
 
-        maxLevel:
+const plan = {
 
-            MAX_PEDAGOGICAL_LEVEL,
+    level,
 
-        sessionSize:
+    maxLevel:
 
-            SESSION_SIZE,
+        MAX_PEDAGOGICAL_LEVEL,
 
-        priority,
+    sessionSize:
 
-        analysis,
+        SESSION_SIZE,
 
-        skillAssessment,
+    priority,
 
-        levelInfo:
+    analysis,
+
+    skillAssessment,
+
+    skillTargets,
+
+    levelInfo:
 
             getPedagogicalLevelInfo(
 
