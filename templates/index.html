@@ -338,6 +338,22 @@ button:disabled {
 
 <div id="box"></div>
 
+<!-- 🏠 ÉCRAN DES RÉSULTATS DE LA SESSION PERSONNALISÉE -->
+
+<div id="adaptive-result-screen" class="hidden">
+
+    <div id="adaptive-result-box"></div>
+
+    <button
+        id="return-home-button"
+        class="secondary"
+        onclick="returnToHome()"
+    >
+        🏠 Retour à l’accueil
+    </button>
+
+</div>
+
 
 <script>
 
@@ -3381,6 +3397,110 @@ document.getElementById(
 // Il est destiné à la vérification technique.
 
 updateLevelDisplay();
+
+}
+
+// =====================================================
+// 🏠 RETOUR À L'ACCUEIL
+// =====================================================
+
+function returnToHome() {
+
+    // 🛑 Arrêter une éventuelle voix
+    if (
+        "speechSynthesis" in window
+    ) {
+
+        speechSynthesis.cancel();
+
+    }
+
+    // 🏠 Afficher le menu principal
+    const menu =
+        document.getElementById(
+            "menu"
+        );
+
+    if (menu) {
+
+        menu.classList.remove(
+            "hidden"
+        );
+
+    }
+
+    // 🎯 Masquer la session
+    const session =
+        document.getElementById(
+            "session"
+        );
+
+    if (session) {
+
+        session.classList.add(
+            "hidden"
+        );
+
+    }
+
+    // 📦 Masquer les résultats
+    const resultScreen =
+        document.getElementById(
+            "adaptive-result-screen"
+        );
+
+    if (resultScreen) {
+
+        resultScreen.classList.add(
+            "hidden"
+        );
+
+    }
+
+    // 🧹 Nettoyer les résultats
+    const resultBox =
+        document.getElementById(
+            "adaptive-result-box"
+        );
+
+    if (resultBox) {
+
+        resultBox.innerHTML = "";
+
+    }
+
+    // 🧹 Nettoyer la zone principale
+    const box =
+        document.getElementById(
+            "box"
+        );
+
+    if (box) {
+
+        box.innerHTML = "";
+
+    }
+
+    // 🔄 Revenir à l'état initial
+    current = null;
+
+    currentMode = "none";
+
+    adaptiveExercises = [];
+
+    adaptiveIndex = 0;
+
+    adaptiveSessionStarted =
+        false;
+
+    adaptiveSessionFinished =
+        false;
+
+    hideMathMenu();
+
+    updateLevelDisplay();
+
+    updateSessionDisplay();
 
 }
      
