@@ -962,6 +962,20 @@ function startAdaptive() {
 
     currentMode =
         "adaptive";
+     // 🏠 Cacher le menu pendant la session personnalisée
+
+const menu =
+    document.getElementById(
+        "menu"
+    );
+
+if (menu) {
+
+    menu.classList.add(
+        "hidden"
+    );
+
+}
 
     hideMathMenu();
 
@@ -1772,11 +1786,34 @@ if (
         );
 
 
-    document.getElementById(
-        "box"
-    ).innerText =
-        message;
+        // 📦 AFFICHER LE RÉSULTAT DANS L'ÉCRAN DÉDIÉ
 
+    const resultScreen =
+        document.getElementById(
+            "adaptive-result-screen"
+        );
+
+    const resultBox =
+        document.getElementById(
+            "adaptive-result-box"
+        );
+
+    if (
+        resultScreen &&
+        resultBox
+    ) {
+
+        resultBox.innerText =
+            message;
+
+        resultScreen.classList.remove(
+            "hidden"
+        );
+
+    }
+
+
+    // 🗣️ LIRE LE RÉSULTAT
 
     speak(
         getSessionSpeech(
