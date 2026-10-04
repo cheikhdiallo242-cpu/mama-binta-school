@@ -3000,7 +3000,7 @@ if (!diagnostic) {
         "generator-diagnostic";
 
     diagnostic.style.position =
-        "fixed";
+    "static";
 
     diagnostic.style.top =
         "4px";
