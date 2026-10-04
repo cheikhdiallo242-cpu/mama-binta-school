@@ -3040,9 +3040,8 @@ if (!diagnostic) {
     );
 }
 
-diagnostic.textContent =
-    `🧠 ${skill} : niveau global ${safeLevel} → niveau adapté ${exerciseLevel}`;
-
+diagnostic.innerHTML +=
+    `🧠 ${skill} : niveau global ${safeLevel} → niveau adapté ${exerciseLevel}<br>`;
             /*
                Première sécurité :
                le Générateur vérifie sa structure.
